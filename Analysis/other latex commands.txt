@@ -1,0 +1,17 @@
+
+Matrix:
+Version1:
+  (using)
+Version2:
+\newcommand{\matr}[1]{#1}
+Version3:
+\newcommand{\matr}[1]{\bm{#1}}
+
+Vector:
+Version1:
+	(using)
+Version2:
+(with bm package)
+\newcommand{\vect}[1]{\bm{#1}}
+Version3:
+\newcommand{\vect}[1]{\boldsymbol{#1}
