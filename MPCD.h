@@ -17,12 +17,7 @@ namespace MPCD {
 		constexpr double height = y_max - y_0;
 		constexpr double aspect_ratio = width / height;
 	}
-	namespace Grid {
-		constexpr int min_particles_per_cell = 5;
-		constexpr int min_num_cells = number / min_particles_per_cell;
-		constexpr int wanted_num_cells = min_num_cells * 2;
-		const double cell_dim = std::sqrt(std::pow(Pipe::width, 2) / (wanted_num_cells * Pipe::aspect_ratio)); // cutting dim by x has x^2 effect on area, and therefore on expected particle number.
-		const double max_shift = cell_dim / 2;
+
 
 		/*
 		const int x_cells = std::round(sqrt(number * 0.9 / min_particles_per_cell)); // at least 5 particles per cell. 90% to make sure. sqrt gives 1 dimension, round gives int
@@ -36,7 +31,6 @@ namespace MPCD {
 		const double x_0_offset = Pipe::x_0 - cell_dim / 2;
 		const double y_0_offset = Pipe::y_0 - cell_dim / 2;
 		*/
-	}
 }
 #endif
 

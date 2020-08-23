@@ -83,40 +83,35 @@ TEST_F(ParticleTest, Streaming) {
 	ASSERT_EQ(p_new_pos(1), newPos(1)) << "Moved position is new particle position";
 }
 
+TEST_F(ParticleTest, Rotation) {
+	Vector2d vel(1, 1);
+	Vector2d pos(0, 0);
+	Particle p(pos, vel);
+	Vector2d mockMeanCellVelocity(0, 0);
+	p.updateVelocity(mockMeanCellVelocity, M_PI);
+	Vector2d newVelocity = p.getVelocity();
+	ASSERT_EQ(newVelocity[0], -vel[0]);
+	ASSERT_EQ(newVelocity[1], -vel[1]);
+	p.updateVelocity(mockMeanCellVelocity, M_PI);
+	Vector2d newVelocity2 = p.getVelocity();
+	ASSERT_EQ(newVelocity2[0], vel[0]);
+	ASSERT_EQ(newVelocity2[1], vel[1]);
+}
+
 TEST_F(ParticleTest, Collision) {
-	const int rows = std::ceil(Pipe::height / Grid::cell_dim);
-	const int cols = std::ceil(Pipe::width / Grid::cell_dim);
-	std::map<Vector2i, Vector2d> mean_cell_velocities;
-	std::map<Vector2i, int> total_cell_p_numbers;
-	std::map<Vector2i, double> rotation_angle;
-	for (int r = 0; r < rows; r++) {
-		for (int c = 0; c < cols; c++) {
-			const Vector2i index(r, c);
-			const Vector2d vel(0.0, 0.0);
-			mean_cell_velocities.insert({ index, vel });
-			total_cell_p_numbers.insert({ index, 0 });
-			rotation_angle.insert({ index, 0.0 });
-		}
-	}
-	for (auto it = particles.begin(); it != particles.end(); ++it) {
-		Vector2d shift(rg_shift_x.next(), rg_shift_y.next());
-		Vector2i cell_index = it->shift(shift);
-		Vector2d vel = it->getVelocity();
-		mean_cell_velocities[cell_index] = mean_cell_velocities[cell_index] + vel;
-		total_cell_p_numbers[cell_index] += 1;
-	}
-	for (int r = 0; r < rows; r++) {
-		for (int c = 0; c < cols; c++) {
-			Vector2i cell_index(r, c);
-			mean_cell_velocities[cell_index] /= total_cell_p_numbers[cell_index];
-			rotation_angle[cell_index] = rg_angle.next();
-		}
-	}
-	// put these together
+	
+	
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
 		Vector2i cell_index = it->getCellIndex();
+		if (!cellCalculationDone[cell_index]) {
+			mean_cell_velocities[cell_index] /= total_cell_p_numbers[cell_index];
+			rotation_angle[cell_index] = rg_angle.next();
+			cellCalculationDone[cell_index] = true;
+		}
 		it->updateVelocity(mean_cell_velocities[cell_index], rotation_angle[cell_index]);
 	}
+	// put these together
+	
 }
 
 

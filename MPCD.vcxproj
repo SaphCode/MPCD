@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Grid.cpp" />
     <ClCompile Include="MersenneTwister.cpp" />
     <ClCompile Include="MPCD.cpp" />
     <ClCompile Include="Particle.cpp" />
