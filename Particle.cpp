@@ -45,7 +45,10 @@ void Particle::move(double time_step) {
 	_position += time_step * _velocity;
 }
 
-void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, Eigen::Matrix2d rotationMatrix) {
+void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
+	Eigen::Matrix2d rotationMatrix;
+	rotationMatrix << cos(rotationAngle), -sin(rotationAngle),
+					sin(rotationAngle), cos(rotationAngle);
 	_velocity = mean_cell_velocity + rotationMatrix * (_velocity - mean_cell_velocity);
 }
 

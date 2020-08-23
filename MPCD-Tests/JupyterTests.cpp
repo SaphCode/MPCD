@@ -82,10 +82,10 @@ protected:
 			double xs_vy = xs_yvel.next();
 			double xs_alpha = xs_angle.next();
 
-			pos(xs_x, xs_y);
-			vel(xs_vx, xs_vy);
+			Vector2d pos_xs(xs_x, xs_y);
+			Vector2d vel_xs(xs_vx, xs_vy);
 
-			Particle xs_p(pos, vel);
+			Particle xs_p(pos_xs, vel_xs);
 
 			xs_particles.push_back(xs_p);
 			xs_angles.push_back(xs_alpha);

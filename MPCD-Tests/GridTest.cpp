@@ -4,6 +4,8 @@
 #include "Xoshiro.h"
 #include "seeder.h"
 #include "Particle.h"
+#include <filesystem>
+#include <fstream>
 
 using namespace MPCD;
 using namespace Eigen;
@@ -26,6 +28,12 @@ TEST(Grid, Constants) {
 	ASSERT_LT(std::abs(num_hypothetical_cells - Grid::wanted_num_cells) / Grid::wanted_num_cells, epsilon);
 
 	ASSERT_GT(Grid::wanted_num_cells, Grid::min_num_cells);
+
+	std::filesystem::path cwd = std::filesystem::current_path();
+
+	std::ofstream outFile(cwd.string() + "//Data//constants.csv");
+	outFile << "cell_dim,pipe_width,pipe_height" << "\n"; // header columns
+	outFile << Grid::cell_dim << "," << Pipe::width << "," << Pipe::height << std::endl;
 }
 
 TEST(Grid, MinNumberPerCell) {
@@ -69,16 +77,27 @@ TEST(Grid, MinNumberPerCell) {
 	}
 
 	int num_smaller = 0;
-	
-	
+
+	std::filesystem::path cwd = std::filesystem::current_path();
+
+	std::ofstream outFile(cwd.string() + "//Data//cell_frequencies.csv");
+	outFile << "i,j,n" << "\n"; // header columns
+
+	int row_ind = 0;
+	int col_ind = 0;
 	for (auto row = frequencies.begin(); row != frequencies.end(); ++row) {
 		for (auto col = row->begin(); col != row->end(); ++col) {
 			//EXPECT_GE(*col, Grid::min_particles_per_cell);
+			outFile << row_ind << "," << col_ind << "," << *col << "\n";
+			col_ind++;
 			if (*col < Grid::min_particles_per_cell) {
 				num_smaller++;
 			}
 		}
+		row_ind++;
 	}
+
+	outFile.close();
 	
 	double epsilon = 0.01;
 
@@ -87,6 +106,4 @@ TEST(Grid, MinNumberPerCell) {
 	/*
 	Test that every cell has about 5 particles
 	*/
-
 }
-

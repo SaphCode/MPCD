@@ -54,7 +54,7 @@ namespace MPCD {
 				applied first
 		@param rotationMatrix: the rotation Matrix for the cell the particle belongs to. NOTE: same as above
 		*/
-		void updateVelocity(Eigen::Vector2d mean_cell_velocity, Eigen::Matrix2d rotationMatrix);
+		void updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle);
 		friend std::ostream& operator<<(std::ostream& output, const Particle& p);
 	};
 

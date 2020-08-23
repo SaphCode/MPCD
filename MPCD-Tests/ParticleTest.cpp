@@ -4,24 +4,68 @@
 #include "MPCD.h"
 #include <cmath>
 #include "Compare.h"
+#include "Xoshiro.h"
+#include <map>
+#include <tuple>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace Eigen;
 using namespace MPCD;
 
 class ParticleTest : public ::testing::Test {
 protected:
-	void SetUp() override {
-		//particles.reserve(number);
-		//for (int i = 0; i < number; i++) {
-		//	particles.push_back(p);
-		//}
+	const double time_step = 1.0;
+	const double aspect_ratio = Pipe::width / Pipe::height;
+	const double max_x_position = Pipe::width;
+	const double max_y_position = Pipe::height;
+	const double max_x_velocity = std::max(max_x_position, max_y_position) / 100.0; // also in RandomGenerator.cpp
+	const double max_y_velocity = max_x_velocity / aspect_ratio;
+	const double max_angle = 2 * M_PI;
 
+	std::vector<Particle> particles;
+
+	Xoshiro rg_angle;
+	Xoshiro rg_shift_x;
+	Xoshiro rg_shift_y;
+
+	void SetUp() override {
+		particles.reserve(number);
+
+		/* dont worry the numbers are just seeds */
+		Xoshiro xs_xpos(0.0, max_x_position);
+		Xoshiro xs_ypos(0.0, max_y_position);
+		Xoshiro xs_xvel(-max_x_velocity, max_x_velocity);
+		Xoshiro xs_yvel(-max_y_velocity, max_y_velocity);
+		Xoshiro angles(0.0, 2*M_PI);
+		rg_angle = angles;
+		Xoshiro shifts_x(-Grid::max_shift, Grid::max_shift);
+		Xoshiro shifts_y(-Grid::max_shift, Grid::max_shift);
+		rg_shift_x = shifts_x;
+		rg_shift_y = shifts_y;
+
+		for (int i = 0; i < number; i++) {
+			double xs_x = xs_xpos.next();
+			double xs_y = xs_ypos.next();
+			double xs_vx = xs_xvel.next();
+			double xs_vy = xs_yvel.next();
+
+			Vector2d pos(xs_x, xs_y);
+			Vector2d vel(xs_vx, xs_vy);
+
+			Particle xs_p(pos, vel);
+
+			particles.push_back(xs_p);
+		}
 	}
-	//const int number = 1000000; // 10^6 particles
-	//std::vector<Particle> particles;
+
+	ParticleTest(const ParticleTest&) = default;
+	ParticleTest& operator=(const ParticleTest&) = default;
+	ParticleTest();
 };
 
-TEST_F(ParticleTest, CreateAndMoveParticle) {
+TEST_F(ParticleTest, Streaming) {
 	Vector2d pos(0, 0);
 	Vector2d vel(0.5, 0.5);
 	Particle p(pos, vel);
@@ -37,6 +81,42 @@ TEST_F(ParticleTest, CreateAndMoveParticle) {
 	Vector2d p_new_pos = p.getPosition();
 	ASSERT_EQ(p_new_pos(0), newPos(0)) << "Moved position is new particle position";
 	ASSERT_EQ(p_new_pos(1), newPos(1)) << "Moved position is new particle position";
+}
+
+TEST_F(ParticleTest, Collision) {
+	const int rows = std::ceil(Pipe::height / Grid::cell_dim);
+	const int cols = std::ceil(Pipe::width / Grid::cell_dim);
+	std::map<Vector2i, Vector2d> mean_cell_velocities;
+	std::map<Vector2i, int> total_cell_p_numbers;
+	std::map<Vector2i, double> rotation_angle;
+	for (int r = 0; r < rows; r++) {
+		for (int c = 0; c < cols; c++) {
+			const Vector2i index(r, c);
+			const Vector2d vel(0.0, 0.0);
+			mean_cell_velocities.insert({ index, vel });
+			total_cell_p_numbers.insert({ index, 0 });
+			rotation_angle.insert({ index, 0.0 });
+		}
+	}
+	for (auto it = particles.begin(); it != particles.end(); ++it) {
+		Vector2d shift(rg_shift_x.next(), rg_shift_y.next());
+		Vector2i cell_index = it->shift(shift);
+		Vector2d vel = it->getVelocity();
+		mean_cell_velocities[cell_index] = mean_cell_velocities[cell_index] + vel;
+		total_cell_p_numbers[cell_index] += 1;
+	}
+	for (int r = 0; r < rows; r++) {
+		for (int c = 0; c < cols; c++) {
+			Vector2i cell_index(r, c);
+			mean_cell_velocities[cell_index] /= total_cell_p_numbers[cell_index];
+			rotation_angle[cell_index] = rg_angle.next();
+		}
+	}
+	// put these together
+	for (auto it = particles.begin(); it != particles.end(); ++it) {
+		Vector2i cell_index = it->getCellIndex();
+		it->updateVelocity(mean_cell_velocities[cell_index], rotation_angle[cell_index]);
+	}
 }
 
 
