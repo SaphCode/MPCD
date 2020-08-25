@@ -1,5 +1,5 @@
 #include "seeder.h"
-#include "MPCD.h"
+#include "Constants.h"
 
 /* This is a fixed-increment version of Java 8's SplittableRandom generator
    See http://dx.doi.org/10.1145/2714064.2660195 and
@@ -9,7 +9,7 @@
    for some reason you absolutely want 64 bits of state.
    This is for generating seeds. should use 2 different algos. */
 
-static uint64_t seed = MPCD::seed;
+static uint64_t seed = MPCD::Constants::seed;
 
 uint64_t nextSeed() {
 	uint64_t z = (seed += 0x9e3779b97f4a7c15);

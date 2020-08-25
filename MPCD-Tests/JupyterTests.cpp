@@ -5,7 +5,9 @@
 #include <filesystem>
 #include <fstream>
 #include "seeder.h"
-#include "MPCD.h"
+#include "Constants.h"
+#include "Out.h"
+#include "Locations.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -28,9 +30,9 @@ using namespace MPCD;
 class JupyterNotebookTests : public ::testing::Test {
 protected:
 	const double time_step = 1.0;
-	const double aspect_ratio = Pipe::width / Pipe::height;
-	const double max_x_position = Pipe::width;
-	const double max_y_position = Pipe::height;
+	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
+	const double max_x_position = MPCD::Constants::Pipe::width;
+	const double max_y_position = MPCD::Constants::Pipe::height;
 	const double max_x_velocity = std::max(max_x_position, max_y_position) / 100.0; // also in RandomGenerator.cpp
 	const double max_y_velocity = max_x_velocity / aspect_ratio;
 	const double max_angle = 2 * M_PI;
@@ -42,11 +44,11 @@ protected:
 	std::vector<double> xs_angles;
 
 	void SetUp() override {
-		mers_particles.reserve(number);
-		mers_angles.reserve(number);
+		mers_particles.reserve(MPCD::Constants::number);
+		mers_angles.reserve(MPCD::Constants::number);
 
-		xs_particles.reserve(number);
-		xs_angles.reserve(number);
+		xs_particles.reserve(MPCD::Constants::number);
+		xs_angles.reserve(MPCD::Constants::number);
 
 		MersenneTwister rg_xpos(0.0, max_x_position, DistributionType::UNIFORM);
 		MersenneTwister rg_ypos(0.0, max_y_position, DistributionType::UNIFORM);
@@ -61,7 +63,7 @@ protected:
 		Xoshiro xs_yvel(-max_y_velocity, max_y_velocity);
 		Xoshiro xs_angle(0.0, max_angle);
 
-		for (int i = 0; i < number; i++) {
+		for (int i = 0; i < MPCD::Constants::number; i++) {
 			double mers_x = rg_xpos.next();
 			double mers_y = rg_ypos.next();
 			double mers_vx = rg_xvel.next();
@@ -97,100 +99,41 @@ protected:
 TEST_F(JupyterNotebookTests, MersWrite) { // DISABLED_
 
 	std::filesystem::path cwd = std::filesystem::current_path();
+	Out out(cwd.string() + l_data + l_rng);
+	out.writeToOut(mers_angles, "mersenne_angles.csv", "alpha");
+	out.writeToOut(mers_particles, "mersenne_particles.csv");
 
-	std::ofstream outFileMersPos(cwd.string() + "//Data//RNG//mers_initial_xy.csv"); // navigate to MPCD and create /data folder
-	outFileMersPos << "x,y" << "\n"; // header columns
-
-	std::ofstream outFileMersVel(cwd.string() + "//Data//RNG//mers_initial_v_xy.csv");
-	outFileMersVel << "vx,vy" << "\n"; // header columns
-
-	std::ofstream outFileMersMovedPos(cwd.string() + "//Data//RNG//mers_moved_xy.csv");
-	outFileMersMovedPos << "x,y" << "\n"; // header columns
-
-	std::ofstream outFileMersTimestepsMovedPos(cwd.string() + "//Data//RNG//mers_timesteps_moved_xy.csv");
-	outFileMersTimestepsMovedPos << "x,y" << "\n"; // header columns
-
-	std::ofstream outFileMersAngle(cwd.string() + "//Data//RNG//mers_random_angle.csv");
-	outFileMersAngle << "alpha" << "\n"; // header columns
-
-
-	for (int i = 0; i < number; i++) { // initial + 1 move
-		Vector2d pos_mers = mers_particles[i].getPosition();
-		outFileMersPos << pos_mers(0) << "," << pos_mers(1) << "\n";
-		Vector2d vel = mers_particles[i].getVelocity();
-		outFileMersVel << vel(0) << "," << vel(1) << "\n";
+	for (int i = 0; i < MPCD::Constants::number; i++) { // initial + 1 move
 		mers_particles[i].move(time_step);
-		Vector2d moved_pos = mers_particles[i].getPosition();
-		outFileMersMovedPos << moved_pos(0) << "," << moved_pos(1) << "\n";
-		outFileMersAngle << mers_angles[i] << "\n";
 	}
+	out.writeToOut(mers_particles, "mersenne_particles_after_move.csv");
 
 	int timesteps = 10;
 	for (int t = 0; t < timesteps; t++) { // timesteps moves
-		for (int i = 0; i < number; i++) {
+		for (int i = 0; i < MPCD::Constants::number; i++) {
 			mers_particles[i].move(time_step);
 		}
 	}
-
-	for (int i = 0; i < number; i++) {
-		Vector2d pos = mers_particles[i].getPosition();
-		outFileMersTimestepsMovedPos << pos(0) << "," << pos(1) << "\n";
-	}
-
-	outFileMersPos.close();
-	outFileMersVel.close();
-	outFileMersMovedPos.close();
-	outFileMersTimestepsMovedPos.close();
-	outFileMersAngle.close();
+	out.writeToOut(mers_particles, "mersenne_particles_after_xx_timesteps.csv");
 }
 
 /* Draw a histogram somehow, also check by hand. */
 TEST_F(JupyterNotebookTests, XSWrite) { // DISABLED_
-
 	std::filesystem::path cwd = std::filesystem::current_path();
+	Out out(cwd.string() + l_data + l_rng);
+	out.writeToOut(xs_angles, "xoshiro_angles.csv", "alpha");
+	out.writeToOut(xs_particles, "xoshiro_particles.csv");
 
-	std::ofstream outFileXSPos(cwd.string() + "//Data//RNG//xs_initial_xy.csv"); // navigate to MPCD and create /data folder
-	outFileXSPos << "x,y" << "\n"; // header columns
-
-	std::ofstream outFileXSVel(cwd.string() + "//Data//RNG//xs_initial_v_xy.csv");
-	outFileXSVel << "vx,vy" << "\n"; // header columns
-
-	std::ofstream outFileXSMovedPos(cwd.string() + "//Data//RNG//xs_moved_xy.csv");
-	outFileXSMovedPos << "x,y" << "\n"; // header columns
-
-	std::ofstream outFileXSTimestepsMovedPos(cwd.string() + "//Data//RNG//xs_timesteps_moved_xy.csv");
-	outFileXSTimestepsMovedPos << "x,y" << "\n"; // header columns
-
-	std::ofstream outFileXSAngle(cwd.string() + "//Data//RNG//xs_random_angle.csv");
-	outFileXSAngle << "alpha" << "\n"; // header columns
-
-
-	for (int i = 0; i < number; i++) { // initial + 1 move
-		Vector2d pos = xs_particles[i].getPosition();
-		outFileXSPos << pos(0) << "," << pos(1) << "\n";
-		Vector2d vel = xs_particles[i].getVelocity();
-		outFileXSVel << vel(0) << "," << vel(1) << "\n";
+	for (int i = 0; i < MPCD::Constants::number; i++) { // initial + 1 move
 		xs_particles[i].move(time_step);
-		Vector2d moved_pos = xs_particles[i].getPosition();
-		outFileXSMovedPos << moved_pos(0) << "," << moved_pos(1) << "\n";
-		outFileXSAngle << xs_angles[i] << "\n";
 	}
+	out.writeToOut(xs_particles, "xoshiro_particles_after_move.csv");
 
 	int timesteps = 10;
 	for (int t = 0; t < timesteps; t++) { // timesteps moves
-		for (int i = 0; i < number; i++) {
+		for (int i = 0; i < MPCD::Constants::number; i++) {
 			xs_particles[i].move(time_step);
 		}
 	}
-
-	for (int i = 0; i < number; i++) {
-		Vector2d pos = xs_particles[i].getPosition();
-		outFileXSTimestepsMovedPos << pos(0) << "," << pos(1) << "\n";
-	}
-
-	outFileXSPos.close();
-	outFileXSVel.close();
-	outFileXSMovedPos.close();
-	outFileXSTimestepsMovedPos.close();
-	outFileXSAngle.close();
+	out.writeToOut(xs_particles, "xoshiro_particles_after_xx_timesteps.csv");
 }

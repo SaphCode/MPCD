@@ -52,23 +52,23 @@ void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotatio
 	_velocity = mean_cell_velocity + rotationMatrix * (_velocity - mean_cell_velocity);
 }
 
-void Particle::updateCellPosition(Eigen::Vector2d shiftedPosition) {
-	_cell_index(0) = std::floor(shiftedPosition(0) / Grid::cell_dim);
-	_cell_index(1) = std::floor(shiftedPosition(1) / Grid::cell_dim);
+Eigen::Vector2i Particle::getCellIndex(Eigen::Vector2d shiftedPosition, double cell_dim) {
+	int i = std::round(std::floor(shiftedPosition(0) / cell_dim));
+	int j = std::round(std::floor(shiftedPosition(1) / cell_dim));
+	Eigen::Vector2i cell_index(i, j);
+	return cell_index;
+	
+	/*
 	std::cout << "cell_index: (" << _cell_index(0) << ", " << _cell_index(1) << ")" << std::endl;
-	std::cout << "cell_dim: " << Grid::cell_dim << std::endl;
+	std::cout << "cell_dim: " << cell_dim << std::endl;
 	std::cout << "(update) shiftedPos: (" << shiftedPosition(0) << "," << shiftedPosition(1) << ")" << std::endl;
+	*/
 }
 
-Eigen::Vector2i Particle::shift(Eigen::Vector2d amount) {
+Eigen::Vector2i Particle::shift(Eigen::Vector2d amount, double cell_dim) {
 	Eigen::Vector2d shiftedPosition = _position + amount;
-	std::cout << "shiftedPos: (" << shiftedPosition(0) << "," << shiftedPosition(1) << ")" << std::endl;
-	updateCellPosition(shiftedPosition);
-	return _cell_index;
-}
-
-Eigen::Vector2i Particle::getCellIndex() {
-	return _cell_index;
+	//std::cout << "shiftedPos: (" << shiftedPosition(0) << "," << shiftedPosition(1) << ")" << std::endl;
+	return getCellIndex(shiftedPosition, cell_dim);
 }
 
 

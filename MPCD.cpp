@@ -5,50 +5,78 @@
 #include <Eigen/Dense>
 #include "Particle.h"
 #include "MPCD.h"
+#include "Grid.h"
+#include "Constants.h"
+#include <filesystem>
+#include <fstream>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 using namespace Eigen;
 using namespace MPCD;
 
 int main()
 {
-	Vector2d pos0(Grid::cell_dim / 10, Grid::cell_dim / 10);
-	Vector2d vel0(0, 0);
-	Particle p(pos0, vel0);
+	Grid g(MPCD::Constants::min_particles_per_cell);
+	std::vector<Particle> particles;
+	particles.reserve(MPCD::Constants::number);
 
-	Vector2d shift1(Grid::max_shift, Grid::max_shift);
-	Vector2i index_shift1(0, 0);
-	Vector2d shift2(Grid::max_shift, -Grid::max_shift);
-	Vector2i index_shift2(1, -1);
+	/* dont worry the numbers are just seeds */
+	Xoshiro xs_xpos(0.0, 1.0);
+	Xoshiro xs_ypos(0.0, 1.0);
+	Xoshiro xs_xvel(-0.01, 0.01);
+	Xoshiro xs_yvel(-0.01, 0.01);
+	Xoshiro angles(0.0, 2 * M_PI);
+	Xoshiro rg_angle = angles;
 
-	Vector2d shift_zero(0, 0);
-	Vector2i zero_index = p.shift(shift_zero);
+	for (int i = 0; i < MPCD::Constants::number; i++) {
+		double xs_x = xs_xpos.next();
+		double xs_y = xs_ypos.next();
+		double xs_vx = xs_xvel.next();
+		double xs_vy = xs_yvel.next();
 
-	Vector2i zeros(0, 0);
+		Vector2d pos(xs_x, xs_y);
+		Vector2d vel(xs_vx, xs_vy);
 
-	//ASSERT_TRUE(areVectorsEqual(zero_index, zeros)) << "Particle with position inside first cell should have (0,0) index (first cell should be (0,0))";
+		Particle xs_p(pos, vel);
 
-	Vector2i shift1_index = p.shift(shift1);
-	Vector2i shift1_index_calc = zero_index + index_shift1;
-	Vector2i r_shift1_index = p.shift(-shift1);
-	Vector2i r_shift1_index_calc = zero_index - index_shift1;
+		particles.push_back(xs_p);
+	}
 
-	//EXPECT_EQ(r_shift1_index_calc(0), r_shift1_index(0));
-	//EXPECT_EQ(r_shift1_index_calc(1), r_shift1_index(1));
+}
 
-	//ASSERT_TRUE(areVectorsEqual(shift1_index_calc, shift1_index)) << "Shifting once should not change index in this case.";
-	//ASSERT_TRUE(areVectorsEqual(r_shift1_index_calc, r_shift1_index)) << "Shifting by + and - same vector should get us back to the beginning index.";
-	//ASSERT_TRUE(areVectorsEqual(pos0, p.getPosition())) << "Position does not change in a shift. This would take unnecessary storage and computation time.";
+void MPCD::timestep(std::vector<Particle>& particles, Grid g, double time_lapse, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y, Xoshiro& rg_angle)
+{
+	std::map<int, Vector2d> meanCellVelocities;
+	std::map<int, int> numParticles;
+	std::map<int, double> rotationAngles;
+	std::map<int, bool> calculationDone;
 
-	Vector2i shift2_index = p.shift(shift2);
-	Vector2i shift2_index_calc = zero_index + index_shift2;
-	Vector2i r_shift2_index = p.shift(-shift2);
-	Vector2i r_shift2_index_calc = zero_index - index_shift2;
+	double cell_dim = g.getCellDim();
 
-	//ASSERT_TRUE(areVectorsEqual(r_shift2_index_calc, r_shift2_index)) << "Shifting once should change index in this case.";;
-	//ASSERT_TRUE(areVectorsEqual(shift2_index_calc, shift2_index)) << "Shifting by + and - same vector should get us back to the beginning index.";;
-	//ASSERT_TRUE(areVectorsEqual(pos0, p.getPosition())) << "Position does not change in a shift. This would take unnecessary storage and computation time.";
+	for (auto it = particles.begin(); it != particles.end(); ++it) {
+		it->move(time_lapse);
 
-	//ASSERT_TRUE(areVectorsEqual(p.getVelocity(), vel0)) << "Velocity does not change in a shift.";
+		Vector2d shift(rg_shift_x.next(), rg_shift_y.next());
+		Vector2i cell_index = it->shift(shift, cell_dim);
+		int linear_index = g.convertToLinearIndex(cell_index);
+		Vector2d vel = it->getVelocity();
+		meanCellVelocities[linear_index] += vel;
+		numParticles[linear_index] += 1;
+	}
+
+	for (auto const& [key, val] : meanCellVelocities) {
+		meanCellVelocities[key] =  val / numParticles[key];
+		rotationAngles[key] = rg_angle.next();
+	}
+
+	for (auto it = particles.begin(); it != particles.end(); ++it) {
+		Vector2i index = it->getCellIndex(it->getPosition(), cell_dim);
+		int linearIndex = g.convertToLinearIndex(index);
+		it->updateVelocity(meanCellVelocities[linearIndex], rotationAngles[linearIndex]);
+	}
+
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
@@ -61,3 +89,5 @@ int main()
 //   4. Use the Error List window to view errors
 //   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
 //   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+
+
