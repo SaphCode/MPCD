@@ -14,16 +14,12 @@ Grid::Grid(int minNumberPerCell) {
 	max_shift = cell_dim / 2;
 	rows = std::ceil(MPCD::Constants::Pipe::height / cell_dim);
 	cols = std::ceil(MPCD::Constants::Pipe::width / cell_dim);
-	rg_angle.setMin(0.0);
-	rg_angle.setMax(2 * M_PI);
-	rg_shift_x.setMin(-max_shift);
-	rg_shift_y.setMax(max_shift);
-	rg_shift_y.setMin(-max_shift);
-	rg_shift_y.setMax(max_shift);
+
 }
 
 Grid::~Grid() {}
 
+/*
 std::tuple<std::map<int, Vector2d>, std::map<int, double>> Grid::calculateCellValues(std::vector<Particle> particles) {
 	std::map<int, Vector2d> meanCellVelocities;
 	std::map<int, int> numParticles;
@@ -44,6 +40,7 @@ std::tuple<std::map<int, Vector2d>, std::map<int, double>> Grid::calculateCellVa
 
 	return std::make_pair(meanCellVelocities, rotationAngles);
 }
+*/
 
 int Grid::convertToLinearIndex(Eigen::Vector2i index) {
 	return index[0] * cols + index[1];

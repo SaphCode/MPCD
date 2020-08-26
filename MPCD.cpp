@@ -44,6 +44,20 @@ int main()
 		particles.push_back(xs_p);
 	}
 
+	double time_lapse = MPCD::Constants::time_lapse;
+
+	Xoshiro rg_angle(0.0, 2 * M_PI);
+	double max_shift = g.getMaxShift();
+	Xoshiro rg_shift_x(-max_shift, max_shift);
+	Xoshiro rg_shift_y(-max_shift, max_shift);
+
+	int timesteps = MPCD::Constants::timesteps;
+
+	for (int t = 0; t < timesteps; t++) {
+		timestep(particles, g, time_lapse, rg_shift_x, rg_shift_y, rg_angle);
+	}
+
+	
 }
 
 void MPCD::timestep(std::vector<Particle>& particles, Grid g, double time_lapse, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y, Xoshiro& rg_angle)

@@ -43,6 +43,7 @@
     <ClCompile Include="GridTest.cpp" />
     <ClCompile Include="JupyterTests.cpp" />
     <ClCompile Include="MersenneTwisterTest.cpp" />
+    <ClCompile Include="MPCDTest.cpp" />
     <ClCompile Include="Out.cpp" />
     <ClCompile Include="ParticleTest.cpp" />
     <ClCompile Include="test.cpp" />

@@ -19,7 +19,7 @@ namespace MPCD {
 		/* Calculates the mean cell velocity, rotation angle and total number of particles (shifted) per cell.
 		* @return 2 maps: mean velocity and rotation angle.
 		*/
-		std::tuple<std::map<int, Eigen::Vector2d>, std::map<int, double>> calculateCellValues(std::vector<MPCD::Particle> particles);
+		//std::tuple<std::map<int, Eigen::Vector2d>, std::map<int, double>> calculateCellValues(std::vector<MPCD::Particle> particles);
 
 		/* Converts 2d indexes into linear indexes.
 			Example:
@@ -51,9 +51,6 @@ namespace MPCD {
 		double max_shift;
 		int rows;
 		int cols;
-		Xoshiro rg_angle;
-		Xoshiro rg_shift_x;
-		Xoshiro rg_shift_y;
 	};
 }
 #endif
