@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <Eigen/Dense>
-#include "MPCD.h"
+#include "Constants.h"
 
 /* This and only this order gives us pi */
 #define _USE_MATH_DEFINES
@@ -17,10 +17,10 @@ using namespace MPCD;
 class MersenneTwisterTest : public ::testing::Test {
 protected:
 	const double time_step = 1.0;
-	const double aspect_ratio = Pipe::width / Pipe::height;
-	const double max_x_position = Pipe::width;
-	const double max_y_position = Pipe::height;
-	const double max_x_velocity = std::max(Pipe::width, Pipe::height) / 100.0; // also in RandomGenerator.cpp
+	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
+	const double max_x_position = MPCD::Constants::Pipe::width;
+	const double max_y_position = MPCD::Constants::Pipe::height;
+	const double max_x_velocity = std::max(MPCD::Constants::Pipe::width, MPCD::Constants::Pipe::height) / 100.0; // also in RandomGenerator.cpp
 	const double max_y_velocity = max_x_velocity / aspect_ratio;
 	const double max_angle = 2 * M_PI;
 
@@ -29,9 +29,9 @@ protected:
 	std::vector<double> mers_angles;
 
 	void SetUp() override {
-		mers_positions.reserve(number);
-		mers_velocities.reserve(number);
-		mers_angles.reserve(number);
+		mers_positions.reserve(MPCD::Constants::number);
+		mers_velocities.reserve(MPCD::Constants::number);
+		mers_angles.reserve(MPCD::Constants::number);
 
 		MersenneTwister rg_xpos(0.0, max_x_position, DistributionType::UNIFORM);
 		MersenneTwister rg_ypos(0.0, max_y_position, DistributionType::UNIFORM);
@@ -39,7 +39,7 @@ protected:
 		MersenneTwister rg_yvel(-max_y_velocity, max_y_velocity, DistributionType::UNIFORM);
 		MersenneTwister rg_angle(0.0, max_angle, DistributionType::UNIFORM);
 
-		for (int i = 0; i < number; i++) {
+		for (int i = 0; i < MPCD::Constants::number; i++) {
 			double mers_x = rg_xpos.next();
 			double mers_y = rg_ypos.next();
 			double mers_vx = rg_xvel.next();
@@ -71,15 +71,15 @@ protected:
 
 TEST_F(MersenneTwisterTest, RandomBoundsTest) {
 
-	for (int i = 0; i < number; i++) {
+	for (int i = 0; i < MPCD::Constants::number; i++) {
 		Vector2d mers_pos(mers_positions[i]);
 		Vector2d mers_vel(mers_velocities[i]);
 		double mers_alpha = mers_angles[i];
 
 		ASSERT_GE(mers_pos(0), 0.0);
-		ASSERT_LE(mers_pos(0), Pipe::width);
+		ASSERT_LE(mers_pos(0), MPCD::Constants::Pipe::width);
 		ASSERT_GE(mers_pos(1), 0.0);
-		ASSERT_LE(mers_pos(1), Pipe::height);
+		ASSERT_LE(mers_pos(1), MPCD::Constants::Pipe::height);
 		ASSERT_GE(mers_vel(0), -max_x_velocity);
 		ASSERT_LE(mers_vel(0), max_x_velocity);
 		ASSERT_GE(mers_vel(1), -max_y_velocity);
@@ -120,7 +120,7 @@ TEST_F(MersenneTwisterTest, ChiSquaredTest) {
 	outFile << "k,observed MT,chi^2 probability" << std::endl;
 	outFile.close();
 	for (int buckets = 2; buckets <= chi_2_alpha05.size(); buckets++) {
-		const double expected_bucket_size = (double)number / buckets;
+		const double expected_bucket_size = (double)MPCD::Constants::number / buckets;
 
 		std::vector<std::vector<double>> mers_buckets_xpos;
 		std::vector<std::vector<double>> mers_buckets_ypos;
@@ -154,18 +154,18 @@ TEST_F(MersenneTwisterTest, ChiSquaredTest) {
 			mers_b_yvel.reserve(std::round(expected_bucket_size));
 			mers_b_angle.reserve(std::round(expected_bucket_size));
 
-			ASSERT_EQ(mers_positions.size(), number);
-			ASSERT_EQ(mers_velocities.size(), number);
-			ASSERT_EQ(mers_angles.size(), number);
+			ASSERT_EQ(mers_positions.size(), MPCD::Constants::number);
+			ASSERT_EQ(mers_velocities.size(), MPCD::Constants::number);
+			ASSERT_EQ(mers_angles.size(), MPCD::Constants::number);
 
 			auto size = mers_positions.size();
 			for (int i = 0; i < size; i++) {
 
 				Vector2d pos = mers_positions[i];
-				if (inBucketB(buckets, b, pos(0), Pipe::x_0, Pipe::width)) {
+				if (inBucketB(buckets, b, pos(0), MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::width)) {
 					mers_b_xpos.push_back(pos(0));
 				}
-				if (inBucketB(buckets, b, pos(1), Pipe::y_0, Pipe::height)) {
+				if (inBucketB(buckets, b, pos(1), MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::height)) {
 					mers_b_ypos.push_back(pos(1));
 				}
 

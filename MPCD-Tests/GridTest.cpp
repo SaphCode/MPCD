@@ -1,20 +1,24 @@
 #include "pch.h"
-#include "MPCD.h"
+#include "Constants.h"
 #include <Eigen/Dense>
 #include "Xoshiro.h"
 #include "seeder.h"
 #include "Particle.h"
 #include <filesystem>
 #include <fstream>
+#include "Grid.h"
 
 using namespace MPCD;
 using namespace Eigen;
 
-TEST(Grid, Constants) {
-	int num_hypothetical_x_cells = std::round(Pipe::width / Grid::cell_dim);
-	int num_hypothetical_y_cells = std::round(Pipe::height / Grid::cell_dim);
+const int min_per_cell = MPCD::Constants::min_particles_per_cell;
 
-	if (Pipe::width > Pipe::height) {
+TEST(Grid, Constants) {
+	Grid g(min_per_cell);
+	int num_hypothetical_x_cells = std::round(MPCD::Constants::Pipe::width / g.getCellDim());
+	int num_hypothetical_y_cells = std::round(MPCD::Constants::Pipe::height / g.getCellDim());
+
+	if (MPCD::Constants::Pipe::width > MPCD::Constants::Pipe::height) {
 		ASSERT_GT(num_hypothetical_x_cells, num_hypothetical_y_cells);
 	}
 	else {
@@ -25,23 +29,24 @@ TEST(Grid, Constants) {
 
 	double epsilon = 0.05;
 
-	ASSERT_LT(std::abs(num_hypothetical_cells - Grid::wanted_num_cells) / Grid::wanted_num_cells, epsilon);
+	ASSERT_LT(std::abs(num_hypothetical_cells - g.getWantedNumCells()) / g.getWantedNumCells(), epsilon);
 
-	ASSERT_GT(Grid::wanted_num_cells, Grid::min_num_cells);
+	ASSERT_GT(g.getWantedNumCells(), g.getMinNumCells());
 
 	std::filesystem::path cwd = std::filesystem::current_path();
 
 	std::ofstream outFile(cwd.string() + "//Data//constants.csv");
 	outFile << "cell_dim,pipe_width,pipe_height" << "\n"; // header columns
-	outFile << Grid::cell_dim << "," << Pipe::width << "," << Pipe::height << std::endl;
+	outFile << g.getCellDim() << "," << MPCD::Constants::Pipe::width << "," << MPCD::Constants::Pipe::height << std::endl;
 }
 
 TEST(Grid, MinNumberPerCell) {
+	Grid g(min_per_cell);
 	const double time_step = 1.0;
-	const double aspect_ratio = Pipe::width / Pipe::height;
-	const double max_x_position = Pipe::width;
-	const double max_y_position = Pipe::height;
-	const double max_x_velocity = std::max(Pipe::width, Pipe::height) / 100.0; // also in RandomGenerator.cpp
+	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
+	const double max_x_position = MPCD::Constants::Pipe::width;
+	const double max_y_position = MPCD::Constants::Pipe::height;
+	const double max_x_velocity = std::max(MPCD::Constants::Pipe::width, MPCD::Constants::Pipe::height) / 100.0; // also in RandomGenerator.cpp
 	const double max_y_velocity = max_x_velocity / aspect_ratio;
 
 	Xoshiro xs_xpos(0.0, max_x_position);
@@ -49,14 +54,14 @@ TEST(Grid, MinNumberPerCell) {
 	Xoshiro xs_xvel(-max_x_velocity, max_x_velocity);
 	Xoshiro xs_yvel(-max_y_velocity, max_y_velocity);
 
-	const int rows = std::ceil(Pipe::height / Grid::cell_dim);
-	const int cols = std::ceil(Pipe::width / Grid::cell_dim);
+	const int rows = std::ceil(MPCD::Constants::Pipe::height / g.getCellDim());
+	const int cols = std::ceil(MPCD::Constants::Pipe::width / g.getCellDim());
 	std::vector<std::vector<int>> frequencies;
 	frequencies.resize(rows, std::vector<int>(cols, 0));
 
 	const Vector2d zero(0, 0);
 
-	for (int i = 0; i < number; i++) {
+	for (int i = 0; i < MPCD::Constants::number; i++) {
 		double xs_x = xs_xpos.next();
 		double xs_y = xs_ypos.next();
 		double xs_vx = xs_xvel.next();
@@ -66,7 +71,7 @@ TEST(Grid, MinNumberPerCell) {
 		Vector2d vel(xs_vx, xs_vy);
 		Particle p(pos, vel);
 		
-		Vector2i cell_index = p.shift(zero);
+		Vector2i cell_index = p.shift(zero, g.getCellDim());
 
 		ASSERT_LT(cell_index(0), rows);
 		ASSERT_LT(cell_index(1), cols);
@@ -90,7 +95,7 @@ TEST(Grid, MinNumberPerCell) {
 			//EXPECT_GE(*col, Grid::min_particles_per_cell);
 			outFile << row_ind << "," << col_ind << "," << *col << "\n";
 			col_ind++;
-			if (*col < Grid::min_particles_per_cell) {
+			if (*col < g.getMinParticlesPerCell()) {
 				num_smaller++;
 			}
 		}
@@ -101,7 +106,7 @@ TEST(Grid, MinNumberPerCell) {
 	
 	double epsilon = 0.01;
 
-	EXPECT_LT(num_smaller / Grid::wanted_num_cells, epsilon);
+	EXPECT_LT(num_smaller / g.getWantedNumCells(), epsilon);
 
 	/*
 	Test that every cell has about 5 particles

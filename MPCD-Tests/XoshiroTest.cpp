@@ -18,10 +18,10 @@ using namespace MPCD;
 class XoshiroTest : public ::testing::Test {
 protected:
 	const double time_step = 1.0;
-	const double aspect_ratio = Pipe::width / Pipe::height;
-	const double max_x_position = Pipe::width;
-	const double max_y_position = Pipe::height;
-	const double max_x_velocity = std::max(Pipe::width, Pipe::height) / 100.0;
+	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
+	const double max_x_position = MPCD::Constants::Pipe::width;
+	const double max_y_position = MPCD::Constants::Pipe::height;
+	const double max_x_velocity = std::max(MPCD::Constants::Pipe::width, MPCD::Constants::Pipe::height) / 100.0;
 	const double max_y_velocity = max_x_velocity / aspect_ratio;
 	const double max_angle = 2 * M_PI;
 
@@ -29,7 +29,9 @@ protected:
 	std::vector<Eigen::Vector2d> xs_velocities;
 	std::vector<double> xs_angles;
 
+	int number;
 	void SetUp() override {
+		number = MPCD::Constants::number;
 		xs_positions.reserve(number);
 		xs_velocities.reserve(number);
 		xs_angles.reserve(number);
@@ -76,9 +78,9 @@ TEST_F(XoshiroTest, RandomBoundsTest) {
 		double xs_alpha = xs_angles[i];
 
 		ASSERT_GE(xs_pos(0), 0.0);
-		ASSERT_LE(xs_pos(0), Pipe::width);
+		ASSERT_LE(xs_pos(0), MPCD::Constants::Pipe::width);
 		ASSERT_GE(xs_pos(1), 0.0);
-		ASSERT_LE(xs_pos(1), Pipe::height);
+		ASSERT_LE(xs_pos(1), MPCD::Constants::Pipe::height);
 		ASSERT_GE(xs_vel(0), -max_x_velocity);
 		ASSERT_LE(xs_vel(0), max_x_velocity);
 		ASSERT_GE(xs_vel(1), -max_y_velocity);
@@ -159,10 +161,10 @@ TEST_F(XoshiroTest, ChiSquaredTest) {
 			auto size = xs_positions.size();
 			for (int i = 0; i < size; i++) {
 				Vector2d pos = xs_positions[i];
-				if (inBucketB(buckets, b, pos(0), Pipe::x_0, Pipe::width)) {
+				if (inBucketB(buckets, b, pos(0), MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::width)) {
 					xs_b_xpos.push_back(pos(0));
 				}
-				if (inBucketB(buckets, b, pos(1), Pipe::y_0, Pipe::height)) {
+				if (inBucketB(buckets, b, pos(1), MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::height)) {
 					xs_b_ypos.push_back(pos(1));
 				}
 

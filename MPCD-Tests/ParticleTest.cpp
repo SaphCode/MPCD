@@ -7,6 +7,11 @@
 #include "Xoshiro.h"
 #include <map>
 #include <tuple>
+#include "Grid.h"
+#include <filesystem>
+#include <fstream>
+#include "Out.h"
+#include "Locations.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -17,12 +22,13 @@ using namespace MPCD;
 class ParticleTest : public ::testing::Test {
 protected:
 	const double time_step = 1.0;
-	const double aspect_ratio = Pipe::width / Pipe::height;
-	const double max_x_position = Pipe::width;
-	const double max_y_position = Pipe::height;
+	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
+	const double max_x_position = MPCD::Constants::Pipe::width;
+	const double max_y_position = MPCD::Constants::Pipe::height;
 	const double max_x_velocity = std::max(max_x_position, max_y_position) / 100.0; // also in RandomGenerator.cpp
 	const double max_y_velocity = max_x_velocity / aspect_ratio;
 	const double max_angle = 2 * M_PI;
+	const int min_particles_per_cell = MPCD::Constants::min_particles_per_cell;
 
 	std::vector<Particle> particles;
 
@@ -30,8 +36,11 @@ protected:
 	Xoshiro rg_shift_x;
 	Xoshiro rg_shift_y;
 
+	int number;
+
 	void SetUp() override {
-		particles.reserve(number);
+		number = MPCD::Constants::number;
+		particles.reserve(number);	
 
 		/* dont worry the numbers are just seeds */
 		Xoshiro xs_xpos(0.0, max_x_position);
@@ -40,10 +49,6 @@ protected:
 		Xoshiro xs_yvel(-max_y_velocity, max_y_velocity);
 		Xoshiro angles(0.0, 2*M_PI);
 		rg_angle = angles;
-		Xoshiro shifts_x(-Grid::max_shift, Grid::max_shift);
-		Xoshiro shifts_y(-Grid::max_shift, Grid::max_shift);
-		rg_shift_x = shifts_x;
-		rg_shift_y = shifts_y;
 
 		for (int i = 0; i < number; i++) {
 			double xs_x = xs_xpos.next();
@@ -60,9 +65,9 @@ protected:
 		}
 	}
 
-	ParticleTest(const ParticleTest&) = default;
-	ParticleTest& operator=(const ParticleTest&) = default;
-	ParticleTest();
+	//ParticleTest(const ParticleTest&) = default;
+	//ParticleTest& operator=(const ParticleTest&) = default;
+	//ParticleTest();
 };
 
 TEST_F(ParticleTest, Streaming) {
@@ -90,30 +95,87 @@ TEST_F(ParticleTest, Rotation) {
 	Vector2d mockMeanCellVelocity(0, 0);
 	p.updateVelocity(mockMeanCellVelocity, M_PI);
 	Vector2d newVelocity = p.getVelocity();
-	ASSERT_EQ(newVelocity[0], -vel[0]);
-	ASSERT_EQ(newVelocity[1], -vel[1]);
+	double epsilon = 0.0001;
+	EXPECT_LT(std::abs((newVelocity[0] - -vel[0])/vel[0]), epsilon);
+	EXPECT_LT(std::abs((newVelocity[1] - -vel[1])/vel[1]), epsilon);
 	p.updateVelocity(mockMeanCellVelocity, M_PI);
 	Vector2d newVelocity2 = p.getVelocity();
-	ASSERT_EQ(newVelocity2[0], vel[0]);
-	ASSERT_EQ(newVelocity2[1], vel[1]);
+	EXPECT_LT(std::abs((newVelocity2[0] - vel[0])/vel[0]), epsilon);
+	EXPECT_LT(std::abs((newVelocity2[1] - vel[1])/vel[1]), epsilon);
 }
 
 TEST_F(ParticleTest, Collision) {
+	Grid g(min_particles_per_cell);
+
+	std::tuple<std::map<int, Vector2d>, std::map<int, double>> origMaps = g.calculateCellValues(particles);
+	std::map<int, Vector2d> origMeanVelocities = std::get<0>(origMaps);
+	std::map<int, double> origRotationAngles = std::get<1>(origMaps);
+
+	ASSERT_EQ(origMeanVelocities.size(), origRotationAngles.size());
 	
-	
+	int steps = 1;
+	//for (int step = 0; step < steps; step++) {
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
-		Vector2i cell_index = it->getCellIndex();
-		if (!cellCalculationDone[cell_index]) {
-			mean_cell_velocities[cell_index] /= total_cell_p_numbers[cell_index];
-			rotation_angle[cell_index] = rg_angle.next();
-			cellCalculationDone[cell_index] = true;
-		}
-		it->updateVelocity(mean_cell_velocities[cell_index], rotation_angle[cell_index]);
+		it->move(time_step);
 	}
-	// put these together
-	
+
+	std::tuple<std::map<int, Vector2d>, std::map<int, double>> maps = g.calculateCellValues(particles);
+	std::map<int, Vector2d> meanCellVelocities = std::get<0>(maps);
+	std::map<int, double> rotationAngles = std::get<1>(maps);
+
+	double cell_dim = g.getCellDim();
+	for (auto it = particles.begin(); it != particles.end(); ++it) {
+		Vector2i cellIndex = it->getCellIndex(it->getPosition(), cell_dim);
+		int linearIndex = g.convertToLinearIndex(cellIndex);
+		it->updateVelocity(meanCellVelocities[linearIndex], rotationAngles[linearIndex]);
+	}
+
+	ASSERT_EQ(true, false); // this is here to remind yourself to fix this test. in mpcd.cpp the new timestep method was built, test that instead.
+	//}	
+
+	std::tuple<std::map<int, Vector2d>, std::map<int, double>> maps_new = g.calculateCellValues(particles);
+	std::map<int, Vector2d> meanCellVelocities_new = std::get<0>(maps_new);
+	std::map<int, double> rotationAngles_new = std::get<1>(maps_new);
+
+	ASSERT_EQ(meanCellVelocities_new.size(), rotationAngles_new.size());
+
+	std::filesystem::path cwd = std::filesystem::current_path();
+
+	Out out(cwd.string() + l_data);
+	out.writeToOut(origMeanVelocities, "before_collision.csv", "cell_vx_b,cell_vy_b");
+	out.writeToOut(meanCellVelocities_new, "after_collision.csv", "cell_vx_a,cell_vy_a");
 }
 
+/*
+TEST_F(ParticleTest, StreamingAndCollision) {
+	
+	Grid g(min_particles_per_cell);
+
+	int steps = 5;
+	for (int step = 0; step < steps; step++) {
+
+	}
+
+	std::tuple<std::map<Vector2i, Vector2d>, std::map<Vector2i, double>> maps = g.calculateCellValues(particles);
+	std::map<Vector2i, Vector2d> meanCellVelocities = std::get<0>(maps);
+	std::map<Vector2i, double> rotationAngles = std::get<1>(maps);
+
+	for (auto it = particles.begin(); it != particles.end(); ++it) {
+		Vector2i cell_index = it->getCellIndex();
+		it->updateVelocity(meanCellVelocities[cell_index], rotationAngles[cell_index]);
+	}
+
+	std::tuple<std::map<Vector2i, Vector2d>, std::map<Vector2i, double>> maps_new = g.calculateCellValues(particles);
+	std::map<Vector2i, Vector2d> meanCellVelocities_new = std::get<0>(maps_new);
+	std::map<Vector2i, double> rotationAngles_new = std::get<1>(maps_new);
+
+	std::filesystem::path cwd = std::filesystem::current_path();
+
+	std::ofstream outFile(cwd.string() + "//Data//one_collision.csv");
+	outFile << "cell_vx_b,cell_vy_b,cell_vx,cell_vy" << std::endl; // header columns
+	
+}
+*/
 
 /* This test actually passes. Fixed the test, what was wrong before:
 	------------------------
@@ -145,20 +207,22 @@ TEST_F(ParticleTest, Collision) {
 	----------------------		
 	*/
 TEST_F(ParticleTest, CellLogicWorks) {
-	Vector2d pos0(Grid::cell_dim / 10, Grid::cell_dim / 10); // look at reason for in cell above
+	Grid g(min_particles_per_cell);
+	double cell_dim = g.getCellDim();
+	Vector2d pos0(cell_dim / 10, cell_dim / 10); // look at reason for in cell above
 	Vector2d vel0(0, 0);
 	Particle p(pos0, vel0);
-	Vector2i cell_index_calc(std::floor(pos0(0) / Grid::cell_dim), std::floor(pos0(1) / Grid::cell_dim));
+	Vector2i cell_index_calc(std::floor(pos0(0) / cell_dim), std::floor(pos0(1) / cell_dim));
 	Vector2d zero_shift(0, 0);
-	Vector2i cell_index_zero_shift = p.shift(zero_shift);
+	Vector2i cell_index_zero_shift = p.shift(zero_shift, g.getCellDim());
 	ASSERT_TRUE(areVectorsEqual(cell_index_calc, cell_index_zero_shift));
 
 	for (int i = 0; i < 100; i++) {
 		for (int j = 0; j < 100; j++) {
 			Vector2i index(i, j);
-			Vector2d pos_ij(pos0(0) + i * Grid::cell_dim, pos0(1) + j * Grid::cell_dim);
+			Vector2d pos_ij(pos0(0) + i * cell_dim, pos0(1) + j * cell_dim);
 			Particle p_ij(pos_ij, vel0);
-			Vector2i cell_index_ij = p_ij.shift(zero_shift);
+			Vector2i cell_index_ij = p_ij.shift(zero_shift, g.getCellDim());
 			ASSERT_TRUE(areVectorsEqual(cell_index_ij, cell_index_zero_shift + index));
 		}
 	}
@@ -167,35 +231,38 @@ TEST_F(ParticleTest, CellLogicWorks) {
 /* r_ stands for reversed 
 	Shift should not change the particle position, since it is an "imagined" shift. The particle cannot just teleport, its just to avoid correlations buildup. */
 TEST_F(ParticleTest, ShiftParticles) {
+	Grid g(min_particles_per_cell);
+	double cell_dim = g.getCellDim();
+	double max_shift = g.getMaxShift();
 	// test if cell index is at most different by one.
 	// test if position is exactly different by shift
-	Vector2d pos0(Grid::cell_dim/10, Grid::cell_dim/10);
+	Vector2d pos0(cell_dim/10, cell_dim/10);
 	Vector2d vel0(0, 0);
 	Particle p(pos0, vel0);
 
-	Vector2d shift1(Grid::max_shift, Grid::max_shift);
+	Vector2d shift1(max_shift, max_shift);
 	Vector2i index_after_pshift1(0, 0);
 	Vector2i index_after_nshift1(-1, -1);
-	Vector2d shift2(Grid::max_shift, -Grid::max_shift);
+	Vector2d shift2(max_shift, -max_shift);
 	Vector2i index_after_pshift2(0, -1);
 	Vector2i index_after_nshift2(-1, 0);
 
 	Vector2d shift_zero(0, 0);
-	Vector2i zero_index = p.shift(shift_zero);
+	Vector2i zero_index = p.shift(shift_zero, g.getCellDim());
 
 	Vector2i zeros(0, 0);
 
 	ASSERT_TRUE(areVectorsEqual(zero_index, zeros)) << "Particle with position inside first cell should have (0,0) index (first cell should be (0,0))";
 
-	Vector2i shift1_index = p.shift(shift1);
-	Vector2i r_shift1_index = p.shift(-shift1);
+	Vector2i shift1_index = p.shift(shift1, g.getCellDim());
+	Vector2i r_shift1_index = p.shift(-shift1, g.getCellDim());
 
 	ASSERT_TRUE(areVectorsEqual(index_after_pshift1, shift1_index)) << "Shifting once should not change index in this case.";
 	ASSERT_TRUE(areVectorsEqual(index_after_nshift1, r_shift1_index)) << "Shifting once should change index in this case.";
 	ASSERT_TRUE(areVectorsEqual(pos0, p.getPosition())) << "Position does not change in a shift. This would take unnecessary storage and computation time.";
 	
-	Vector2i shift2_index = p.shift(shift2);
-	Vector2i r_shift2_index = p.shift(-shift2);
+	Vector2i shift2_index = p.shift(shift2, g.getCellDim());
+	Vector2i r_shift2_index = p.shift(-shift2, g.getCellDim());
 
 	ASSERT_TRUE(areVectorsEqual(index_after_pshift2, shift2_index)) << "Shifting once should not change index in this case.";
 	ASSERT_TRUE(areVectorsEqual(index_after_nshift2, r_shift2_index)) << "Shifting once should change index in this case.";
