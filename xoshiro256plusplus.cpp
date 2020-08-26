@@ -1,4 +1,5 @@
 #include <xoshiro256plusplus.h>
+#include <seeder.h>
 
 /*  Written in 2019 by David Blackman and Sebastiano Vigna (vigna@acm.org)
 

@@ -4,7 +4,6 @@
 #define XOSHIRO_256_PLUS_PLUS_H
 
 #include <stdint.h>
-#include "seeder.h"
 
 /*  Written in 2019 by David Blackman and Sebastiano Vigna (vigna@acm.org)
 

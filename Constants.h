@@ -3,11 +3,12 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#include <cmath>
+
 namespace MPCD {
 	namespace Constants {
 		constexpr int number = 10000;
 		constexpr int seed = 34534;
-		constexpr int min_particles_per_cell = 5;
 		constexpr double time_lapse = 1.0;
 		constexpr int timesteps = 10;
 		namespace Pipe {
@@ -19,7 +20,15 @@ namespace MPCD {
 			constexpr double height = y_max - y_0;
 			constexpr double aspect_ratio = width / height;
 		}
-
+		namespace Grid {
+			constexpr int min_particles_per_cell = 5;
+			constexpr int min_num_cells = MPCD::Constants::number / min_particles_per_cell;
+			constexpr int wanted_num_cells = min_num_cells * 2;
+			const double cell_dim = std::sqrt(MPCD::Constants::Pipe::width * MPCD::Constants::Pipe::width / (wanted_num_cells * MPCD::Constants::Pipe::aspect_ratio));
+			const int rows = std::ceil(MPCD::Constants::Pipe::height / cell_dim);
+			const int cols = std::ceil(MPCD::Constants::Pipe::width / cell_dim);; // cutting dim by x has x^2 effect on area, and therefore on expected particle number.
+			const double max_shift = cell_dim / 2;
+		}
 	}
 		/*
 		const int x_cells = std::round(sqrt(number * 0.9 / min_particles_per_cell)); // at least 5 particles per cell. 90% to make sure. sqrt gives 1 dimension, round gives int
@@ -34,5 +43,29 @@ namespace MPCD {
 		const double y_0_offset = Pipe::y_0 - cell_dim / 2;
 		*/
 }
-#endif
 
+/*
+namespace Detail
+{
+	double constexpr sqrtNewtonRaphson(double x, double curr, double prev)
+	{
+		return curr == prev
+			? curr
+			: sqrtNewtonRaphson(x, 0.5 * (curr + x / curr), curr);
+	}
+}
+
+/*
+* Constexpr version of the square root
+* Return value:
+*   - For a finite and non-negative value of "x", returns an approximation for the square root of "x"
+*   - Otherwise, returns NaN
+
+double constexpr sqrt(double x)
+{
+	return x >= 0 && x < std::numeric_limits<double>::infinity()
+		? Detail::sqrtNewtonRaphson(x, x, 0)
+		: std::numeric_limits<double>::quiet_NaN();
+}
+*/
+#endif

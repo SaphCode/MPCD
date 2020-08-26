@@ -2,6 +2,7 @@
 #include <iostream>
 #include "MPCD.h"
 #include <cmath>
+#include "Constants.h"
 //#include "Grid.h"
 
 using namespace MPCD;
@@ -41,8 +42,8 @@ void Particle::setVelocity(Eigen::Vector2d newVelocity) {
 
 /* If you make the variables PRIVATE */
 
-void Particle::move(double time_step) {
-	_position += time_step * _velocity;
+void Particle::move() {
+	_position += MPCD::Constants::time_lapse * _velocity;
 }
 
 void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
@@ -52,7 +53,8 @@ void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotatio
 	_velocity = mean_cell_velocity + rotationMatrix * (_velocity - mean_cell_velocity);
 }
 
-Eigen::Vector2i Particle::getCellIndex(Eigen::Vector2d shiftedPosition, double cell_dim) {
+Eigen::Vector2i Particle::getCellIndex(Eigen::Vector2d shiftedPosition) {
+	double cell_dim = MPCD::Constants::Grid::cell_dim;
 	int i = std::round(std::floor(shiftedPosition(0) / cell_dim));
 	int j = std::round(std::floor(shiftedPosition(1) / cell_dim));
 	Eigen::Vector2i cell_index(i, j);
@@ -65,10 +67,10 @@ Eigen::Vector2i Particle::getCellIndex(Eigen::Vector2d shiftedPosition, double c
 	*/
 }
 
-Eigen::Vector2i Particle::shift(Eigen::Vector2d amount, double cell_dim) {
+Eigen::Vector2i Particle::shift(Eigen::Vector2d amount) {
 	Eigen::Vector2d shiftedPosition = _position + amount;
 	//std::cout << "shiftedPos: (" << shiftedPosition(0) << "," << shiftedPosition(1) << ")" << std::endl;
-	return getCellIndex(shiftedPosition, cell_dim);
+	return getCellIndex(shiftedPosition);
 }
 
 

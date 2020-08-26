@@ -22,7 +22,7 @@ namespace MPCD {
 		//double mass; // could this be int?, do i need this
 	public:
 		/* Update the Cell index */
-		Eigen::Vector2i getCellIndex(Eigen::Vector2d shiftedPosition, double cell_dim);
+		Eigen::Vector2i getCellIndex(Eigen::Vector2d shiftedPosition);
 		//Eigen::Vector2d _position;
 		//Eigen::Vector2d _velocity;
 		/* Creates a particle with @param position, @param velocity and unit mass. */
@@ -42,11 +42,11 @@ namespace MPCD {
 		 @param amount: the amount of the shift.
 		 @param cell_dim: the cell_dim of the grid.
 		 @return the new cell index of the particle*/
-		Eigen::Vector2i shift(Eigen::Vector2d amount, double cell_dim);
+		Eigen::Vector2i shift(Eigen::Vector2d amount);
 		//void setPosition(Eigen::Vector2d position);
 		//void setVelocity(Eigen::Vector2d velocity);
 		/* Moves the particle according to its current velocity. */
-		void move(double time_step);
+		void move();
 
 		/* Updates the velocity of the particle using the MPCD cell collision algorithm.
 		@param mean_cell_velocity: the mean velocity of the cell the particle belongs to. NOTE:
