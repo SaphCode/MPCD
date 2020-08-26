@@ -107,3 +107,38 @@ TEST(Grid, MinNumberPerCell) {
 	Test that every cell has about 5 particles
 	*/
 }
+
+TEST(Grid, MeanVelocity) {
+	Vector2d pos(0, 0);
+	double xvel = 1;
+	double yvel = 1;
+	Vector2d vel(xvel, yvel);
+	std::vector<Particle> particles;
+	int num = 5;
+	particles.reserve(num);
+
+	for (int i = 0; i < num; i++) {
+		Particle p(pos, vel);
+		particles.push_back(p);
+	}
+	Grid g(5);
+
+	g.calculateCellValues(particles);
+	ASSERT_EQ(meanCellVelocity[0], xvel);
+	ASSERT_EQ(meanCellVelocity[1], yvel);
+
+	double mxvel = -xvel;
+	double myvel = -yvel;
+	Vector2d mvel(mxvel, myvel);
+
+	for (int i = 0; i < num; i++) {
+		Particle p(pos, mvel);
+		particles.push_back(p);
+	}
+
+	Grid g2(10);
+	g2.calculateCellValues();
+	
+	ASSERT_EQ(meanCellVelocity[0], num*(xvel + mxvel)/(2*num));
+	ASSERT_EQ(meanCellVelocity[1], num * (yvel + myvel) / (2 * num));
+}
