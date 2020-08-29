@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{818ff300-416a-4c00-a294-9e29133128da}</ProjectGuid>
+    <ProjectGuid>{818FF300-416A-4C00-A294-9E29133128DA}</ProjectGuid>
     <RootNamespace>MPCD</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>

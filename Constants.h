@@ -25,8 +25,8 @@ namespace MPCD {
 			constexpr int min_num_cells = MPCD::Constants::number / min_particles_per_cell;
 			constexpr int wanted_num_cells = min_num_cells * 2;
 			const double cell_dim = std::sqrt(MPCD::Constants::Pipe::width * MPCD::Constants::Pipe::width / (wanted_num_cells * MPCD::Constants::Pipe::aspect_ratio));
-			const int rows = std::ceil(MPCD::Constants::Pipe::height / cell_dim);
-			const int cols = std::ceil(MPCD::Constants::Pipe::width / cell_dim);; // cutting dim by x has x^2 effect on area, and therefore on expected particle number.
+			const int rows = (int) std::round(std::ceil(MPCD::Constants::Pipe::height / cell_dim));
+			const int cols = (int) std::round(std::ceil(MPCD::Constants::Pipe::width / cell_dim)); // cutting dim by x has x^2 effect on area, and therefore on expected particle number.
 			const double max_shift = cell_dim / 2;
 		}
 	}
