@@ -55,8 +55,8 @@ void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotatio
 
 Eigen::Vector2i Particle::getCellIndex(Eigen::Vector2d shiftedPosition) {
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
-	int i = (int) std::round(std::floor(shiftedPosition(0) / cell_dim));
-	int j = (int) std::round(std::floor(shiftedPosition(1) / cell_dim));
+	int i = std::round(std::floor(shiftedPosition(1) / cell_dim));
+	int j = std::round(std::floor(shiftedPosition(0) / cell_dim));
 	Eigen::Vector2i cell_index(i, j);
 	return cell_index;
 	

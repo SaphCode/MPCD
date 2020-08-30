@@ -173,15 +173,15 @@ TEST_F(ParticleTest, CellLogicWorks) {
 	Vector2d pos0(cell_dim / 10, cell_dim / 10); // look at reason for in cell above
 	Vector2d vel0(0, 0);
 	Particle p(pos0, vel0);
-	Vector2i cell_index_calc(std::floor(pos0(0) / cell_dim), std::floor(pos0(1) / cell_dim));
+	Vector2i cell_index_calc(std::floor(pos0(1) / cell_dim), std::floor(pos0(0) / cell_dim));
 	Vector2d zero_shift(0, 0);
 	Vector2i cell_index_zero_shift = p.shift(zero_shift);
 	ASSERT_TRUE(areVectorsEqual(cell_index_calc, cell_index_zero_shift));
 
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
+	for (int i = 0; i < MPCD::Constants::Grid::rows; i++) {
+		for (int j = 0; j < MPCD::Constants::Grid::cols; j++) {
 			Vector2i index(i, j);
-			Vector2d pos_ij(pos0(0) + i * cell_dim, pos0(1) + j * cell_dim);
+			Vector2d pos_ij(pos0(1) + j * cell_dim, pos0(0) + i * cell_dim);
 			Particle p_ij(pos_ij, vel0);
 			Vector2i cell_index_ij = p_ij.shift(zero_shift);
 			ASSERT_TRUE(areVectorsEqual(cell_index_ij, cell_index_zero_shift + index));
@@ -204,8 +204,8 @@ TEST_F(ParticleTest, ShiftParticles) {
 	Vector2i index_after_pshift1(0, 0);
 	Vector2i index_after_nshift1(-1, -1);
 	Vector2d shift2(max_shift, -max_shift);
-	Vector2i index_after_pshift2(0, -1);
-	Vector2i index_after_nshift2(-1, 0);
+	Vector2i index_after_pshift2(-1, 0);
+	Vector2i index_after_nshift2(0, -1);
 
 	Vector2d shift_zero(0, 0);
 	Vector2i zero_index = p.shift(shift_zero);

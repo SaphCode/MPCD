@@ -20,46 +20,61 @@ using namespace MPCD;
 
 void MPCD::timestep(std::vector<Particle>& particles, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y, Xoshiro& rg_angle)
 {
-	std::map<int, Vector2d> meanCellVelocities;
-	std::map<int, int> numParticles;
-	std::map<int, double> rotationAngles;
-	std::map<int, bool> calculationDone;
-
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
 
-	moveAndShift(particles, meanCellVelocities, numParticles, rg_shift_x, rg_shift_y);
-	calculateCellQuantities(meanCellVelocities, numParticles, rotationAngles, rg_angle);
-	updateVelocity(particles, meanCellVelocities, rotationAngles);
+	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, int>> totalCellVelocitiesAndParticles = moveAndPrepare(particles, rg_shift_x, rg_shift_y);
+	std::map<int, double> totalCellVelocityX = std::get<0>(totalCellVelocitiesAndParticles);
+	std::map<int, double> totalCellVelocityY = std::get<1>(totalCellVelocitiesAndParticles);
+	std::map<int, int> particlesPerCell = std::get<2>(totalCellVelocitiesAndParticles);
 
+	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, double>> cellMeanVelocityAndRotationAngle = calculateCellQuantities(totalCellVelocityX, totalCellVelocityY, particlesPerCell, rg_angle);
+	std::map<int, double> meanCellVelocityX = std::get<0>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> meanCellVelocityY = std::get<1>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> cellRotationAngles = std::get<2>(cellMeanVelocityAndRotationAngle);
+
+	updateVelocity(particles, meanCellVelocityX, meanCellVelocityY, cellRotationAngles);
 }
 
 /* O(N) */
-void MPCD::moveAndShift(std::vector<Particle>& particles, std::map<int, Vector2d> &meanCellVelocities, std::map<int, int> &numParticles, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y) {
+std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, int>> MPCD::moveAndPrepare(std::vector<Particle>& particles, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y) {
+	std::map<int, double> totalCellVelocityX;
+	std::map<int, double> totalCellVelocityY;
+	std::map<int, int> numParticles;
+	int cols = MPCD::Constants::Grid::cols;
+	
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
 		it->move(); // move const
 
 		Vector2d shift(rg_shift_x.next(), rg_shift_y.next());
 		Vector2i cell_index = it->shift(shift); // shift // const
-		int linear_index = MPCD::Grid::convertToLinearIndex(cell_index);
+		int linear_index = MPCD::Grid::convertToLinearIndex(cell_index, cols);
 		Vector2d vel = it->getVelocity();
-		meanCellVelocities[linear_index] += vel; // add vel to total cell velocity
+		totalCellVelocityX[linear_index] += vel[0]; // add vel to total cell velocity
+		totalCellVelocityY[linear_index] += vel[1]; // add vel to total cell velocity
 		numParticles[linear_index] += 1; // add 1 to particle of cell
 	}
+
+	return std::make_tuple(totalCellVelocityX, totalCellVelocityY, numParticles);
 }
 
 /* O(N) (because num cells should be proportional to particles) */
-void MPCD::calculateCellQuantities(std::map<int, Vector2d>& meanCellVelocities, std::map<int, int>& numParticles, std::map<int, double>& rotationAngles, Xoshiro& rg_angle) {
-	for (auto const& [key, val] : meanCellVelocities) {
-		meanCellVelocities[key] = val / numParticles[key];
+std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, double>> MPCD::calculateCellQuantities(std::map<int, double> totalCellVelocityX, std::map<int, double> totalCellVelocityY, std::map<int, int> numParticles, Xoshiro& rg_angle) {
+	std::map<int, double> rotationAngles;
+	for (auto const& [key, val] : totalCellVelocityX) {
+		totalCellVelocityX[key] /= numParticles[key];
+		totalCellVelocityY[key] /= numParticles[key];
 		rotationAngles[key] = rg_angle.next();
 	}
+	return std::make_tuple(totalCellVelocityX, totalCellVelocityY, rotationAngles);
 }
 
 /* O(N) */
-void MPCD::updateVelocity(std::vector<Particle>& particles, std::map<int, Vector2d> meanCellVelocities, std::map<int, double> rotationAngles) {
+void MPCD::updateVelocity(std::vector<Particle>& particles, std::map<int, double> meanCellVelocityX, std::map<int, double> meanCellVelocityY, std::map<int, double> rotationAngles) {
+	int cols = MPCD::Constants::Grid::cols;
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
 		Vector2i index = it->getCellIndex(it->getPosition()); // const
-		int linearIndex = MPCD::Grid::convertToLinearIndex(index); // const
-		it->updateVelocity(meanCellVelocities[linearIndex], rotationAngles[linearIndex]); // const
+		int linearIndex = MPCD::Grid::convertToLinearIndex(index, cols); // const
+		Vector2d newVel(meanCellVelocityX[linearIndex], meanCellVelocityY[linearIndex]);
+		it->updateVelocity(newVel, rotationAngles[linearIndex]); // const
 	}
 }

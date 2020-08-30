@@ -4,24 +4,15 @@
 #define GRID_H
 
 #include <Eigen/Dense>
+#include <map>
 
 namespace MPCD {
 	namespace Grid {
-		int convertToLinearIndex(Eigen::Vector2i index);
-	}
-}
-#endif
-/*
-namespace MPCD {
-	class Grid
-	{
-	public:
-		Grid(int minNumberPerCell);
-		~Grid();
-
+		static std::map<int, Eigen::Vector2d> totalVelocityPerCell;
+		static std::map<int, int> totalParticlesPerCell;
 		/* Calculates the mean cell velocity, rotation angle and total number of particles (shifted) per cell.
 		* @return 2 maps: mean velocity and rotation angle.
-		
+
 		//std::tuple<std::map<int, Eigen::Vector2d>, std::map<int, double>> calculateCellValues(std::vector<MPCD::Particle> particles);
 
 		/* Converts 2d indexes into linear indexes.
@@ -34,7 +25,22 @@ namespace MPCD {
 			A[1,1], index = (1,1)
 			returns 4
 			@param index needs to be 2d!
+			@param cols: the number of cols of your object
 			@returns linear index
+		*/
+		int convertToLinearIndex(Eigen::Vector2i index, int cols);
+	}
+}
+#endif
+/*
+namespace MPCD {
+	class Grid
+	{
+	public:
+		Grid(int minNumberPerCell);
+		~Grid();
+
+		
 		
 		
 		

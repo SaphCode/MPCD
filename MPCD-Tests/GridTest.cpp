@@ -116,21 +116,118 @@ TEST(Grid, MinNumberPerCell) {
 	*/
 }
 
-TEST(Grid, MeanVelocity) {
+/* Converts 2d indexes into linear indexes.
+	Example:
+	A = [[1, 2, 3]
+			[4, 5, 6]
+			[7, 8, 9]]
+	A[0,0], index = (0,0)
+	returns 0
+	A[1,1], index = (1,1)
+	returns 4
+	@param index needs to be 2d!
+	@returns linear index
+*/
+TEST(Grid, ConvertToLinearIndex_3x3) {
+	Eigen::Matrix3i A;
+	A << 0, 1, 2,
+		3, 4, 5,
+		6, 7, 8;
+
+	int cols = 3;
 	
+	ASSERT_EQ(A(0, 0), 0);
+	ASSERT_EQ(A(0, 1), 1);
+	ASSERT_EQ(A(0, 2), 2);
+	ASSERT_EQ(A(1, 0), 3);
+	ASSERT_EQ(A(1, 1), 4);
+	ASSERT_EQ(A(1, 2), 5);
+	ASSERT_EQ(A(2, 0), 6);
+	ASSERT_EQ(A(2, 1), 7);
+	ASSERT_EQ(A(2, 2), 8);
+
+	Eigen::Vector2i index_00(0, 0);
+	Eigen::Vector2i index_01(0, 1);
+	Eigen::Vector2i index_02(0, 2);
+	Eigen::Vector2i index_10(1, 0);
+	Eigen::Vector2i index_11(1, 1);
+	Eigen::Vector2i index_12(1, 2);
+	Eigen::Vector2i index_20(2, 0);
+	Eigen::Vector2i index_21(2, 1);
+	Eigen::Vector2i index_22(2, 2);
+
+	ASSERT_EQ(Grid::convertToLinearIndex(index_00, cols), A(0, 0));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_01, cols), A(0, 1));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_02, cols), A(0, 2));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_10, cols), A(1, 0));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_11, cols), A(1, 1));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_12, cols), A(1, 2));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_20, cols), A(2, 0));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_21, cols), A(2, 1));
+	ASSERT_EQ(Grid::convertToLinearIndex(index_22, cols), A(2, 2));
+
+}
+
+TEST(Grid, ConvertToLinearIndex_WholeGrid) {
+	const double xvel = 1;
+	const double yvel = 1;
+	Vector2d vel(xvel, yvel);
+
+	std::vector<Particle> particles;
+	const int num = MPCD::Constants::number;
+	particles.reserve(num);
+
+	const double cell_dim = MPCD::Constants::Grid::cell_dim;
+	Vector2d startPos(cell_dim / 20, cell_dim / 20);
+	std::map<int, double> totalCellVelocityX;
+	std::map<int, double> totalCellVelocityY;
+	std::map<int, int> cellParticles;
+
+	const int rows = MPCD::Constants::Grid::rows;
+	const int cols= MPCD::Constants::Grid::cols;
+
+	Xoshiro rg_angle(0.0, 2 * 3.141); // not important in this test
+
+	/*
+	* This block should place 1 particle in each cell. The mean of every cell should then be the velocity of the particle itself.
+	*/
+	Particle init(startPos, vel);
+	Eigen::Vector2i startIndex = init.getCellIndex(init.getPosition());
+	for (int i = startIndex[0]; i < rows; i++) {
+		int linearIndex_before = Grid::convertToLinearIndex(startIndex, cols) - 1 + i * cols;
+		for (int j = startIndex[1]; j < MPCD::Constants::Grid::cols; j++) {
+			Vector2d offset(j * cell_dim, i * cell_dim);
+			Vector2d pos = startPos + offset;
+			Particle p(pos, vel);
+			particles.push_back(p);
+
+			int linearIndex = MPCD::Grid::convertToLinearIndex(p.getCellIndex(p.getPosition()), cols);
+			ASSERT_EQ(p.getCellIndex(p.getPosition())[0], i);
+			ASSERT_EQ(p.getCellIndex(p.getPosition())[1], j);
+			Vector2i index(i, j);
+			ASSERT_EQ(linearIndex, MPCD::Grid::convertToLinearIndex(index, rows));
+			ASSERT_EQ(linearIndex, linearIndex_before + 1);
+			linearIndex_before = linearIndex;
+		}
+	}
+}
+
+
+
+TEST(Grid, MeanVelocity_OneParticlePerCell) {
 	double xvel = 1;
 	double yvel = 1;
 	Vector2d vel(xvel, yvel);
 
 	std::vector<Particle> particles;
 	int num = MPCD::Constants::number;
-	particles.reserve(num);
+	particles.reserve((double)MPCD::Constants::Grid::rows * MPCD::Constants::Grid::cols);
 
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
 	Vector2d startPos(cell_dim / 10, cell_dim / 10);
-	std::map<int, Vector2d> totalCellVelocities;
+	std::map<int, double> totalCellVelocityX;
+	std::map<int, double> totalCellVelocityY;
 	std::map<int, int> cellParticles;
-	std::map<int, double> cellRotationAngles;
 
 	Xoshiro rg_angle(0.0, 2 * 3.141); // not important in this test
 
@@ -144,51 +241,64 @@ TEST(Grid, MeanVelocity) {
 			Particle p(pos, vel);
 			particles.push_back(p);
 			
-			int linearIndex = MPCD::Grid::convertToLinearIndex(p.getCellIndex(p.getPosition()));
+			int linearIndex = MPCD::Grid::convertToLinearIndex(p.getCellIndex(p.getPosition()), MPCD::Constants::Grid::cols);
 
 			Vector2d vel = p.getVelocity();
-			totalCellVelocities[linearIndex] += vel;
+			totalCellVelocityX[linearIndex] += vel[0];
+			totalCellVelocityY[linearIndex] += vel[1];
 			cellParticles[linearIndex] += 1;
 		}
 	}
 
-	MPCD::calculateCellQuantities(totalCellVelocities, cellParticles, cellRotationAngles, rg_angle);
+	//updateVelocity(particles, meanCellVelocities, cellRotationAngles);
+	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, double>> cellMeanVelocityAndRotationAngle = MPCD::calculateCellQuantities(totalCellVelocityX, totalCellVelocityY, cellParticles, rg_angle);
+	std::map<int, double> meanCellVelocityX = std::get<0>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> meanCellVelocityY = std::get<1>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> cellRotationAngles = std::get<2>(cellMeanVelocityAndRotationAngle);
 	
-	std::map<int, Vector2d> meanCellVelocities = totalCellVelocities;
-	for (auto const& [key, val] : meanCellVelocities) {
+	for (auto const& [key, val] : meanCellVelocityX) {
 		double epsilon = 0.0001;
-		ASSERT_LT(std::abs(val[0] - xvel) / xvel, epsilon);
-		ASSERT_LT(std::abs(val[1] - yvel) / yvel, epsilon);
+		ASSERT_LT(std::abs(meanCellVelocityX[key] - xvel) / xvel, epsilon);
+		ASSERT_LT(std::abs(meanCellVelocityY[key] - yvel) / yvel, epsilon);
 	}
 
-	/* ------------------------------------ */
+}
 
-	std::vector<Particle> particles2;
-	particles2.reserve(num);
+TEST(Grid, MeanVelocity_AllParticlesInOneCell) {
+	std::vector<Particle> particles;
+	const int num = MPCD::Constants::number;
+	particles.reserve(num);
+	const double cell_dim = MPCD::Constants::Grid::cell_dim;
+	const int cols = MPCD::Constants::Grid::cols;
 
-	Vector2d pos2(3.1 * cell_dim, 3.1 * cell_dim);
-	double vx2 = 1.1111;
-	double vy2 = -12;
-	Vector2d vel2(vx2, vy2);
+	Xoshiro rg_angle(0, 2 * 3.141); // not importatnt here
 
-	std::map<int, Vector2d> totalCellVelocities2;
-	std::map<int, int> cellParticles2;
-	std::map<int, double> cellRotationAngles2;
+	Vector2d pos(3.1 * cell_dim, 3.1 * cell_dim);
+	double vx = 1.1111;
+	double vy = -12;
+	Vector2d vel(vx, vy);
+
+	std::map<int, double> totalCellVelocityX;
+	std::map<int, double> totalCellVelocityY;
+	std::map<int, int> cellParticles;
 
 	for (int i = 0; i < num; i++) {
-		Particle p(pos2, vel2);
-		particles2.push_back(p);
-		int linearIndex = MPCD::Grid::convertToLinearIndex(p.getCellIndex(pos2));
-		totalCellVelocities2[linearIndex] += vel2;
-		cellParticles2[linearIndex] += 1;
+		Particle p(pos, vel);
+		particles.push_back(p);
+		int linearIndex = MPCD::Grid::convertToLinearIndex(p.getCellIndex(pos), cols);
+		totalCellVelocityX[linearIndex] += vel[0];
+		totalCellVelocityY[linearIndex] += vel[1];
+		cellParticles[linearIndex] += 1;
 	}
 
-	calculateCellQuantities(totalCellVelocities2, cellParticles2, cellRotationAngles2, rg_angle);
-	std::map<int, Vector2d> meanCellVelocities2 = totalCellVelocities2;
+	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, double>> cellMeanVelocityAndRotationAngle = MPCD::calculateCellQuantities(totalCellVelocityX, totalCellVelocityY, cellParticles, rg_angle);
+	std::map<int, double> meanCellVelocityX = std::get<0>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> meanCellVelocityY = std::get<0>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> cellRotationAngles = std::get<1>(cellMeanVelocityAndRotationAngle);
 
-	for (auto const& [key, val] : meanCellVelocities2) {
+	for (auto const& [key, val] : meanCellVelocityX) {
 		double epsilon = 0.0001;
-		ASSERT_LT(std::abs(val[0] - vx2) / vx2, epsilon);
-		ASSERT_LT(std::abs(val[1] - vy2) / vy2, epsilon);
+		ASSERT_LT(std::abs(meanCellVelocityX[key] - vx) / vx, epsilon);
+		ASSERT_LT(std::abs(meanCellVelocityY[key] - vy) / vy, epsilon);
 	}
 }

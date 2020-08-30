@@ -2,6 +2,13 @@
 #include "MPCD.h"
 #include "Grid.h"
 #include "Constants.h"
+#include "Out.h"
+#include <filesystem>
+#include <fstream>
+#include "Locations.h"
+#include <iomanip>
+#include <iostream>
+#include <stdexcept>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -40,7 +47,39 @@ TEST(MPCD, Timestep) {
 	Xoshiro rg_shift_x(-max_shift, max_shift);
 	Xoshiro rg_shift_y(-max_shift, max_shift);
 
-	ASSERT_EQ(true, false);
+	std::filesystem::path cwd = std::filesystem::current_path();
+	
+	Out out(cwd.string() + l_data);
+
+	int timesteps = MPCD::Constants::timesteps;
+	ASSERT_GT(timesteps, 0);
+
+	int w = -1;
+	if (timesteps < 99) {
+		w = 2;
+	}
+	else if (timesteps < 999) {
+		w = 3;
+	}
+	else if (timesteps < 9999) {
+		w = 4;
+	}
+	else if (timesteps < 99999) {
+		w = 5;
+	}
+	else {
+		throw std::exception("timesteps too large or too short: " + timesteps);
+	}
+
+	for (int t = 0; t < timesteps; t++) {
+		MPCD::timestep(particles, rg_shift_x, rg_shift_y, rg_angle);
+		std::stringstream s;
+		s << std::setfill('0') << std::setw(w) << t;
+		std::string filename = "particles_timestep_" + s.str() + ".csv";
+		out.writeToOut(particles, filename);
+	}
+	
+	
 
 	/*
 
