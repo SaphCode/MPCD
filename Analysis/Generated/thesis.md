@@ -4,6 +4,7 @@
 
 \newcommand{\matr}[1]\textbf{#1}
 \newcommand{\vect}[1]{\vec{#1}}
+\usepackage[table,xcdraw]{xcolor}
 
 
 
@@ -57,9 +58,9 @@ Multiparticle collision dynamics (MPCD), also known as Stochastic Rotation Dynam
 
 The MPCD technique models the fluid using particles, their positions and velocities are treated as continuous variables. The system is divided up into cells that have no restriction on the number of particles, each of the cells is part of a regular lattice. The dynamics is split into two parts: Particle streaming and multiparticle collision dynamics. Particle streaming is treated exactly for each particle in the system, while the collision step is approximated on a cell level. The multiparticle collision dynamics conserves mass, momentum and energy and leads to the correct hydrodynamical equations.[@malev1999] The streaming and collision step are described in more detail in (TODO).
 
-# How does MPCD work?
+# The MPCD algorithm
 
-The system we are modelling consists of $N$ particles with mass $m$, position $\vec{r_{i}}$ and velocity $\vec{v_{i}}$, where $i \in \{1, 2, \dots, N\}$. One timestep shall correspond to having calculated all the new particle positions and velocities in the streaming and collision steps, respectively. For each of the N particles, the streaming and collision steps are applied, and this pattern is repeated until the wanted number of timesteps have elapsed.
+The system we are modelling consists of $N$ particles with mass $m$, continuous position $\vec{r_{i}}$ and velocity $\vec{v_{i}}$, where $i \in \{1, 2, \dots, N\}$. One timestep $\Delta t$ shall correspond to having calculated all the new particle positions and velocities in the streaming and collision steps, respectively. For each of the N particles, the streaming and collision steps are applied, and this pattern is repeated until the wanted number of timesteps have elapsed.
 
 ## The streaming step
 
@@ -79,25 +80,32 @@ The collision step is somewhat more complicated. It involves the mean velocity o
 \vect{v_i} \rightarrow \vect{V_c} + \matr{R}(\alpha) [\vect{v_i} - \vect{V_c}] \textrm{,}
 \end{equation}
 
-conserves mass, momentum and energy. The rotation matrix $\matr{R}(\alpha)$ is a simple 2d rotation matrix
+conserves mass, momentum and energy under the molecular chaos assumption[@malev1999? cite differently][@winkl2009, molecular chaos, p.7]. The rotation matrix $\matr{R}(\alpha)$ is a simple 2d rotation matrix
 
 \begin{equation}
 R(\alpha) = 
 \left[ \begin{array}{rr}
 cos(\alpha) & -sin(\alpha) \\
 sin(\alpha) & cos(\alpha) \\
-\end{array}\right]
+\end{array}\right],
 \end{equation}
 
-It is the same for all particles of a cell, but since $\alpha$ is sampled randomly,  will probably differ from cell to cell. The mean velocity of a cell is defined as
+where $\alpha$ is sampled randomly on a per-cell basis. Furthermore, for each particle in the cell $\alpha$ flips its sign with probability $\frac{1}{2}$.[@winkl2009, (p.6)]
+The mean velocity of a cell is defined as
 
 \begin{equation}
 \vect{V_c} = \frac{1}{N_c} \sum_{i=1}^{N_c} \vect{v_i} \textrm{,}
 \end{equation}
 
-where $N_c$ is the number of particles in the cell.[@malev1999]
+where $N_c$ is the number of particles in cell c.[@malev1999]
 
-# (Pseudo) Random Number Generation
+The original MPCD algorithm was not Galilean invariant. The problem lay in the "molecular chaos" assumption, which means that particles involved in a collision have no memory of earlier encounters when colliding. This assumption is problematic when the mean free path $\lambda = \Delta t \sqrt{\frac{k_{B}T}{m}}$ is small compared to the cell size $a$, since the same particles collide with each other repeatedly and thus build up correlations. When $\lambda \gg a$ Ihle and Kroll have shown that the molecular chaos assumption holds and the simulated results deviate from experimental ones only negligibly.[@ihlekroll2001, p.2][@winkl2009]
+
+The solution to this problem is to shift all particles by the same random vector $s$ before the collision step. The components of $s$ are sampled randomly from a uniform distribution in the interval $[\frac{-a}{2}, \frac{a}{2}]$. After the collision, the particles are shifted back by the same amount.[@ihlekroll2001]
+
+# Implementing the MPCD Algorithm
+
+## (Pseudo) Random Number Generation
 
 One of the pillars of this thesis is the generation of random rotation angles for the rotation matrix needed in the collision step. This proved to be somewhat difficult. First, the standard algorithm of the C++ standard library was tried, but it didn't qualify because it performed poorly in comparison to the second and third algorithms tried, which are called "Mersenne Twister" and "xoshiro256++", respectively.[@wiki:mersennetwister][@cppreference:prng][@unimi:xoshiro]
 
@@ -131,27 +139,36 @@ The results of the $\chi^2$ test are summarised in [TODO: Table, and table forma
 
 
 \begin{table}[]
-\begin{tabular}{|l|c|r|r|}
-\textbf{k} & \textbf{chisquared[TODO]} &\textbf{observed MT} & \textbf{observed xoshiro} \\
-1                              & 3.841           & 4.709                                    & 0.551                                         \\
-2                              & 5.991            & 6.211                                    & 0.58                                          \\
-3                              & 7.815                          & 8.137                                    & 1.263                                         \\
-4                              & 9.488                          & 11.506                       & 1.776                                         \\
-5                              & 11.070                          & 10.954                                   & 3.783                                         \\
-6                              & 12.592                          & 19.849                                   & 4.565                                         \\ 
-7                              & 14.067                          & 12.545                                   & 3.339                                         \\
-8                              & 15.507                          & 14.802                                   & 4.946                             \\
-9                              & 16.919                           & 14.101                       & 3.196                                         \\
-10                             & 18.307                          & 15.701                       & 5.794                                         \\ 
-11                             & 19.675                          & 19.148                                   & 9.452                                         \\
-12                             & 21.026                         & 17.072                                   & 6.947                                         \\ 
-13                             & 22.362              & 20.366                                   & 10.734                            \\
-14                             & 23.685                          & 18.033                                   & 6.426                                         \\ 
-15                             & 24.996              & 15.477                                   & 6.75                                          \\
-16                             & 26.296                          & 18.604                                   & 8.554                                         \\
-17                             & 27.587                           & 21.79                                    & 13.028                            \\
-18                             & 28.869                         & 26.316                                   & 9.882                                         \\ 
-19                             & 30.144             & 26.845                                   & 14.323                                       
+\begin{tabular}{llll}
+\rowcolor[HTML]{4472C4} 
+{\color[HTML]{FFF} \textbf{k}} & {\color[HTML]{FFF} \textbf{chi\textasciicircum{}2   probability}} & {\color[HTML]{FFF} \textbf{observed   MT}} & {\color[HTML]{FFF} \textbf{observed XS256++}} \\
+\rowcolor[HTML]{D9E1F2} 
+1                              & 5.991                                                             & 0.292                                      & 0.068                                         \\
+2                              & 7.815                                                             & 1.626                                      & 3.682                                         \\
+\rowcolor[HTML]{D9E1F2} 
+3                              & 9.488                                                             & 3.735                                      & 2.124                                         \\
+4                              & 11.07                                                             & 4.255                                      & 4.525                                         \\
+\rowcolor[HTML]{D9E1F2} 
+5                              & 12.592                                                            & 2.86                                       & 6.345                                         \\
+6                              & 14.067                                                            & 4.071                                      & 6.377                                         \\
+\rowcolor[HTML]{D9E1F2} 
+7                              & 15.507                                                            & 8.662                                      & 11.731                                        \\
+8                              & 16.919                                                            & 14.426                                     & 8.693                                         \\
+\rowcolor[HTML]{D9E1F2} 
+9                              & 18.307                                                            & 11.732                                     & 6.932                                         \\
+10                             & 19.675                                                            & 9.857                                      & 5.939                                         \\
+\rowcolor[HTML]{D9E1F2} 
+11                             & 21.026                                                            & 10.438                                     & 11.73                                         \\
+12                             & 22.362                                                            & 10.985                                     & 15.543                                        \\
+\rowcolor[HTML]{D9E1F2} 
+13                             & 23.685                                                            & 22.603                                     & 12.022                                        \\
+14                             & 24.996                                                            & 13.988                                     & 12.923                                        \\
+\rowcolor[HTML]{D9E1F2} 
+15                             & 26.296                                                            & 15.526                                     & 20.71                                         \\
+16                             & 27.587                                                            & 16.288                                     & 11.501                                        \\
+\rowcolor[HTML]{D9E1F2} 
+17                             & 28.869                                                            & \cellcolor[HTML]{F8CBAD}32.26              & 12.478                                        \\
+18                             & 30.144                                                            & \cellcolor[HTML]{F8CBAD}31.787             & 13.882                                       
 \end{tabular}
 \end{table}
 
@@ -163,35 +180,41 @@ Visually, we can examine the generated buckets of both random generators in [TOD
 
 
 
-
-![png](thesis_files/thesis_24_0.png)
-
-
 ![A histogram of different bucket sizes generated by MT and xoshiro256++](Assets/angle_buckets.png)
 
 The Mersenne Twister has been known to fail certain statistical tests since its inception, by virtue of its mathematical characteristics. There exist other algorithms that are designed to be faster and that do not fail any known statistical tests.[@vigna2019] Ultimately, the xoshiro256++, developed by Sebastian Vigna and David Blackman, was used. It is a variant of the xorshift algorithm, which extends the bit-shift and xor methods by bitrotation, making it still very fast, and more "random" than the xorshift.[@wiki:xorshift][@unimi:xoshiro]
 
 Note that testing a (pseudo) random number generator is usually much more involved than this, but since this has already been done extensively by other authors, we are satisfied with the $\chi^2$ test, simply to test the implementation of the xoshiro256++, since it plays an important part.[@wiki:prng][@vigna2019]
 
-# Particle Streaming
+## Particle Streaming
 
-The particle positions were drawn from a uniform real distribution in the interval $[0, 5)$ for the $x$-coordinate, and $[0, 1)$ for the $y$-coordinate. The velocities were initialized to be in the interval $[-1\% \cdot 5, 1\% \cdot 5)$ for the $v_x$ component, and $[-1\% \cdot 1, 1\% \cdot 1)$ for the $v_y$ component. The results can be seen [TODO] below. From the positions in the first row, the velocities in the second row, particle streaming is applied for 1 and 10 timesteps, respectively.
+The particle positions were drawn from a uniform real distribution in the interval $[0, 5)$ for the $x$-coordinate, and $[0, 1)$ for the $y$-coordinate. The velocities were initialized to be in the interval $[-1\% \cdot 5, 1\% \cdot 5)$ for the $v_x$ component, and $[-1\% \cdot 1, 1\% \cdot 1)$ for the $v_y$ component. The results can be seen in figure [TODO] below. From the positions in the first row, the velocities in the second row, particle streaming is applied for 1 and 10 timesteps, according to equation (TODO).
 
-
-
-
-![png](thesis_files/thesis_29_0.png)
 
 
 ![Particle streaming without collision with MT and with xoshiro](Assets/particle_streaming.png)
 
 We see the x and y coordinates are randomly initialized according to the shape of the container. Looking closely, one can see that our particles look very much like noise. The absolute value of the velocity components are initialized to at most 1% of their respective dimensions. After one timestep, some of the particles on the outer ranges have moved out of bounds, and after ten timesteps, the particles have thinned out considerably along the edges.
 
-# The collision step
+## The collision step
 
-## Grid
+### Grid
 
-Work in progress
+For the implementation of the collision step, a regular lattice, is needed. This grid has lattice constant $a$, where $a$ is a function of the desired average number of particles per cell, which is typically initialised to between three and 20[@winkl2009], although it can be as high as 70[@ihlekroll2001].
+
+The lattice constant $a$ is calculated as follows. The average number of particles per cell, $\bar{N_c}$, is decided upon. If the grid has fixed dimensions, the number of cells is $n = \frac{N}{\bar{N_c}}$. This assumption is valid when only looking at flow through the region of interest and simulating continuous, neverending flow. Practically, this means ignoring particles that go too far out of this region of interest and creating particles that flow into it. If we assign a width $w$ and height $h$ to our region of interest, its area is $A = wh$. But since $n a^{2} = A$, this means that $a = \sqrt{\frac{wh}{n}}$.
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Velocity updating
 
@@ -227,520 +250,6 @@ $$
 
 
 
-    Deleting 1001:1009
-    ```javascript
-    
-    %%javascript
-    
-    MathJax.Hub.Queue(
-    
-      ["resetEquationNumbers", MathJax.InputJax.TeX],
-    
-      ["PreProcess", MathJax.Hub],
-    
-      ["Reprocess", MathJax.Hub]
-    
-    );
-    
-    ```
-    
-    Deleting 987:993
-    ```javascript
-    
-    %%javascript
-    
-    MathJax.Hub.Config({
-    
-        TeX: { equationNumbers: { autoNumber: "AMS" } }
-    
-    });
-    
-    ```
-    
-    Deleting 424:462
-    ```python
-    
-    # just do it manually, it works on anaconda env datascience
-    
-    
-    
-    import subprocess
-    
-    #automatic document conversion to markdown and then to word
-    
-    #first convert the ipython notebook paper.ipynb to markdown
-    
-    subprocess.run("jupyter nbconvert --to markdown thesis.ipynb --output-dir='./Generated'") #--output-dir='./Generated'
-    
-    #next remove code
-    
-    path = "./Generated/thesis.md"
-    
-    with open(path, "r") as f:
-    
-        lines = f.readlines()
-    
-        idx = []
-    
-        idx_files = []
-    
-        for i, line in enumerate(lines):
-    
-            if (line.startswith("```")):
-    
-                idx.append(i)
-    
-            if ("thesis_files" in line):
-    
-                c = line.find("thesis_files")
-    
-                lines[i] = line[0:c] + "" + line[c:]
-    
-    
-    
-    idx = sorted(idx, reverse=True) # reverse order so not deleting lines and then missing others
-    
-    for current, previous in zip(idx[::2], idx[1::2]):
-    
-        print("Deleting {p}:{c}".format(p=previous, c=current+1))
-    
-        print('\n'.join(lines[previous:current+1]))
-    
-        del lines[previous:current+1]
-    
-        
-    
-    with open(path, "w") as f:
-    
-        #f.write("\\newcommand{\matr}[1]\\textbf{#1}")
-    
-        #f.write("\\newcommand{\\vect}[1]{\\vec{#1}}")
-    
-        for line in lines:
-    
-            f.write("%s" % line)
-    
-    #next convert markdown to ms word
-    
-    conversion_tex = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.tex --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
-    
-    subprocess.run(conversion_tex)
-    
-    conversion_pdf = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
-    
-    subprocess.run(conversion_pdf)
-    
-    # LATEX TO DOCX pandoc -s math.tex -o example30.docx
-    
-    ```
-    
-    Deleting 285:376
-    ```python
-    
-    path = "../x64/Debug/Data/RNG/"
-    
-    mers = "mers_"
-    
-    xoshiro = "xs_"
-    
-    csv = ".csv"
-    
-    i_xy = "initial_xy"
-    
-    i_v_xy = "initial_v_xy"
-    
-    moved_xy = "moved_xy"
-    
-    timesteps_moved_xy = "timesteps_moved_xy"
-    
-    x = "x"
-    
-    y = "y"
-    
-    vx = "vx"
-    
-    vy = "vy"
-    
-    
-    
-    mers_initial_xy = pd.read_csv(path + mers + i_xy + csv)
-    
-    x_mers = mers_initial_xy[x]
-    
-    y_mers = mers_initial_xy[y]
-    
-    xs_initial_xy = pd.read_csv(path + xoshiro + i_xy + csv)
-    
-    x_xs = xs_initial_xy[x]
-    
-    y_xs = xs_initial_xy[y]
-    
-    
-    
-    mers_initial_v_xy = pd.read_csv(path + mers + i_v_xy + csv)
-    
-    vx_mers = mers_initial_v_xy[vx]
-    
-    vy_mers = mers_initial_v_xy[vy]
-    
-    xs_initial_v_xy = pd.read_csv(path + xoshiro + i_v_xy + csv)
-    
-    vx_xs = xs_initial_v_xy[vx]
-    
-    vy_xs = xs_initial_v_xy[vy]
-    
-    
-    
-    mers_moved_xy = pd.read_csv(path + mers + moved_xy + csv)
-    
-    moved_x_mers = mers_moved_xy[x]
-    
-    moved_y_mers = mers_moved_xy[y]
-    
-    xs_moved_xy = pd.read_csv(path + xoshiro + moved_xy + csv)
-    
-    moved_x_xs = xs_moved_xy[x]
-    
-    moved_y_xs = xs_moved_xy[y]
-    
-    
-    
-    mers_timesteps_moved_xy = pd.read_csv(path + mers + timesteps_moved_xy + csv)
-    
-    timesteps_moved_x_mers = mers_timesteps_moved_xy[x]
-    
-    timesteps_moved_y_mers = mers_timesteps_moved_xy[y]
-    
-    xs_timesteps_moved_xy = pd.read_csv(path + xoshiro + timesteps_moved_xy + csv)
-    
-    timesteps_moved_x_xs = xs_timesteps_moved_xy[x]
-    
-    timesteps_moved_y_xs = xs_timesteps_moved_xy[y]
-    
-    
-    
-    
-    
-    with sns.plotting_context(sns.set()):
-    
-        point_size = 1
-    
-        x_size_per_plot = 7
-    
-        y_size_per_plot = 4
-    
-        rows = 4
-    
-        cols = 2
-    
-        #plt.figure(num = 1, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
-    
-    
-    
-        fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
-    
-        cols = ["Mersenne Twister", "xoshiro256++"]
-    
-        for ax, col in zip(axes[0], cols):
-    
-            ax.annotate(col, xy=(0.5, 1), xytext=(0, 10),
-    
-                        textcoords='offset points', xycoords='axes fraction',
-    
-                        size='24', ha='center', va='baseline')
-    
-    
-    
-        axes[0,0].set_ylabel(y)
-    
-        axes[0,0].plot(x_mers, y_mers, "o", markersize = point_size)
-    
-        axes[0,0].set_xlabel(x)
-    
-    
-    
-        axes[0,1].plot(x_xs, y_xs, "o", markersize = point_size)
-    
-        axes[0,1].set_xlabel(x)
-    
-    
-    
-        axes[1,0].set_ylabel("y-component of v")
-    
-        axes[1,0].plot(vx_mers, vy_mers, "o", markersize = point_size)
-    
-        axes[1,0].set_xlabel("x-component of v")
-    
-    
-    
-        axes[1,1].plot(vx_xs, vy_xs, "o", markersize = point_size)
-    
-        axes[1,1].set_xlabel("x-component of v")
-    
-    
-    
-        axes[2,0].set_ylabel(y)
-    
-        axes[2,0].plot(moved_x_mers, moved_y_mers, "o", markersize = point_size)
-    
-        axes[2,0].set_xlabel(x)
-    
-    
-    
-        axes[2,1].plot(moved_x_xs, moved_y_xs, "o", markersize = point_size)
-    
-        axes[2,1].set_xlabel(x)
-    
-    
-    
-        axes[3,0].set_ylabel(y)
-    
-        axes[3,0].plot(timesteps_moved_x_mers, timesteps_moved_y_mers, "o", markersize = point_size)
-    
-        axes[3,0].set_xlabel(x)
-    
-    
-    
-        axes[3,1].plot(timesteps_moved_x_xs, timesteps_moved_y_xs, "o", markersize = point_size)
-    
-        axes[3,1].set_xlabel(x)
-    
-    
-    
-        plt.savefig("Assets/particle_streaming.png")
-    
-        #plt.close()
-    
-        
-    
-        # here something is wrong. these plots are the same.......
-    
-    ```
-    
-    Deleting 213:269
-    ```python
-    
-    mers = "mers_"
-    
-    xoshiro = "xs_"
-    
-    csv = ".csv"
-    
-    angle = "alpha"
-    
-    random_angle = "random_angle"
-    
-    
-    
-    mers_random_angle = pd.read_csv(path + mers + random_angle + csv)
-    
-    angle_mers = mers_random_angle[angle]
-    
-    xs_random_angle = pd.read_csv(path + xoshiro + random_angle + csv)
-    
-    angle_xs = xs_random_angle[angle]
-    
-    
-    
-    with sns.plotting_context(sns.set()):
-    
-        x_size_per_plot = 7
-    
-        y_size_per_plot = 4
-    
-        rows = 4
-    
-        cols = 2
-    
-        
-    
-        fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
-    
-        cols = ["Mersenne Twister", "xoshiro256++"]
-    
-        for ax, col in zip(axes[0], cols):
-    
-            ax.annotate(col, xy=(0.5, 1), xytext=(0, 10),
-    
-                        textcoords='offset points', xycoords='axes fraction',
-    
-                        size='24', ha='center', va='baseline')
-    
-    
-    
-        axes[0,0].set_xlabel("5 buckets")
-    
-        axes[0,0].set_ylabel("frequency of angle")
-    
-        axes[0,0].hist(x=angle_mers,bins = 5)
-    
-    
-    
-        axes[0,1].set_xlabel("5 buckets")
-    
-        axes[0,1].hist(x=angle_xs, bins = 5)
-    
-    
-    
-        axes[1,0].set_xlabel("10 buckets")
-    
-        axes[1,0].set_ylabel("frequency of angle")
-    
-        axes[1,0].hist(x=angle_mers,bins = 10)
-    
-    
-    
-        axes[1,1].set_xlabel("10 buckets")
-    
-        axes[1,1].hist(x=angle_xs, bins = 10)
-    
-    
-    
-        axes[2,0].set_xlabel("50 buckets")
-    
-        axes[2,0].set_ylabel("frequency of angle")
-    
-        axes[2,0].hist(x=angle_mers,bins = 50)
-    
-    
-    
-        axes[2,1].set_xlabel("50 buckets")
-    
-        axes[2,1].hist(x=angle_xs, bins = 50)
-    
-    
-    
-        axes[3,0].set_xlabel("100 buckets")
-    
-        axes[3,0].set_ylabel("frequency of angle")
-    
-        axes[3,0].hist(x=angle_mers,bins = 100)
-    
-    
-    
-        axes[3,1].set_xlabel("100 buckets")
-    
-        axes[3,1].hist(x=angle_xs, bins = 100)
-    
-    
-    
-        plt.savefig("Assets/angle_buckets.png")
-    
-        #plt.close()
-    
-    ```
-    
-    Deleting 152:179
-    ```latex
-    
-    %%latex
-    
-    \begin{table}[]
-    
-    \begin{tabular}{|l|c|r|r|}
-    
-    \textbf{k} & \textbf{chisquared[TODO]} &\textbf{observed MT} & \textbf{observed xoshiro} \\
-    
-    1                              & 3.841           & 4.709                                    & 0.551                                         \\
-    
-    2                              & 5.991            & 6.211                                    & 0.58                                          \\
-    
-    3                              & 7.815                          & 8.137                                    & 1.263                                         \\
-    
-    4                              & 9.488                          & 11.506                       & 1.776                                         \\
-    
-    5                              & 11.070                          & 10.954                                   & 3.783                                         \\
-    
-    6                              & 12.592                          & 19.849                                   & 4.565                                         \\ 
-    
-    7                              & 14.067                          & 12.545                                   & 3.339                                         \\
-    
-    8                              & 15.507                          & 14.802                                   & 4.946                             \\
-    
-    9                              & 16.919                           & 14.101                       & 3.196                                         \\
-    
-    10                             & 18.307                          & 15.701                       & 5.794                                         \\ 
-    
-    11                             & 19.675                          & 19.148                                   & 9.452                                         \\
-    
-    12                             & 21.026                         & 17.072                                   & 6.947                                         \\ 
-    
-    13                             & 22.362              & 20.366                                   & 10.734                            \\
-    
-    14                             & 23.685                          & 18.033                                   & 6.426                                         \\ 
-    
-    15                             & 24.996              & 15.477                                   & 6.75                                          \\
-    
-    16                             & 26.296                          & 18.604                                   & 8.554                                         \\
-    
-    17                             & 27.587                           & 21.79                                    & 13.028                            \\
-    
-    18                             & 28.869                         & 26.316                                   & 9.882                                         \\ 
-    
-    19                             & 30.144             & 26.845                                   & 14.323                                       
-    
-    \end{tabular}
-    
-    \end{table}
-    
-    ```
-    
-    Deleting 140:150
-    ```python
-    
-    path = "../x64/Debug/Data/RNG/"
-    
-    mersenne = "mersenne_twister_chi2.csv"
-    
-    xoshiro = "xoshiro_chi2.csv"
-    
-    index = ["k", "chi^2 probability"]
-    
-    new_name = "chi2_results_dirty.csv"
-    
-    mersenne_twister_chi2 = pd.read_csv(path + mersenne).set_index(index)
-    
-    xoshiro256plusplus_chi2 = pd.read_csv(path + xoshiro).set_index(index)
-    
-    results = mersenne_twister_chi2.join(xoshiro256plusplus_chi2, on = index, how = "inner").to_csv(new_name)
-    
-    ```
-    
-    Deleting 9:14
-    ```latex
-    
-    %%latex
-    
-    \newcommand{\matr}[1]\textbf{#1}
-    
-    \newcommand{\vect}[1]{\vec{#1}}
-    
-    ```
-    
-    Deleting 0:7
-    ```python
-    
-    import seaborn as sns
-    
-    import pandas as pd
-    
-    import matplotlib.pyplot as plt
-    
-    import numpy as np
-    
-    import math
-    
-    ```
-    
-    
-
-
-
-
-    CompletedProcess(args='pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography="list.bib" --csl="apa.csl"', returncode=0)
-
-
-
 ## Equation Numbering jupyter extension
 conda install -c conda-forge jupyter_contrib_nbextensions
 
@@ -752,16 +261,8 @@ jupyter nbextension enable equation-numbering/main
 
 
 
-
-    <IPython.core.display.Javascript object>
-
-
 ### Renumber equations
 
-
-
-
-    <IPython.core.display.Javascript object>
 
 
 -->

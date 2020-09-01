@@ -37,8 +37,7 @@ namespace MPCD {
 		Eigen::Vector2d getPosition();
 		Eigen::Vector2d getVelocity();
 
-		/* Shifts the position of the particle by @param amount and updates the particle's cell position. Keeps the shifted position in a separate variable so 
-		 it does not forget where it was.
+		/* Shifts the position of the particle by @param amount and updates the particle's cell position.
 		 @param amount: the amount of the shift.
 		 @param cell_dim: the cell_dim of the grid.
 		 @return the new cell index of the particle*/

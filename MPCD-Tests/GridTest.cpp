@@ -12,7 +12,7 @@
 using namespace MPCD;
 using namespace Eigen;
 
-const int min_per_cell = MPCD::Constants::Grid::min_particles_per_cell;
+const int average_particles_per_cell = MPCD::Constants::Grid::average_particles_per_cell;
 
 TEST(Grid, Constants) {
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
@@ -30,20 +30,22 @@ TEST(Grid, Constants) {
 
 	double epsilon = 0.05;
 
-	int wanted_num_cells = MPCD::Constants::Grid::wanted_num_cells;
-	int min_num_cells = MPCD::Constants::Grid::min_num_cells;
-	ASSERT_LT(std::abs(num_hypothetical_cells - wanted_num_cells) / wanted_num_cells, epsilon);
-
-	ASSERT_GT(wanted_num_cells, min_num_cells);
+	int num_cells = MPCD::Constants::Grid::num_cells;
+	ASSERT_LT(std::abs(num_hypothetical_cells - num_cells) / num_cells, epsilon);
 
 	std::filesystem::path cwd = std::filesystem::current_path();
 
-	std::ofstream outFile(cwd.string() + "//Data//constants.csv");
-	outFile << "cell_dim,pipe_width,pipe_height" << "\n"; // header columns
-	outFile << cell_dim << "," << MPCD::Constants::Pipe::width << "," << MPCD::Constants::Pipe::height << std::endl;
+	std::string filename("//Data//constants_");
+	std::string num(std::to_string(average_particles_per_cell));
+	std::string csv(".csv");
+
+	std::ofstream outFile(cwd.string() + filename + num + csv);
+	outFile << "cell_dim,pipe_width,pipe_height,average_particles_per_cell,total_number_of_particles" << "\n"; // header columns
+	outFile << cell_dim << "," << MPCD::Constants::Pipe::width << "," << MPCD::Constants::Pipe::height <<
+		"," << MPCD::Constants::Grid::average_particles_per_cell << "," << MPCD::Constants::number << std::endl;
 }
 
-TEST(Grid, MinNumberPerCell) {
+TEST(Grid, AverageNumberPerCell) {
 	const double cell_dim = MPCD::Constants::Grid::cell_dim;
 	const double time_step = MPCD::Constants::time_lapse;
 	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
@@ -88,28 +90,35 @@ TEST(Grid, MinNumberPerCell) {
 
 	std::filesystem::path cwd = std::filesystem::current_path();
 
-	std::ofstream outFile(cwd.string() + "//Data//cell_frequencies.csv");
+	std::string filename("//Data//cell_frequencies");
+	std::string num("_av_" + std::to_string(average_particles_per_cell));
+	std::string csv(".csv");
+
+	std::ofstream outFile(cwd.string() + filename + num + csv);
 	outFile << "i,j,n" << "\n"; // header columns
 
 	int row_ind = 0;
 	int col_ind = 0;
+	int total = 0;
 	for (auto row = frequencies.begin(); row != frequencies.end(); ++row) {
+		col_ind = 0;
 		for (auto col = row->begin(); col != row->end(); ++col) {
 			//EXPECT_GE(*col, Grid::min_particles_per_cell);
 			outFile << row_ind << "," << col_ind << "," << *col << "\n";
 			col_ind++;
-			if (*col < MPCD::Constants::Grid::min_particles_per_cell) {
+			if (*col < average_particles_per_cell) {
 				num_smaller++;
 			}
+			total += *col;
 		}
 		row_ind++;
 	}
-
 	outFile.close();
 	
-	double epsilon = 0.01;
+	double epsilon = 0.55;
 
-	EXPECT_LT(num_smaller / MPCD::Constants::Grid::wanted_num_cells, epsilon);
+	ASSERT_LT(num_smaller / MPCD::Constants::Grid::num_cells, epsilon);
+	ASSERT_GE(total / MPCD::Constants::Grid::num_cells, average_particles_per_cell);
 
 	/*
 	Test that every cell has about 5 particles
@@ -178,7 +187,7 @@ TEST(Grid, ConvertToLinearIndex_WholeGrid) {
 	particles.reserve(num);
 
 	const double cell_dim = MPCD::Constants::Grid::cell_dim;
-	Vector2d startPos(cell_dim / 20, cell_dim / 20);
+	Vector2d startPos(cell_dim / 10, cell_dim / 10);
 	std::map<int, double> totalCellVelocityX;
 	std::map<int, double> totalCellVelocityY;
 	std::map<int, int> cellParticles;

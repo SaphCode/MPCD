@@ -9,6 +9,9 @@
 #include "MPCD.h"
 #include "Grid.h"
 
+#include <fstream>
+#include <filesystem>
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -17,6 +20,25 @@ using namespace MPCD;
 
 int main()
 {
+	const int average_particles_per_cell = MPCD::Constants::Grid::average_particles_per_cell;
+	const double cell_dim = MPCD::Constants::Grid::cell_dim;
+	const int rows = MPCD::Constants::Grid::rows;
+	const int cols = MPCD::Constants::Grid::cols;
+	const double w_pipe = MPCD::Constants::Pipe::width;
+	const double h_pipe = MPCD::Constants::Pipe::height;
+	const double w_grid = cell_dim * cols;
+	const double h_grid = cell_dim * rows;
+	
+	std::cout << "Rows: " << rows << "\nCols: " << cols << std::endl;
+	std::cout << "Width Pipe: " << w_pipe << "\nHeight Pipe: " << h_pipe << std::endl;
+	std::cout << "celldim Grid: " << cell_dim << std::endl;
+	std::cout << "implied width Grid: " << w_grid << std::endl;
+	std::cout << "implied height Grid: " << h_grid << std::endl;
+
+	//ASSERT_LT(num_smaller / MPCD::Constants::Grid::num_cells, epsilon);
+	//ASSERT_GE(total / MPCD::Constants::Grid::num_cells, average_particles_per_cell);
+
+	/*
 	double xvel = 1;
 	double yvel = 1;
 	Vector2d vel(xvel, yvel);
@@ -33,9 +55,7 @@ int main()
 
 	Xoshiro rg_angle(0.0, 2 * 3.141); // not important in this test
 
-	/*
-	* This block should place 1 particle in each cell. The mean of every cell should then be the velocity of the particle itself.
-	*/
+	
 	for (int i = 0; i < MPCD::Constants::Grid::rows; i++) {
 		for (int j = 0; j < MPCD::Constants::Grid::cols; j++) {
 			Vector2d offset(j * cell_dim, i * cell_dim);

@@ -76,6 +76,7 @@
 \{\#1\}
 
 \newcommand{\vect}[1]{\vec{#1}}
+\usepackage[table,xcdraw]{xcolor}
 
 \hypertarget{to-my-dear-supervisors}{%
 \section{To my dear supervisors}\label{to-my-dear-supervisors}}
@@ -196,14 +197,14 @@ collision dynamics conserves mass, momentum and energy and leads to the
 correct hydrodynamical equations.(Malevanets \& Kapral, 1999) The
 streaming and collision step are described in more detail in (TODO).
 
-\hypertarget{how-does-mpcd-work}{%
-\section{How does MPCD work?}\label{how-does-mpcd-work}}
+\hypertarget{the-mpcd-algorithm}{%
+\section{The MPCD algorithm}\label{the-mpcd-algorithm}}
 
 The system we are modelling consists of \(N\) particles with mass \(m\),
-position \(\vec{r_{i}}\) and velocity \(\vec{v_{i}}\), where
-\(i \in \{1, 2, \dots, N\}\). One timestep shall correspond to having
-calculated all the new particle positions and velocities in the
-streaming and collision steps, respectively. For each of the N
+continuous position \(\vec{r_{i}}\) and velocity \(\vec{v_{i}}\), where
+\(i \in \{1, 2, \dots, N\}\). One timestep \(\Delta t\) shall correspond
+to having calculated all the new particle positions and velocities in
+the streaming and collision steps, respectively. For each of the N
 particles, the streaming and collision steps are applied, and this
 pattern is repeated until the wanted number of timesteps have elapsed.
 
@@ -235,30 +236,54 @@ being the cell which particle \(i\) belongs to. It is shown in
 \vec{v_i} \rightarrow \vec{V_c} + \textbf(\alpha) [\vec{v_i} - \vec{V_c}] \textrm{,}
 \end{equation}
 
-conserves mass, momentum and energy. The rotation matrix
-\(\textbf(\alpha)\) is a simple 2d rotation matrix
+conserves mass, momentum and energy under the molecular chaos
+assumption(Malevanets \& Kapral, 1999? cite differently)(Gompper et al.,
+2009, molecular chaos, p.7). The rotation matrix \(\textbf(\alpha)\) is
+a simple 2d rotation matrix
 
 \begin{equation}
 R(\alpha) = 
 \left[ \begin{array}{rr}
 cos(\alpha) & -sin(\alpha) \\
 sin(\alpha) & cos(\alpha) \\
-\end{array}\right]
+\end{array}\right],
 \end{equation}
 
-It is the same for all particles of a cell, but since \(\alpha\) is
-sampled randomly, will probably differ from cell to cell. The mean
-velocity of a cell is defined as
+where \(\alpha\) is sampled randomly on a per-cell basis. Furthermore,
+for each particle in the cell \(\alpha\) flips its sign with probability
+\(\frac{1}{2}\).(Gompper et al., 2009, p. (p.6)) The mean velocity of a
+cell is defined as
 
 \begin{equation}
 \vec{V_c} = \frac{1}{N_c} \sum_{i=1}^{N_c} \vec{v_i} \textrm{,}
 \end{equation}
 
-where \(N_c\) is the number of particles in the cell.(Malevanets \&
+where \(N_c\) is the number of particles in cell c.(Malevanets \&
 Kapral, 1999)
 
+The original MPCD algorithm was not Galilean invariant. The problem lay
+in the ``molecular chaos'' assumption, which means that particles
+involved in a collision have no memory of earlier encounters when
+colliding. This assumption is problematic when the mean free path
+\(\lambda = \Delta t \sqrt{\frac{k_{B}T}{m}}\) is small compared to the
+cell size \(a\), since the same particles collide with each other
+repeatedly and thus build up correlations. When \(\lambda \gg a\) Ihle
+and Kroll have shown that the molecular chaos assumption holds and the
+simulated results deviate from experimental ones only negligibly.(Ihle
+\& Kroll, 2001, p. 2)(Gompper et al., 2009)
+
+The solution to this problem is to shift all particles by the same
+random vector \(s\) before the collision step. The components of \(s\)
+are sampled randomly from a uniform distribution in the interval
+\([\frac{-a}{2}, \frac{a}{2}]\). After the collision, the particles are
+shifted back by the same amount.(Ihle \& Kroll, 2001)
+
+\hypertarget{implementing-the-mpcd-algorithm}{%
+\section{Implementing the MPCD
+Algorithm}\label{implementing-the-mpcd-algorithm}}
+
 \hypertarget{pseudo-random-number-generation}{%
-\section{(Pseudo) Random Number
+\subsection{(Pseudo) Random Number
 Generation}\label{pseudo-random-number-generation}}
 
 One of the pillars of this thesis is the generation of random rotation
@@ -306,27 +331,36 @@ The results of the \(\chi^2\) test are summarised in {[}TODO: Table, and
 table formatting{]}.
 
 \begin{table}[]
-\begin{tabular}{|l|c|r|r|}
-\textbf{k} & \textbf{chisquared[TODO]} &\textbf{observed MT} & \textbf{observed xoshiro} \\
-1                              & 3.841           & 4.709                                    & 0.551                                         \\
-2                              & 5.991            & 6.211                                    & 0.58                                          \\
-3                              & 7.815                          & 8.137                                    & 1.263                                         \\
-4                              & 9.488                          & 11.506                       & 1.776                                         \\
-5                              & 11.070                          & 10.954                                   & 3.783                                         \\
-6                              & 12.592                          & 19.849                                   & 4.565                                         \\ 
-7                              & 14.067                          & 12.545                                   & 3.339                                         \\
-8                              & 15.507                          & 14.802                                   & 4.946                             \\
-9                              & 16.919                           & 14.101                       & 3.196                                         \\
-10                             & 18.307                          & 15.701                       & 5.794                                         \\ 
-11                             & 19.675                          & 19.148                                   & 9.452                                         \\
-12                             & 21.026                         & 17.072                                   & 6.947                                         \\ 
-13                             & 22.362              & 20.366                                   & 10.734                            \\
-14                             & 23.685                          & 18.033                                   & 6.426                                         \\ 
-15                             & 24.996              & 15.477                                   & 6.75                                          \\
-16                             & 26.296                          & 18.604                                   & 8.554                                         \\
-17                             & 27.587                           & 21.79                                    & 13.028                            \\
-18                             & 28.869                         & 26.316                                   & 9.882                                         \\ 
-19                             & 30.144             & 26.845                                   & 14.323                                       
+\begin{tabular}{llll}
+\rowcolor[HTML]{4472C4} 
+{\color[HTML]{FFF} \textbf{k}} & {\color[HTML]{FFF} \textbf{chi\textasciicircum{}2   probability}} & {\color[HTML]{FFF} \textbf{observed   MT}} & {\color[HTML]{FFF} \textbf{observed XS256++}} \\
+\rowcolor[HTML]{D9E1F2} 
+1                              & 5.991                                                             & 0.292                                      & 0.068                                         \\
+2                              & 7.815                                                             & 1.626                                      & 3.682                                         \\
+\rowcolor[HTML]{D9E1F2} 
+3                              & 9.488                                                             & 3.735                                      & 2.124                                         \\
+4                              & 11.07                                                             & 4.255                                      & 4.525                                         \\
+\rowcolor[HTML]{D9E1F2} 
+5                              & 12.592                                                            & 2.86                                       & 6.345                                         \\
+6                              & 14.067                                                            & 4.071                                      & 6.377                                         \\
+\rowcolor[HTML]{D9E1F2} 
+7                              & 15.507                                                            & 8.662                                      & 11.731                                        \\
+8                              & 16.919                                                            & 14.426                                     & 8.693                                         \\
+\rowcolor[HTML]{D9E1F2} 
+9                              & 18.307                                                            & 11.732                                     & 6.932                                         \\
+10                             & 19.675                                                            & 9.857                                      & 5.939                                         \\
+\rowcolor[HTML]{D9E1F2} 
+11                             & 21.026                                                            & 10.438                                     & 11.73                                         \\
+12                             & 22.362                                                            & 10.985                                     & 15.543                                        \\
+\rowcolor[HTML]{D9E1F2} 
+13                             & 23.685                                                            & 22.603                                     & 12.022                                        \\
+14                             & 24.996                                                            & 13.988                                     & 12.923                                        \\
+\rowcolor[HTML]{D9E1F2} 
+15                             & 26.296                                                            & 15.526                                     & 20.71                                         \\
+16                             & 27.587                                                            & 16.288                                     & 11.501                                        \\
+\rowcolor[HTML]{D9E1F2} 
+17                             & 28.869                                                            & \cellcolor[HTML]{F8CBAD}32.26              & 12.478                                        \\
+18                             & 30.144                                                            & \cellcolor[HTML]{F8CBAD}31.787             & 13.882                                       
 \end{tabular}
 \end{table}
 
@@ -335,12 +369,6 @@ have to reject our null hypothesis \(H_0\).
 
 Visually, we can examine the generated buckets of both random generators
 in {[}TODO{]} the following plot.
-
-\begin{figure}
-\centering
-\includegraphics{thesis_files/thesis_24_0.png}
-\caption{png}
-\end{figure}
 
 \begin{figure}
 \centering
@@ -366,22 +394,16 @@ simply to test the implementation of the xoshiro256++, since it plays an
 important part.(Wikipedia contributors, 2020d)(Vigna, 2019)
 
 \hypertarget{particle-streaming}{%
-\section{Particle Streaming}\label{particle-streaming}}
+\subsection{Particle Streaming}\label{particle-streaming}}
 
 The particle positions were drawn from a uniform real distribution in
 the interval \([0, 5)\) for the \(x\)-coordinate, and \([0, 1)\) for the
 \(y\)-coordinate. The velocities were initialized to be in the interval
 \([-1\% \cdot 5, 1\% \cdot 5)\) for the \(v_x\) component, and
 \([-1\% \cdot 1, 1\% \cdot 1)\) for the \(v_y\) component. The results
-can be seen {[}TODO{]} below. From the positions in the first row, the
-velocities in the second row, particle streaming is applied for 1 and 10
-timesteps, respectively.
-
-\begin{figure}
-\centering
-\includegraphics{thesis_files/thesis_29_0.png}
-\caption{png}
-\end{figure}
+can be seen in figure {[}TODO{]} below. From the positions in the first
+row, the velocities in the second row, particle streaming is applied for
+1 and 10 timesteps, according to equation (TODO).
 
 \begin{figure}
 \centering
@@ -398,12 +420,26 @@ bounds, and after ten timesteps, the particles have thinned out
 considerably along the edges.
 
 \hypertarget{the-collision-step-1}{%
-\section{The collision step}\label{the-collision-step-1}}
+\subsection{The collision step}\label{the-collision-step-1}}
 
 \hypertarget{grid}{%
-\subsection{Grid}\label{grid}}
+\subsubsection{Grid}\label{grid}}
 
-Work in progress
+For the implementation of the collision step, a regular lattice, is
+needed. This grid has lattice constant \(a\), where \(a\) is a function
+of the desired average number of particles per cell, which is typically
+initialised to between three and 20(Gompper et al., 2009), although it
+can be as high as 70(Ihle \& Kroll, 2001).
+
+The lattice constant \(a\) is calculated as follows. The average number
+of particles per cell, \(\bar{N_c}\), is decided upon. If the grid has
+fixed dimensions, the number of cells is \(n = \frac{N}{\bar{N_c}}\).
+This assumption is valid when only looking at flow through the region of
+interest and simulating continuous, neverending flow. Practically, this
+means ignoring particles that go too far out of this region of interest
+and creating particles that flow into it. If we assign a width \(w\) and
+height \(h\) to our region of interest, its area is \(A = wh\). But
+since \(n a^{2} = A\), this means that \(a = \sqrt{\frac{wh}{n}}\).
 
 \hypertarget{velocity-updating}{%
 \subsection{Velocity updating}\label{velocity-updating}}
@@ -445,6 +481,11 @@ Multi-Particle Collision Dynamics: A Particle-Based Mesoscale Simulation
 Approach to the Hydrodynamics of Complex Fluids. In \emph{Advanced
 computer simulation approaches for soft matter sciences iii} (Vol. 221,
 p. 1). \url{https://doi.org/10.1007/978-3-540-87706-6_1}
+
+\leavevmode\hypertarget{ref-ihlekroll2001}{}%
+Ihle, T., \& Kroll, D. M. (2001). Stochastic rotation dynamics: A
+galilean-invariant mesoscopic model for fluid flow. \emph{Phys. Rev. E},
+\emph{63}(2), 020201. \url{https://doi.org/10.1103/PhysRevE.63.020201}
 
 \leavevmode\hypertarget{ref-malev1999}{}%
 Malevanets, A., \& Kapral, R. (1999). Mesoscopic model for solvent

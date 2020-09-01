@@ -22,7 +22,10 @@ void MPCD::timestep(std::vector<Particle>& particles, Xoshiro& rg_shift_x, Xoshi
 {
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
 
-	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, int>> totalCellVelocitiesAndParticles = moveAndPrepare(particles, rg_shift_x, rg_shift_y);
+	Vector2d shift(rg_shift_x.next(), rg_shift_y.next());
+	Xoshiro sign(-1, 1);
+
+	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, int>> totalCellVelocitiesAndParticles = moveAndPrepare(particles, shift);
 	std::map<int, double> totalCellVelocityX = std::get<0>(totalCellVelocitiesAndParticles);
 	std::map<int, double> totalCellVelocityY = std::get<1>(totalCellVelocitiesAndParticles);
 	std::map<int, int> particlesPerCell = std::get<2>(totalCellVelocitiesAndParticles);
@@ -32,20 +35,19 @@ void MPCD::timestep(std::vector<Particle>& particles, Xoshiro& rg_shift_x, Xoshi
 	std::map<int, double> meanCellVelocityY = std::get<1>(cellMeanVelocityAndRotationAngle);
 	std::map<int, double> cellRotationAngles = std::get<2>(cellMeanVelocityAndRotationAngle);
 
-	updateVelocity(particles, meanCellVelocityX, meanCellVelocityY, cellRotationAngles);
+	updateVelocity(particles, shift, meanCellVelocityX, meanCellVelocityY, cellRotationAngles, sign);
 }
 
 /* O(N) */
-std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, int>> MPCD::moveAndPrepare(std::vector<Particle>& particles, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y) {
+std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, int>> MPCD::moveAndPrepare(std::vector<Particle>& particles, Eigen::Vector2d shift) {
 	std::map<int, double> totalCellVelocityX;
 	std::map<int, double> totalCellVelocityY;
 	std::map<int, int> numParticles;
 	int cols = MPCD::Constants::Grid::cols;
-	
+
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
 		it->move(); // move const
 
-		Vector2d shift(rg_shift_x.next(), rg_shift_y.next());
 		Vector2i cell_index = it->shift(shift); // shift // const
 		int linear_index = MPCD::Grid::convertToLinearIndex(cell_index, cols);
 		Vector2d vel = it->getVelocity();
@@ -69,12 +71,20 @@ std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, double>> 
 }
 
 /* O(N) */
-void MPCD::updateVelocity(std::vector<Particle>& particles, std::map<int, double> meanCellVelocityX, std::map<int, double> meanCellVelocityY, std::map<int, double> rotationAngles) {
+void MPCD::updateVelocity(std::vector<Particle>& particles, Eigen::Vector2d shift, std::map<int, double> meanCellVelocityX, std::map<int, double> meanCellVelocityY, std::map<int, double> rotationAngles, Xoshiro & sign) {
 	int cols = MPCD::Constants::Grid::cols;
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
 		Vector2i index = it->getCellIndex(it->getPosition()); // const
 		int linearIndex = MPCD::Grid::convertToLinearIndex(index, cols); // const
-		Vector2d newVel(meanCellVelocityX[linearIndex], meanCellVelocityY[linearIndex]);
-		it->updateVelocity(newVel, rotationAngles[linearIndex]); // const
+		Vector2d meanCellVelocity(meanCellVelocityX[linearIndex], meanCellVelocityY[linearIndex]);
+		double s = sign.next();
+		if (s < 0) {
+			s = -1;
+		}
+		else if (s >= 0) {
+			s = 1;
+		}
+		it->updateVelocity(meanCellVelocity, s * rotationAngles[linearIndex]); // const
+		it->shift(-shift);
 	}
 }
