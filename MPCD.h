@@ -23,6 +23,9 @@ namespace MPCD {
 	updates the particles velocities according to their shifted position, and flips the sign of the rotation angle in 1/2 of cases. After
 	the collision the particles are shifted back to their original positions. */
 	void updateVelocity(std::vector<Particle>& particles, Eigen::Vector2d shift, std::map<int, double> meanCellVelocityX, std::map<int, double> meanCellVelocityY, std::map<int, double> rotationAngles, Xoshiro & sign);
+
+	/* For drawing. Saves the grid & particle values to out files. */
+	std::tuple<std::map<int, double>, std::map<int, double>> timestep_draw(std::vector<Particle>& particles, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y, Xoshiro& rg_angle);
 }
 
 #endif // !MPCD_H

@@ -88,3 +88,22 @@ void MPCD::updateVelocity(std::vector<Particle>& particles, Eigen::Vector2d shif
 		it->shift(-shift);
 	}
 }
+
+std::tuple<std::map<int, double>, std::map<int, double>> MPCD::timestep_draw(std::vector<Particle>& particles, Xoshiro& rg_shift_x, Xoshiro& rg_shift_y, Xoshiro& rg_angle) {
+	double cell_dim = MPCD::Constants::Grid::cell_dim;
+
+	Vector2d shift(rg_shift_x.next(), rg_shift_y.next());
+	Xoshiro sign(-1, 1);
+
+	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, int>> totalCellVelocitiesAndParticles = moveAndPrepare(particles, shift);
+	std::map<int, double> totalCellVelocityX = std::get<0>(totalCellVelocitiesAndParticles);
+	std::map<int, double> totalCellVelocityY = std::get<1>(totalCellVelocitiesAndParticles);
+	std::map<int, int> particlesPerCell = std::get<2>(totalCellVelocitiesAndParticles);
+
+	std::tuple<std::map<int, double>, std::map<int, double>, std::map<int, double>> cellMeanVelocityAndRotationAngle = calculateCellQuantities(totalCellVelocityX, totalCellVelocityY, particlesPerCell, rg_angle);
+	std::map<int, double> meanCellVelocityX = std::get<0>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> meanCellVelocityY = std::get<1>(cellMeanVelocityAndRotationAngle);
+	std::map<int, double> cellRotationAngles = std::get<2>(cellMeanVelocityAndRotationAngle);
+
+	updateVelocity(particles, shift, meanCellVelocityX, meanCellVelocityY, cellRotationAngles, sign);
+}

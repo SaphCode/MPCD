@@ -91,7 +91,7 @@ TEST_F(XoshiroTest, RandomBoundsTest) {
 	}
 }
 
-TEST_F(XoshiroTest, ChiSquaredTest) {
+TEST_F(XoshiroTest, DISABLED_ChiSquaredTest) {
 
 	/* Chi Squared Testing */
 	std::vector<double> chi_2_alpha05; // at least 2 degrees of freedom, 1 undefined for alpha = 0.99

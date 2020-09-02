@@ -96,7 +96,7 @@ protected:
 };
 
 /* Draw a histogram somehow, also check by hand. */
-TEST_F(JupyterNotebookTests, MersWrite) { // DISABLED_
+TEST_F(JupyterNotebookTests, DISABLED_MersWrite) { // DISABLED_
 
 	std::filesystem::path cwd = std::filesystem::current_path();
 	Out out(cwd.string() + l_data + l_rng);
@@ -118,7 +118,7 @@ TEST_F(JupyterNotebookTests, MersWrite) { // DISABLED_
 }
 
 /* Draw a histogram somehow, also check by hand. */
-TEST_F(JupyterNotebookTests, XSWrite) { // DISABLED_
+TEST_F(JupyterNotebookTests, DISABLED_XSWrite) { // DISABLED_
 	std::filesystem::path cwd = std::filesystem::current_path();
 	Out out(cwd.string() + l_data + l_rng);
 	out.writeToOut(xs_angles, "xoshiro_angles.csv", "alpha");
