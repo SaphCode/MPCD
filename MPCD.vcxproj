@@ -170,7 +170,6 @@
     <ClInclude Include="Out.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="seeder.h" />
-    <ClInclude Include="VectorCompare.h" />
     <ClInclude Include="Xoshiro.h" />
     <ClInclude Include="xoshiro256plusplus.h" />
   </ItemGroup>

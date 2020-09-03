@@ -65,9 +65,6 @@
     <ClInclude Include="MPCD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VectorCompare.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Out.h">
       <Filter>Header Files</Filter>
     </ClInclude>
