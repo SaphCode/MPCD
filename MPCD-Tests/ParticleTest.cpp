@@ -22,7 +22,7 @@ using namespace MPCD;
 
 class ParticleTest : public ::testing::Test {
 protected:
-	const double time_step = 1.0;
+	const double time_step = MPCD::Constants::time_lapse;
 	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
 	const double max_x_position = MPCD::Constants::Pipe::width;
 	const double max_y_position = MPCD::Constants::Pipe::height;
@@ -177,8 +177,11 @@ TEST_F(ParticleTest, CellLogicWorks) {
 	Vector2i cell_index_zero_shift = p.shift(zero_shift);
 	ASSERT_TRUE(areVectorsEqual(cell_index_calc, cell_index_zero_shift));
 
-	for (int i = 0; i < MPCD::Constants::Grid::rows; i++) {
-		for (int j = 0; j < MPCD::Constants::Grid::cols; j++) {
+	const int rows = std::ceil(MPCD::Constants::Pipe::height / MPCD::Constants::Grid::cell_dim);
+	const int cols = std::ceil(MPCD::Constants::Pipe::width / MPCD::Constants::Grid::cell_dim);
+
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
 			Vector2i index(i, j);
 			Vector2d pos_ij(pos0(1) + j * cell_dim, pos0(0) + i * cell_dim);
 			Particle p_ij(pos_ij, vel0);

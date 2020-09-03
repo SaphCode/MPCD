@@ -71,11 +71,11 @@ TEST(MPCD, Timestep) {
 		throw std::exception("timesteps too large or too short: " + timesteps);
 	}
 
-	bool drawParticles = false;
+	bool drawParticles = true;
 	bool drawCells = true;
 	
 	for (int t = 0; t < timesteps; t++) {
-		std::tuple<std::map<int, double>, std::map<int, double>> meanCellVelocities = MPCD::timestep_draw(particles, rg_shift_x, rg_shift_y, rg_angle);
+		MPCD::vectorMap meanCellVelocities = MPCD::timestep(particles, rg_shift_x, rg_shift_y, rg_angle);
 		if (drawParticles) {
 			std::stringstream s;
 			s << std::setfill('0') << std::setw(w) << t;
@@ -83,8 +83,10 @@ TEST(MPCD, Timestep) {
 			out.writeToOut(particles, filename);
 		}
 		if (drawCells) {
-			std::map<int, double> meanCellVelocitiesX = std::get<0>(meanCellVelocities);
-			std::map<int, double> meanCellVelocitiesY = std::get<1>(meanCellVelocities);
+			std::stringstream s;
+			s << std::setfill('0') << std::setw(w) << t;
+			std::string filename = "cellvalues_timestep_" + s.str() + ".csv";
+			out.writeToOut(meanCellVelocities, filename, "i,j,vx,vy");
 		}
 	}
 	

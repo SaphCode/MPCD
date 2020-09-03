@@ -29,6 +29,7 @@ namespace MPCD {
 			@returns linear index
 		*/
 		int convertToLinearIndex(Eigen::Vector2i index, int cols);
+		Eigen::Vector2i convertToIndex(int linearIndex, int cols);
 	}
 }
 #endif
