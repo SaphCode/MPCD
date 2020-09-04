@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iomanip>
 #include <Eigen/Dense>
-#include "MPCD.h"
 #include "seeder.h"
 #include "Constants.h"
 
@@ -18,10 +17,12 @@ using namespace MPCD;
 
 class XoshiroTest : public ::testing::Test {
 protected:
-	const double time_step = 1.0;
+	const double time_lapse = MPCD::Constants::time_lapse;
 	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
-	const double max_x_position = MPCD::Constants::Pipe::width;
-	const double max_y_position = MPCD::Constants::Pipe::height;
+	const double min_x_position = MPCD::Constants::Pipe::x_0;
+	const double min_y_position = MPCD::Constants::Pipe::y_0;
+	const double max_x_position = MPCD::Constants::Pipe::x_max;
+	const double max_y_position = MPCD::Constants::Pipe::y_max;
 	const double max_x_velocity = std::max(MPCD::Constants::Pipe::width, MPCD::Constants::Pipe::height) / 100.0;
 	const double max_y_velocity = max_x_velocity / aspect_ratio;
 	const double max_angle = 2 * M_PI;
@@ -38,8 +39,8 @@ protected:
 		xs_angles.reserve(number);
 
 		/* dont worry the numbers are just seeds */
-		Xoshiro xs_xpos(0.0, max_x_position);
-		Xoshiro xs_ypos(0.0, max_y_position);
+		Xoshiro xs_xpos(min_x_position, max_x_position);
+		Xoshiro xs_ypos(min_y_position, max_y_position);
 		Xoshiro xs_xvel(-max_x_velocity, max_x_velocity);
 		Xoshiro xs_yvel(-max_y_velocity, max_y_velocity);
 		Xoshiro xs_angle(0.0, max_angle);
@@ -78,10 +79,10 @@ TEST_F(XoshiroTest, RandomBoundsTest) {
 		Vector2d xs_vel(xs_velocities[i]);
 		double xs_alpha = xs_angles[i];
 
-		ASSERT_GE(xs_pos(0), 0.0);
-		ASSERT_LE(xs_pos(0), MPCD::Constants::Pipe::width);
-		ASSERT_GE(xs_pos(1), 0.0);
-		ASSERT_LE(xs_pos(1), MPCD::Constants::Pipe::height);
+		ASSERT_GE(xs_pos(0), min_x_position);
+		ASSERT_LE(xs_pos(0), max_x_position);
+		ASSERT_GE(xs_pos(1), min_y_position);
+		ASSERT_LE(xs_pos(1), max_y_position);
 		ASSERT_GE(xs_vel(0), -max_x_velocity);
 		ASSERT_LE(xs_vel(0), max_x_velocity);
 		ASSERT_GE(xs_vel(1), -max_y_velocity);
@@ -91,7 +92,7 @@ TEST_F(XoshiroTest, RandomBoundsTest) {
 	}
 }
 
-TEST_F(XoshiroTest, DISABLED_ChiSquaredTest) {
+TEST_F(XoshiroTest, ChiSquaredTest) {
 
 	/* Chi Squared Testing */
 	std::vector<double> chi_2_alpha05; // at least 2 degrees of freedom, 1 undefined for alpha = 0.99
@@ -162,10 +163,10 @@ TEST_F(XoshiroTest, DISABLED_ChiSquaredTest) {
 			auto size = xs_positions.size();
 			for (int i = 0; i < size; i++) {
 				Vector2d pos = xs_positions[i];
-				if (inBucketB(buckets, b, pos(0), MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::width)) {
+				if (inBucketB(buckets, b, pos(0), min_x_position, max_x_position)) {
 					xs_b_xpos.push_back(pos(0));
 				}
-				if (inBucketB(buckets, b, pos(1), MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::height)) {
+				if (inBucketB(buckets, b, pos(1), min_y_position, max_y_position)) {
 					xs_b_ypos.push_back(pos(1));
 				}
 

@@ -18,8 +18,10 @@ class MersenneTwisterTest : public ::testing::Test {
 protected:
 	const double time_step = 1.0;
 	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
-	const double max_x_position = MPCD::Constants::Pipe::width;
-	const double max_y_position = MPCD::Constants::Pipe::height;
+	const double min_x_position = MPCD::Constants::Pipe::x_0;
+	const double min_y_position = MPCD::Constants::Pipe::y_0;
+	const double max_x_position = MPCD::Constants::Pipe::x_max;
+	const double max_y_position = MPCD::Constants::Pipe::y_max;
 	const double max_x_velocity = std::max(MPCD::Constants::Pipe::width, MPCD::Constants::Pipe::height) / 100.0; // also in RandomGenerator.cpp
 	const double max_y_velocity = max_x_velocity / aspect_ratio;
 	const double max_angle = 2 * M_PI;
@@ -33,8 +35,8 @@ protected:
 		mers_velocities.reserve(MPCD::Constants::number);
 		mers_angles.reserve(MPCD::Constants::number);
 
-		MersenneTwister rg_xpos(0.0, max_x_position, DistributionType::UNIFORM);
-		MersenneTwister rg_ypos(0.0, max_y_position, DistributionType::UNIFORM);
+		MersenneTwister rg_xpos(min_x_position, max_x_position, DistributionType::UNIFORM);
+		MersenneTwister rg_ypos(min_y_position, max_y_position, DistributionType::UNIFORM);
 		MersenneTwister rg_xvel(-max_x_velocity, max_x_velocity, DistributionType::UNIFORM);
 		MersenneTwister rg_yvel(-max_y_velocity, max_y_velocity, DistributionType::UNIFORM);
 		MersenneTwister rg_angle(0.0, max_angle, DistributionType::UNIFORM);
@@ -76,10 +78,10 @@ TEST_F(MersenneTwisterTest, RandomBoundsTest) {
 		Vector2d mers_vel(mers_velocities[i]);
 		double mers_alpha = mers_angles[i];
 
-		ASSERT_GE(mers_pos(0), 0.0);
-		ASSERT_LE(mers_pos(0), MPCD::Constants::Pipe::width);
-		ASSERT_GE(mers_pos(1), 0.0);
-		ASSERT_LE(mers_pos(1), MPCD::Constants::Pipe::height);
+		ASSERT_GE(mers_pos(0), min_x_position);
+		ASSERT_LE(mers_pos(0), max_x_position);
+		ASSERT_GE(mers_pos(1), min_y_position);
+		ASSERT_LE(mers_pos(1), max_y_position);
 		ASSERT_GE(mers_vel(0), -max_x_velocity);
 		ASSERT_LE(mers_vel(0), max_x_velocity);
 		ASSERT_GE(mers_vel(1), -max_y_velocity);
@@ -90,7 +92,7 @@ TEST_F(MersenneTwisterTest, RandomBoundsTest) {
 	}
 }
 
-TEST_F(MersenneTwisterTest, DISABLED_ChiSquaredTest) {
+TEST_F(MersenneTwisterTest, ChiSquaredTest) {
 
 	/* Chi Squared Testing */
 	std::vector<double> chi_2_alpha05; // at least 2 degrees of freedom, 1 undefined for alpha = 0.99
@@ -162,10 +164,10 @@ TEST_F(MersenneTwisterTest, DISABLED_ChiSquaredTest) {
 			for (int i = 0; i < size; i++) {
 
 				Vector2d pos = mers_positions[i];
-				if (inBucketB(buckets, b, pos(0), MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::width)) {
+				if (inBucketB(buckets, b, pos(0), min_x_position, max_x_position)) {
 					mers_b_xpos.push_back(pos(0));
 				}
-				if (inBucketB(buckets, b, pos(1), MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::height)) {
+				if (inBucketB(buckets, b, pos(1), min_y_position, max_y_position)) {
 					mers_b_ypos.push_back(pos(1));
 				}
 

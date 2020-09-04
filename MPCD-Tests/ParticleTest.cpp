@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Particle.h"
 #include <Eigen/Dense>
-#include "MPCD.h"
 #include <cmath>
 #include "Compare.h"
 #include "Xoshiro.h"
@@ -169,12 +168,13 @@ TEST_F(ParticleTest, StreamingAndCollision) {
 	*/
 TEST_F(ParticleTest, CellLogicWorks) {
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
-	Vector2d pos0(cell_dim / 10, cell_dim / 10); // look at reason for in cell above
+	double grid_x_shift = MPCD::Constants::Grid::grid_x_shift;
+	double grid_y_shift = MPCD::Constants::Grid::grid_y_shift;
+	Vector2d pos0(grid_x_shift + cell_dim / 10, grid_y_shift + cell_dim / 10); // look at reason for in cell above
 	Vector2d vel0(0, 0);
 	Particle p(pos0, vel0);
-	Vector2i cell_index_calc(std::floor(pos0(1) / cell_dim), std::floor(pos0(0) / cell_dim));
-	Vector2d zero_shift(0, 0);
-	Vector2i cell_index_zero_shift = p.shift(zero_shift);
+	Vector2i cell_index_calc(std::floor((pos0(1) - grid_y_shift)/ cell_dim), std::floor((pos0(0) - grid_x_shift)/ cell_dim));
+	Vector2i cell_index_zero_shift = p.getCellIndex();
 	ASSERT_TRUE(areVectorsEqual(cell_index_calc, cell_index_zero_shift));
 
 	const int rows = std::ceil(MPCD::Constants::Pipe::height / MPCD::Constants::Grid::cell_dim);
@@ -185,7 +185,7 @@ TEST_F(ParticleTest, CellLogicWorks) {
 			Vector2i index(i, j);
 			Vector2d pos_ij(pos0(1) + j * cell_dim, pos0(0) + i * cell_dim);
 			Particle p_ij(pos_ij, vel0);
-			Vector2i cell_index_ij = p_ij.shift(zero_shift);
+			Vector2i cell_index_ij = p_ij.getCellIndex();
 			ASSERT_TRUE(areVectorsEqual(cell_index_ij, cell_index_zero_shift + index));
 		}
 	}
@@ -198,7 +198,7 @@ TEST_F(ParticleTest, ShiftParticles) {
 	double max_shift = MPCD::Constants::Grid::max_shift;
 	// test if cell index is at most different by one.
 	// test if position is exactly different by shift
-	Vector2d pos0(cell_dim / 10, cell_dim / 10);
+	Vector2d pos0(MPCD::Constants::Grid::grid_x_shift + cell_dim / 10, MPCD::Constants::Grid::grid_y_shift + cell_dim / 10);
 	Vector2d vel0(0, 0);
 	Particle p(pos0, vel0);
 
@@ -210,29 +210,33 @@ TEST_F(ParticleTest, ShiftParticles) {
 	Vector2i index_after_nshift2(0, -1);
 
 	Vector2d shift_zero(0, 0);
-	Vector2i zero_index = p.shift(shift_zero);
+	p.shift(shift_zero);
+	Vector2i zero_index = p.getCellIndex();
 
 	Vector2i zeros(0, 0);
 
 	ASSERT_TRUE(areVectorsEqual(zero_index, zeros)) << "Particle with position inside first cell should have (0,0) index (first cell should be (0,0))";
 
-	Vector2i shift1_index = p.shift(shift1);
-	
+	p.shift(shift1);
+	Vector2i shift1_index = p.getCellIndex();
 
 	ASSERT_TRUE(areVectorsEqual(index_after_pshift1, shift1_index)) << "Shifting once should not change index in this case.";
 	p.shift(-shift1); //shift back
 
-	Vector2i r_shift1_index = p.shift(-shift1); //shift negative
+	p.shift(-shift1); //shift negative
+	Vector2i r_shift1_index = p.getCellIndex();
 	ASSERT_TRUE(areVectorsEqual(index_after_nshift1, r_shift1_index)) << "Shifting once should change index in this case.";
 	//it does change actually ASSERT_TRUE(areVectorsEqual(pos0, p.getPosition())) << "Position does not change in a shift. This would take unnecessary storage and computation time.";
 	
-	Vector2i shift2_index = p.shift(shift2);
+	p.shift(shift2);
+	Vector2i shift2_index = p.getCellIndex();
 
 
 	ASSERT_TRUE(areVectorsEqual(index_after_pshift2, shift2_index)) << "Shifting once should not change index in this case.";
 	p.shift(-shift2); // shift back
 	
-	Vector2i r_shift2_index = p.shift(-shift2);
+	p.shift(-shift2);
+	Vector2i r_shift2_index = p.getCellIndex();
 	ASSERT_TRUE(areVectorsEqual(index_after_nshift2, r_shift2_index)) << "Shifting once should change index in this case.";
 	//it does change actually ASSERT_TRUE(areVectorsEqual(pos0, p.getPosition())) << "Position does not change in a shift. This would take unnecessary storage and computation time.";
 	

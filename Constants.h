@@ -12,8 +12,8 @@ namespace MPCD {
 		constexpr double time_lapse = 0.1;
 		constexpr int timesteps = 1000;
 		namespace Pipe {
-			constexpr double x_0 = 0;
-			constexpr double y_0 = 0;
+			constexpr double x_0 = -1.0;
+			constexpr double y_0 = -1.0;
 			constexpr double x_max = 1.0;
 			constexpr double y_max = 1.0;
 			constexpr double width = x_max - x_0;
@@ -24,10 +24,12 @@ namespace MPCD {
 			constexpr int average_particles_per_cell = 20;
 			constexpr int num_cells = MPCD::Constants::number / average_particles_per_cell;
 			//constexpr int wanted_num_cells = min_num_cells * 2;
-			const double cell_dim = std::sqrt(MPCD::Constants::Pipe::width * MPCD::Constants::Pipe::width / num_cells );
-			//const int rows = (int) std::round(std::ceil(MPCD::Constants::Pipe::height / cell_dim));
-			//const int cols = (int) std::round(std::ceil(MPCD::Constants::Pipe::width / cell_dim)); // cutting dim by x has x^2 effect on area, and therefore on expected particle number.
+			const double cell_dim = std::sqrt(MPCD::Constants::Pipe::width * MPCD::Constants::Pipe::height / num_cells );
+			const int max_cols = std::floor((MPCD::Constants::Pipe::x_max - MPCD::Constants::Pipe::x_0) / cell_dim);
+			const int max_rows = std::floor((MPCD::Constants::Pipe::y_max - MPCD::Constants::Pipe::y_0) / cell_dim); // cutting dim by x has x^2 effect on area, and therefore on expected particle number.
 			const double max_shift = cell_dim / 2;
+			constexpr double grid_x_shift = MPCD::Constants::Pipe::x_0;
+			constexpr double grid_y_shift = MPCD::Constants::Pipe::y_0;
 		}
 	}
 		/*

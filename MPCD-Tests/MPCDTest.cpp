@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "MPCD.h"
 #include "Grid.h"
 #include "Constants.h"
 #include "Out.h"
@@ -7,8 +6,10 @@
 #include <fstream>
 #include "Locations.h"
 #include <iomanip>
+#include "Xoshiro.h"
 #include <iostream>
 #include <stdexcept>
+#include "Simulation.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -21,10 +22,10 @@ TEST(MPCD, Timestep) {
 	particles.reserve(MPCD::Constants::number);
 
 	/* dont worry the numbers are just seeds */
-	Xoshiro xs_xpos(0.0, 1.0);
-	Xoshiro xs_ypos(0.0, 1.0);
-	Xoshiro xs_xvel(-0.01, 0.01);
-	Xoshiro xs_yvel(-0.01, 0.01);
+	Xoshiro xs_xpos(MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::x_max);
+	Xoshiro xs_ypos(MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::y_max);
+	Xoshiro xs_xvel(-MPCD::Constants::Pipe::width / 100, MPCD::Constants::Pipe::width / 100);
+	Xoshiro xs_yvel(-MPCD::Constants::Pipe::height / 100, MPCD::Constants::Pipe::height / 100);
 
 	for (int i = 0; i < MPCD::Constants::number; i++) {
 		double xs_x = xs_xpos.next();
@@ -41,11 +42,6 @@ TEST(MPCD, Timestep) {
 	}
 
 	double time_lapse = MPCD::Constants::time_lapse;
-
-	Xoshiro rg_angle(0.0, 2 * M_PI);
-	double max_shift = MPCD::Constants::Grid::max_shift;
-	Xoshiro rg_shift_x(-max_shift, max_shift);
-	Xoshiro rg_shift_y(-max_shift, max_shift);
 
 	std::filesystem::path cwd = std::filesystem::current_path();
 	
@@ -74,18 +70,24 @@ TEST(MPCD, Timestep) {
 	bool drawParticles = true;
 	bool drawCells = true;
 	
+	Simulation sim(particles);
+
 	for (int t = 0; t < timesteps; t++) {
-		MPCD::vectorMap meanCellVelocities = MPCD::timestep(particles, rg_shift_x, rg_shift_y, rg_angle);
+		std::map<int, Eigen::Vector2d> meanCellVelocities = sim.timestep();
 		if (drawParticles) {
 			std::stringstream s;
+			std::stringstream av;
 			s << std::setfill('0') << std::setw(w) << t;
-			std::string filename = "particles_timestep_" + s.str() + ".csv";
+			av << "_av" << MPCD::Constants::Grid::average_particles_per_cell;
+			std::string filename = "particles_timestep_" + s.str() + av.str() + ".csv";
 			out.writeToOut(particles, filename);
 		}
 		if (drawCells) {
 			std::stringstream s;
+			std::stringstream av;
 			s << std::setfill('0') << std::setw(w) << t;
-			std::string filename = "cellvalues_timestep_" + s.str() + ".csv";
+			av << "_av" << MPCD::Constants::Grid::average_particles_per_cell;
+			std::string filename = "cellvalues_timestep_" + s.str() + av.str() + ".csv";
 			out.writeToOut(meanCellVelocities, filename, "i,j,vx,vy");
 		}
 	}

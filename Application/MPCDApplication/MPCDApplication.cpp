@@ -6,8 +6,8 @@
 #include "Particle.h"
 #include "Constants.h"
 #include "Xoshiro.h"
-#include "MPCD.h"
 #include "Grid.h"
+#include "Simulation.h"
 
 #include <fstream>
 #include <filesystem>
@@ -18,19 +18,18 @@
 using namespace Eigen;
 using namespace MPCD;
 
+
+
 int main()
 {
-
-
-
 	std::vector<Particle> particles;
 	particles.reserve(MPCD::Constants::number);
 
 	//dont worry the numbers are just seeds 
-	Xoshiro xs_xpos(0.0, 1.0);
-	Xoshiro xs_ypos(0.0, 1.0);
-	Xoshiro xs_xvel(-0.01, 0.01);
-	Xoshiro xs_yvel(-0.01, 0.01);
+	Xoshiro xs_xpos(MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::x_max);
+	Xoshiro xs_ypos(MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::y_max);
+	Xoshiro xs_xvel(-MPCD::Constants::Pipe::width / 100, MPCD::Constants::Pipe::width / 100);
+	Xoshiro xs_yvel(-MPCD::Constants::Pipe::height / 100, MPCD::Constants::Pipe::height / 100);
 
 	for (int i = 0; i < MPCD::Constants::number; i++) {
 		double xs_x = xs_xpos.next();
@@ -46,22 +45,16 @@ int main()
 		particles.push_back(xs_p);
 	}
 
-	double time_lapse = MPCD::Constants::time_lapse;
-
-	Xoshiro rg_angle(0.0, 2 * M_PI);
-	double max_shift = MPCD::Constants::Grid::max_shift;
-	Xoshiro rg_shift_x(-max_shift, max_shift);
-	Xoshiro rg_shift_y(-max_shift, max_shift);
+	Simulation sim(particles);
 
 	int timesteps = MPCD::Constants::timesteps;
 
 	for (int t = 0; t < timesteps; t++) {
 		std::cout << "Timestep: " << t << "\n";
-		timestep(particles, rg_shift_x, rg_shift_y, rg_angle);
+		sim.timestep();
 	}	
 	
 }
-
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
 

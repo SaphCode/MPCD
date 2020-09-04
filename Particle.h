@@ -11,10 +11,11 @@ namespace MPCD {
 	private:
 		Eigen::Vector2d _position;
 		Eigen::Vector2d _velocity;
+		Eigen::Vector2i _cell_index;
 		//Eigen::Vector2i _cell_index; //should not need to store this
 		//Eigen::Vector2i _shifted_cell_index;
 		// Eigen::Vector2d _shifted_position; should not need to store this
-
+		void _updateCellIndex();
 		
 
 		//Vector2d _position;
@@ -22,7 +23,7 @@ namespace MPCD {
 		//double mass; // could this be int?, do i need this
 	public:
 		/* Update the Cell index */
-		Eigen::Vector2i getCellIndex(Eigen::Vector2d shiftedPosition);
+		Eigen::Vector2i getCellIndex();
 		//Eigen::Vector2d _position;
 		//Eigen::Vector2d _velocity;
 		/* Creates a particle with @param position, @param velocity and unit mass. */
@@ -36,12 +37,13 @@ namespace MPCD {
 
 		Eigen::Vector2d getPosition();
 		Eigen::Vector2d getVelocity();
+		
 
 		/* Shifts the position of the particle by @param amount and updates the particle's cell position.
 		 @param amount: the amount of the shift.
 		 @param cell_dim: the cell_dim of the grid.
 		 @return the new cell index of the particle*/
-		Eigen::Vector2i shift(Eigen::Vector2d amount);
+		void shift(Eigen::Vector2d amount);
 		//void setPosition(Eigen::Vector2d position);
 		//void setVelocity(Eigen::Vector2d velocity);
 		/* Moves the particle according to its current velocity. */

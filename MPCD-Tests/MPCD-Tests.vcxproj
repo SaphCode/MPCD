@@ -95,7 +95,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(TargetDir);%(AdditionalLibraryDirectories);$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib;$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib\manual-link</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Out.obj;seeder.obj;MPCD.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Out.obj;seeder.obj;Simulation.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,7 +115,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(TargetDir);%(AdditionalLibraryDirectories);$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib;$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib\manual-link</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Out.obj;seeder.obj;MPCD.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Out.obj;seeder.obj;Simulation.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -136,7 +136,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalLibraryDirectories>$(TargetDir);%(AdditionalLibraryDirectories);$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib;$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib\manual-link</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Out.obj;seeder.obj;MPCD.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Out.obj;seeder.obj;Simulation.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,7 +157,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalLibraryDirectories>$(TargetDir);%(AdditionalLibraryDirectories);$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib;$(VcpkgCurrentInstalledDir)$(VcpkgConfigSubdir)lib\manual-link</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Out.obj;seeder.obj;MPCD.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Out.obj;seeder.obj;Simulation.obj;xoshiro256plusplus.obj;MersenneTwister.obj;Xoshiro.obj;Particle.obj;Grid.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

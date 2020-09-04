@@ -17,7 +17,7 @@ class Out
 {
 private:
 	std::string _location;
-	void init();
+	//void init();
 public:
 	/* @param location: the desired saving location */
 	Out(std::string location);
@@ -28,7 +28,6 @@ public:
 	void writeToOut(std::vector<double> numbers, std::string filename, std::string header);
 	void writeToOut(std::vector<Eigen::Vector2d> vectors, std::string filename, std::string header);
 	void writeToOut(std::map<int, Eigen::Vector2d> map, std::string filename, std::string header);
-	void writeToOut(MPCD::vectorMap map, std::string filename, std::string header);
 };
 
 

@@ -25,11 +25,13 @@ namespace MPCD {
 			A[1,1], index = (1,1)
 			returns 4
 			@param index needs to be 2d!
-			@param cols: the number of cols of your object
 			@returns linear index
 		*/
+		int convertToLinearIndex(Eigen::Vector2i index);
 		int convertToLinearIndex(Eigen::Vector2i index, int cols);
+		Eigen::Vector2i convertToIndex(int linearIndex);
 		Eigen::Vector2i convertToIndex(int linearIndex, int cols);
+		//int _max_cols = MPCD::Constants::Grid::max_cols;
 	}
 }
 #endif

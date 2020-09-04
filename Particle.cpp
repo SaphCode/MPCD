@@ -1,6 +1,5 @@
 #include "Particle.h"
 #include <iostream>
-#include "MPCD.h"
 #include <cmath>
 #include "Constants.h"
 //#include "Grid.h"
@@ -10,6 +9,7 @@ using namespace MPCD;
 Particle::Particle(Eigen::Vector2d position, Eigen::Vector2d velocity) {
 	_position = position;
 	_velocity = velocity;
+	_updateCellIndex();
 }
 
 Particle::Particle() {}
@@ -44,6 +44,7 @@ void Particle::setVelocity(Eigen::Vector2d newVelocity) {
 
 void Particle::move() {
 	_position += MPCD::Constants::time_lapse * _velocity;
+	_updateCellIndex();
 }
 
 void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
@@ -53,29 +54,27 @@ void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotatio
 	_velocity = mean_cell_velocity + rotationMatrix * (_velocity - mean_cell_velocity);
 }
 
-Eigen::Vector2i Particle::getCellIndex(Eigen::Vector2d position) {
-	double cell_dim = MPCD::Constants::Grid::cell_dim;
-	int i = std::round(std::floor(position(1) / cell_dim));
-	int j = std::round(std::floor(position(0) / cell_dim));
-	Eigen::Vector2i cell_index(i, j);
-	return cell_index;
-	
-	/*
-	std::cout << "cell_index: (" << _cell_index(0) << ", " << _cell_index(1) << ")" << std::endl;
-	std::cout << "cell_dim: " << cell_dim << std::endl;
-	std::cout << "(update) shiftedPos: (" << shiftedPosition(0) << "," << shiftedPosition(1) << ")" << std::endl;
-	*/
+Eigen::Vector2i Particle::getCellIndex() {
+	return _cell_index;
 }
 
-Eigen::Vector2i Particle::shift(Eigen::Vector2d amount) {
+void Particle::shift(Eigen::Vector2d amount) {
 	_position += amount;
-	//Eigen::Vector2d shiftedPosition = _position + amount;
-	//std::cout << "shiftedPos: (" << shiftedPosition(0) << "," << shiftedPosition(1) << ")" << std::endl;
-	return getCellIndex(_position);
+	_updateCellIndex();
 }
 
 
 std::ostream& MPCD::operator<<(std::ostream& output, const Particle& p) {
 	output << "Particle:\nLocation(\n" << p._position << "\n)\nVelocity(\n" << p._velocity << "\n)\n" << std::endl;
 	return output;
+}
+
+void Particle::_updateCellIndex() {
+	double cell_dim = MPCD::Constants::Grid::cell_dim;
+	double grid_shifted_x = _position(0) - MPCD::Constants::Grid::grid_x_shift;
+	double grid_shifted_y = _position(1) - MPCD::Constants::Grid::grid_y_shift;
+	int i = std::round(std::floor(grid_shifted_y / cell_dim));
+	int j = std::round(std::floor(grid_shifted_x / cell_dim));
+	Eigen::Vector2i cell_index(i, j);
+	_cell_index = cell_index;
 }

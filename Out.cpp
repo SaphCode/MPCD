@@ -55,11 +55,12 @@ void Out::writeToOut(std::vector<Eigen::Vector2d> vectors, std::string filename,
 	outFile.close();
 }
 */
-void Out::writeToOut(MPCD::vectorMap map, std::string filename, std::string header) {
+void Out::writeToOut(std::map<int, Eigen::Vector2d> map, std::string filename, std::string header) {
 	std::ofstream outFile(_location + "//" + filename);
 	outFile << header << "\n";
 	for (auto const& [key, val] : map) {
-		outFile << key[0] << "," << key[1] << "," << val[0] << "," << val[1] << "\n";
+		Vector2i index = MPCD::Grid::convertToIndex(key);
+		outFile << index[0] << "," << index[1] << "," << val[0] << "," << val[1] << "\n";
 	}
 	outFile.close();
 }
