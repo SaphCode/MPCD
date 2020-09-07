@@ -102,10 +102,6 @@ TEST_F(ParticleTest, Rotation) {
 	EXPECT_LT(std::abs((newVelocity2[1] - vel[1])/vel[1]), epsilon);
 }
 
-TEST_F(ParticleTest, Collision) {
-
-}
-
 /*
 TEST_F(ParticleTest, StreamingAndCollision) {
 	

@@ -5,7 +5,7 @@
 
 #include <string>
 
-static const std::string l_data = "//Data";
-static const std::string l_rng = "//RNG";
+static const std::string l_data = "//Data//";
+static const std::string l_rng = "//RNG//";
 
 #endif

@@ -78,3 +78,18 @@ void Particle::_updateCellIndex() {
 	Eigen::Vector2i cell_index(i, j);
 	_cell_index = cell_index;
 }
+
+bool Particle::operator<(const Particle& p) {
+	Eigen::Vector2i other_index = p._cell_index;
+	int size = _cell_index.size();
+	assert(size == other_index.size());
+	for (int i = 0; i < size; i++) {
+		if (_cell_index[i] < other_index[i]) {
+			return true;
+		}
+		else if (_cell_index[i] > other_index[i]) {
+			return false;
+		}
+	}
+	return false;
+}

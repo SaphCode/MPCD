@@ -57,6 +57,7 @@ namespace MPCD {
 		*/
 		void updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle);
 		friend std::ostream& operator<<(std::ostream& output, const Particle& p);
+		bool operator <(const Particle& p);
 	};
 
 	std::ostream& operator<<(std::ostream& output, const Particle& H);

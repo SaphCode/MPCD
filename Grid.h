@@ -8,8 +8,6 @@
 
 namespace MPCD {
 	namespace Grid {
-		static std::map<int, Eigen::Vector2d> totalVelocityPerCell;
-		static std::map<int, int> totalParticlesPerCell;
 		/* Calculates the mean cell velocity, rotation angle and total number of particles (shifted) per cell.
 		* @return 2 maps: mean velocity and rotation angle.
 
@@ -27,10 +25,10 @@ namespace MPCD {
 			@param index needs to be 2d!
 			@returns linear index
 		*/
-		int convertToLinearIndex(Eigen::Vector2i index);
-		int convertToLinearIndex(Eigen::Vector2i index, int cols);
-		Eigen::Vector2i convertToIndex(int linearIndex);
-		Eigen::Vector2i convertToIndex(int linearIndex, int cols);
+		//int convertToLinearIndex(Eigen::Vector2i index);
+		//int convertToLinearIndex(Eigen::Vector2i index, int cols);
+		//Eigen::Vector2i convertToIndex(int linearIndex);
+		//Eigen::Vector2i convertToIndex(int linearIndex, int cols);
 		//int _max_cols = MPCD::Constants::Grid::max_cols;
 	}
 }

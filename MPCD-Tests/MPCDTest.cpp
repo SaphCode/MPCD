@@ -69,27 +69,11 @@ TEST(MPCD, Timestep) {
 
 	bool drawParticles = true;
 	bool drawCells = true;
-	
-	Simulation sim(particles);
 
+	bool draw = true;
+	Simulation sim(particles, draw);
 	for (int t = 0; t < timesteps; t++) {
-		std::map<int, Eigen::Vector2d> meanCellVelocities = sim.timestep();
-		if (drawParticles) {
-			std::stringstream s;
-			std::stringstream av;
-			s << std::setfill('0') << std::setw(w) << t;
-			av << "_av" << MPCD::Constants::Grid::average_particles_per_cell;
-			std::string filename = "particles_timestep_" + s.str() + av.str() + ".csv";
-			out.writeToOut(particles, filename);
-		}
-		if (drawCells) {
-			std::stringstream s;
-			std::stringstream av;
-			s << std::setfill('0') << std::setw(w) << t;
-			av << "_av" << MPCD::Constants::Grid::average_particles_per_cell;
-			std::string filename = "cellvalues_timestep_" + s.str() + av.str() + ".csv";
-			out.writeToOut(meanCellVelocities, filename, "i,j,vx,vy");
-		}
+		sim.timestep(t);
 	}
 	
 	
