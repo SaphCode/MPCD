@@ -9,6 +9,7 @@
 #include "Grid.h"
 #include "Simulation.h"
 #include "Compare.h"
+#include <boost/unordered_map.hpp>
 
 using namespace MPCD;
 using namespace Eigen;
@@ -72,7 +73,7 @@ TEST(Grid, AverageNumberPerCell) {
 	Xoshiro xs_xvel(-max_x_velocity, max_x_velocity);
 	Xoshiro xs_yvel(-max_y_velocity, max_y_velocity);
 
-	std::map<std::pair<int, int>, int> frequencies;
+	boost::unordered::unordered_map<std::pair<int, int>, int> frequencies;
 
 	const Vector2d zero(0, 0);
 
@@ -238,8 +239,8 @@ TEST(Grid, MeanVelocity_OneParticlePerCell) {
 
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
 	Vector2d startPos(MPCD::Constants::Grid::grid_x_shift + cell_dim / 10, MPCD::Constants::Grid::grid_y_shift + cell_dim / 10);
-	std::map<std::pair<int, int>, Eigen::Vector2d> totalCellVelocities;
-	std::map<std::pair<int, int>, int> cellParticles;
+	boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> totalCellVelocities;
+	boost::unordered::unordered_map<std::pair<int, int>, int> cellParticles;
 
 	Xoshiro rg_angle(0.0, 2 * 3.141); // not important in this test
 
@@ -268,9 +269,9 @@ TEST(Grid, MeanVelocity_OneParticlePerCell) {
 
 	//updateVelocity(particles, meanCellVelocities, cellRotationAngles);
 	Simulation sim(particles, false);
-	std::tuple<std::map<std::pair<int, int>, Eigen::Vector2d>, std::map<std::pair<int, int>, double>> cellMeanVelocityAndRotationAngle = sim.calculateCellQuantities(totalCellVelocities, cellParticles);
-	std::map<std::pair<int, int>, Eigen::Vector2d> meanCellVelocities = std::get<0>(cellMeanVelocityAndRotationAngle);
-	std::map<std::pair<int, int>, double> cellRotationAngles = std::get<1>(cellMeanVelocityAndRotationAngle);
+	std::tuple<boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d>, boost::unordered::unordered_map<std::pair<int, int>, double>> cellMeanVelocityAndRotationAngle = sim.calculateCellQuantities(totalCellVelocities, cellParticles);
+	boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> meanCellVelocities = std::get<0>(cellMeanVelocityAndRotationAngle);
+	boost::unordered::unordered_map<std::pair<int, int>, double> cellRotationAngles = std::get<1>(cellMeanVelocityAndRotationAngle);
 	
 	for (auto const& [key, val] : meanCellVelocities) {
 		double epsilon = 0.0001;
@@ -299,8 +300,8 @@ TEST(Grid, MeanVelocity_AllParticlesInOneCell) {
 	Vector2d vel(vx, vy);
 	Vector2d zero(0, 0);
 
-	std::map<std::pair<int, int>, Eigen::Vector2d> totalCellVelocities;
-	std::map<std::pair<int, int>, int> cellParticles;
+	boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> totalCellVelocities;
+	boost::unordered::unordered_map<std::pair<int, int>, int> cellParticles;
 
 
 	for (int i = 0; i < rows; i++) {
@@ -319,9 +320,9 @@ TEST(Grid, MeanVelocity_AllParticlesInOneCell) {
 	}
 
 	Simulation sim(particles, false);
-	std::tuple<std::map<std::pair<int, int>, Eigen::Vector2d>, std::map<std::pair<int, int>, double>> cellMeanVelocityAndRotationAngle = sim.calculateCellQuantities(totalCellVelocities, cellParticles);
-	std::map<std::pair<int, int>, Eigen::Vector2d> meanCellVelocities = std::get<0>(cellMeanVelocityAndRotationAngle);
-	std::map<std::pair<int, int>, double> cellRotationAngles = std::get<1>(cellMeanVelocityAndRotationAngle);
+	std::tuple<boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d>, boost::unordered::unordered_map<std::pair<int, int>, double>> cellMeanVelocityAndRotationAngle = sim.calculateCellQuantities(totalCellVelocities, cellParticles);
+	boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> meanCellVelocities = std::get<0>(cellMeanVelocityAndRotationAngle);
+	boost::unordered::unordered_map<std::pair<int, int>, double> cellRotationAngles = std::get<1>(cellMeanVelocityAndRotationAngle);
 
 	for (auto const& [key, val] : meanCellVelocities) {
 		if (val != zero) {

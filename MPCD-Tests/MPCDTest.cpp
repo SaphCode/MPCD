@@ -82,9 +82,9 @@ TEST(MPCD, Timestep) {
 
 	Grid g(min_particles_per_cell);
 
-	std::tuple<std::map<int, Vector2d>, std::map<int, double>> origMaps = g.calculateCellValues(particles);
-	std::map<int, Vector2d> origMeanVelocities = std::get<0>(origMaps);
-	std::map<int, double> origRotationAngles = std::get<1>(origMaps);
+	std::tuple<boost::unordered::unordered_map<int, Vector2d>, boost::unordered::unordered_map<int, double>> origMaps = g.calculateCellValues(particles);
+	boost::unordered::unordered_map<int, Vector2d> origMeanVelocities = std::get<0>(origMaps);
+	boost::unordered::unordered_map<int, double> origRotationAngles = std::get<1>(origMaps);
 
 	ASSERT_EQ(origMeanVelocities.size(), origRotationAngles.size());
 
@@ -94,9 +94,9 @@ TEST(MPCD, Timestep) {
 		it->move(time_step);
 	}
 
-	std::tuple<std::map<int, Vector2d>, std::map<int, double>> maps = g.calculateCellValues(particles);
-	std::map<int, Vector2d> meanCellVelocities = std::get<0>(maps);
-	std::map<int, double> rotationAngles = std::get<1>(maps);
+	std::tuple<boost::unordered::unordered_map<int, Vector2d>, boost::unordered::unordered_map<int, double>> maps = g.calculateCellValues(particles);
+	boost::unordered::unordered_map<int, Vector2d> meanCellVelocities = std::get<0>(maps);
+	boost::unordered::unordered_map<int, double> rotationAngles = std::get<1>(maps);
 
 	double cell_dim = g.getCellDim();
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
@@ -108,9 +108,9 @@ TEST(MPCD, Timestep) {
 	ASSERT_EQ(true, false); // this is here to remind yourself to fix this test. in mpcd.cpp the new timestep method was built, test that instead.
 	//}	
 
-	std::tuple<std::map<int, Vector2d>, std::map<int, double>> maps_new = g.calculateCellValues(particles);
-	std::map<int, Vector2d> meanCellVelocities_new = std::get<0>(maps_new);
-	std::map<int, double> rotationAngles_new = std::get<1>(maps_new);
+	std::tuple<boost::unordered::unordered_map<int, Vector2d>, boost::unordered::unordered_map<int, double>> maps_new = g.calculateCellValues(particles);
+	boost::unordered::unordered_map<int, Vector2d> meanCellVelocities_new = std::get<0>(maps_new);
+	boost::unordered::unordered_map<int, double> rotationAngles_new = std::get<1>(maps_new);
 
 	ASSERT_EQ(meanCellVelocities_new.size(), rotationAngles_new.size());
 

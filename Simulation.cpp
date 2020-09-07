@@ -9,7 +9,6 @@
 #include "Constants.h"
 #include <filesystem>
 #include <fstream>
-#include <map>
 #include <cmath>
 #include "Out.h"
 #include "Locations.h"
@@ -81,7 +80,7 @@ void MPCD::Simulation::timestep(int t)
 	//calculateCellQuantities(_totalCellVelocities, _numCellParticles);
 	//updateVelocity(shift);
 
-	/*std::map<std::pair<int, int>, Eigen::Vector2d> meanCellVelocities;
+	/*boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> meanCellVelocities;
 	if (_draw) {
 		draw(t);
 	}
@@ -91,6 +90,7 @@ void MPCD::Simulation::timestep(int t)
 
 /* O(N) */
 void MPCD::Simulation::moveShiftPrepare(Eigen::Vector2d shift, int t) {
+	
 	std::filesystem::path cwd;
 	std::stringstream s;
 	std::stringstream av;
@@ -107,9 +107,10 @@ void MPCD::Simulation::moveShiftPrepare(Eigen::Vector2d shift, int t) {
 		std::stringstream header("x,y,vx,vy");
 		outFile << header.str() << '\n';
 	}
-
+	
 	std::mutex m;
 	std::for_each(std::execution::par, _particles.begin(), _particles.end(), [&](auto& particle) {
+		
 		if (_draw) {
 			Vector2d pos = particle.getPosition();
 			Vector2d vel = particle.getVelocity();
@@ -117,6 +118,7 @@ void MPCD::Simulation::moveShiftPrepare(Eigen::Vector2d shift, int t) {
 			outFile << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
 			m.unlock();
 		}
+		
 
 		particle.move(); // move const
 		particle.shift(shift); // shift // const
@@ -129,8 +131,10 @@ void MPCD::Simulation::moveShiftPrepare(Eigen::Vector2d shift, int t) {
 		bool exists = (_totalCellVelocities.count(indexp) > 0) ? true : false;
 		//std::lock_guard lock(m);
 		if (exists) {
+			m.lock();
 			_totalCellVelocities[indexp] += velocity;
 			_numCellParticles[indexp] += 1;
+			m.unlock();
 		}
 		else {
 			m.lock();
@@ -200,18 +204,25 @@ void MPCD::Simulation::calculateCellQuantities() {
 	Vector2d zero(0, 0);
 	assert(_totalCellVelocities.size() == _meanCellVelocities.size());
 	assert(_meanCellVelocities.size() == _numCellParticles.size());
+	std::mutex m;
 	std::for_each(std::execution::par, _totalCellVelocities.begin(), _totalCellVelocities.end(), [&](std::pair<std::pair<int, int>, Vector2d> entry) {
 		std::pair<int, int> key = entry.first;
 		Vector2d val = entry.second;
 		if (val == zero) {
+			m.lock();
 			_meanCellVelocities[key] = zero;
+			m.unlock();
 		}
 		else {
+			m.lock();
 			int numParticles = _numCellParticles[key];
 			assert(numParticles != 0);
 			_meanCellVelocities[key] = val / numParticles;
+			m.unlock();
 		}
+		m.lock();
 		_cellRotationAngle[key] = _rg_angle.next();
+		m.unlock();
 		});
 }
 

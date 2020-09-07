@@ -9,6 +9,7 @@
 #include <Eigen/Dense>
 #include "VectorCompare.h"
 #include <map>
+#include <boost/unordered_map.hpp>
 
 static const std::string data = "//Data";
 static const std::string rng = "//RNG";
@@ -27,8 +28,8 @@ public:
 	void writeToOut(std::vector<MPCD::Particle> particles, std::string filename);
 	void writeToOut(std::vector<double> numbers, std::string filename, std::string header);
 	void writeToOut(std::vector<Eigen::Vector2d> vectors, std::string filename, std::string header);
-	void writeToOut(std::map<std::pair<int, int>, Eigen::Vector2d> map, std::string filename, std::string header);
-	void writeToOut(std::map<std::pair<int, int>, int> frequencies, std::string filename, std::string header);
+	void writeToOut(boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> map, std::string filename, std::string header);
+	void writeToOut(boost::unordered::unordered_map<std::pair<int, int>, int> frequencies, std::string filename, std::string header);
 };
 
 

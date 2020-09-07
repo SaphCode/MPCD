@@ -46,7 +46,7 @@ void Out::writeToOut(std::vector<Eigen::Vector2d> vectors, std::string filename,
 	outFile.close();
 }
 
-void Out::writeToOut(std::map<std::pair<int, int>, int> frequencies, std::string filename, std::string header) {
+void Out::writeToOut(boost::unordered::unordered_map<std::pair<int, int>, int> frequencies, std::string filename, std::string header) {
 	std::ofstream outFile(_location + "//" + filename);
 	outFile << header << "\n";
 	for (auto const& [key, val] : frequencies) {
@@ -55,7 +55,7 @@ void Out::writeToOut(std::map<std::pair<int, int>, int> frequencies, std::string
 	outFile.close();
 }
 
-/*void Out::writeToOut(std::map<int, Eigen::Vector2d> map, std::string filename, std::string header) {
+/*void Out::writeToOut(boost::unordered::unordered_map<int, Eigen::Vector2d> map, std::string filename, std::string header) {
 	std::ofstream outFile(_location + "//" + filename);
 	outFile << header << std::endl;
 	for (auto it = map.begin(); it != map.end(); ++it) {
@@ -64,7 +64,7 @@ void Out::writeToOut(std::map<std::pair<int, int>, int> frequencies, std::string
 	outFile.close();
 }
 */
-void Out::writeToOut(std::map<std::pair<int, int>, Eigen::Vector2d> map, std::string filename, std::string header) {
+void Out::writeToOut(boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> map, std::string filename, std::string header) {
 	std::ofstream outFile(_location + "//" + filename);
 	outFile << header << "\n";
 	for (auto const& [key, val] : map) {

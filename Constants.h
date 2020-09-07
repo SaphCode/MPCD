@@ -21,7 +21,7 @@ namespace MPCD {
 			constexpr double aspect_ratio = width / height;
 		}
 		namespace Grid {
-			constexpr int average_particles_per_cell = 3;
+			constexpr int average_particles_per_cell = 20;
 			constexpr int num_cells = MPCD::Constants::number / average_particles_per_cell;
 			//constexpr int wanted_num_cells = min_num_cells * 2;
 			const double cell_dim = std::sqrt(MPCD::Constants::Pipe::width * MPCD::Constants::Pipe::height / num_cells );

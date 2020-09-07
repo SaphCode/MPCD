@@ -112,18 +112,18 @@ TEST_F(ParticleTest, StreamingAndCollision) {
 
 	}
 
-	std::tuple<std::map<Vector2i, Vector2d>, std::map<Vector2i, double>> maps = g.calculateCellValues(particles);
-	std::map<Vector2i, Vector2d> meanCellVelocities = std::get<0>(maps);
-	std::map<Vector2i, double> rotationAngles = std::get<1>(maps);
+	std::tuple<boost::unordered::unordered_map<Vector2i, Vector2d>, boost::unordered::unordered_map<Vector2i, double>> maps = g.calculateCellValues(particles);
+	boost::unordered::unordered_map<Vector2i, Vector2d> meanCellVelocities = std::get<0>(maps);
+	boost::unordered::unordered_map<Vector2i, double> rotationAngles = std::get<1>(maps);
 
 	for (auto it = particles.begin(); it != particles.end(); ++it) {
 		Vector2i cell_index = it->getCellIndex();
 		it->updateVelocity(meanCellVelocities[cell_index], rotationAngles[cell_index]);
 	}
 
-	std::tuple<std::map<Vector2i, Vector2d>, std::map<Vector2i, double>> maps_new = g.calculateCellValues(particles);
-	std::map<Vector2i, Vector2d> meanCellVelocities_new = std::get<0>(maps_new);
-	std::map<Vector2i, double> rotationAngles_new = std::get<1>(maps_new);
+	std::tuple<boost::unordered::unordered_map<Vector2i, Vector2d>, boost::unordered::unordered_map<Vector2i, double>> maps_new = g.calculateCellValues(particles);
+	boost::unordered::unordered_map<Vector2i, Vector2d> meanCellVelocities_new = std::get<0>(maps_new);
+	boost::unordered::unordered_map<Vector2i, double> rotationAngles_new = std::get<1>(maps_new);
 
 	std::filesystem::path cwd = std::filesystem::current_path();
 

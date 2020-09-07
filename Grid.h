@@ -11,7 +11,7 @@ namespace MPCD {
 		/* Calculates the mean cell velocity, rotation angle and total number of particles (shifted) per cell.
 		* @return 2 maps: mean velocity and rotation angle.
 
-		//std::tuple<std::map<int, Eigen::Vector2d>, std::map<int, double>> calculateCellValues(std::vector<MPCD::Particle> particles);
+		//std::tuple<boost::unordered::unordered_map<int, Eigen::Vector2d>, boost::unordered::unordered_map<int, double>> calculateCellValues(std::vector<MPCD::Particle> particles);
 
 		/* Converts 2d indexes into linear indexes.
 			Example:

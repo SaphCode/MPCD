@@ -6,16 +6,17 @@
 #include "Particle.h"
 #include "Xoshiro.h"
 #include <Eigen/Dense>
+#include <boost/unordered/unordered_map.hpp>
 
 #include <map>
 
 namespace MPCD {
 	class Simulation {
 	private:
-		std::map<std::pair<int, int>, Eigen::Vector2d> _totalCellVelocities;
-		std::map<std::pair<int, int>, Eigen::Vector2d> _meanCellVelocities;
-		std::map<std::pair<int, int>, int> _numCellParticles;
-		std::map<std::pair<int, int>, double> _cellRotationAngle;
+		boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> _totalCellVelocities;
+		boost::unordered::unordered_map<std::pair<int, int>, Eigen::Vector2d> _meanCellVelocities;
+		boost::unordered::unordered_map<std::pair<int, int>, int> _numCellParticles;
+		boost::unordered::unordered_map<std::pair<int, int>, double> _cellRotationAngle;
 		bool _draw = false;
 		std::vector<Particle> _particles;
 		double _cell_dim;
@@ -25,9 +26,6 @@ namespace MPCD {
 		Xoshiro _rg_angle;
 		Xoshiro _rg_sign;
 		int _w;
-
-		void writeParticleToCsv(Particle p, int t);
-		void writeCellToCsv(int t);
 
 		void reset(int t);
 	public:
