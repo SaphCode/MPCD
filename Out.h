@@ -7,7 +7,6 @@
 #include <vector>
 #include "Particle.h"
 #include <Eigen/Dense>
-#include "VectorCompare.h"
 #include <map>
 #include <boost/unordered_map.hpp>
 

@@ -45,14 +45,14 @@ int main()
 		particles.push_back(xs_p);
 	}
 
-	bool draw = true;
+	bool draw = false;
 	Simulation sim(particles, draw);
 
 	int timesteps = MPCD::Constants::timesteps;
 
 	for (int t = 0; t < timesteps; t++) {
 		std::cout << "Timestep: " << t << "\n";
-		sim.timestep(t);
+		sim.timestep();
 	}	
 	
 }

@@ -73,7 +73,7 @@ TEST(MPCD, Timestep) {
 	bool draw = true;
 	Simulation sim(particles, draw);
 	for (int t = 0; t < timesteps; t++) {
-		sim.timestep(t);
+		sim.timestep();
 	}
 	
 	

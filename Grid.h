@@ -4,64 +4,23 @@
 #define GRID_H
 
 #include <Eigen/Dense>
+#include "Cell.h"
+#include "Particle.h"
 #include <map>
 
 namespace MPCD {
-	namespace Grid {
-		/* Calculates the mean cell velocity, rotation angle and total number of particles (shifted) per cell.
-		* @return 2 maps: mean velocity and rotation angle.
-
-		//std::tuple<boost::unordered::unordered_map<int, Eigen::Vector2d>, boost::unordered::unordered_map<int, double>> calculateCellValues(std::vector<MPCD::Particle> particles);
-
-		/* Converts 2d indexes into linear indexes.
-			Example:
-			A = [[1, 2, 3]
-				 [4, 5, 6]
-				 [7, 8, 9]]
-			A[0,0], index = (0,0)
-			returns 0
-			A[1,1], index = (1,1)
-			returns 4
-			@param index needs to be 2d!
-			@returns linear index
-		*/
-		//int convertToLinearIndex(Eigen::Vector2i index);
-		//int convertToLinearIndex(Eigen::Vector2i index, int cols);
-		//Eigen::Vector2i convertToIndex(int linearIndex);
-		//Eigen::Vector2i convertToIndex(int linearIndex, int cols);
-		//int _max_cols = MPCD::Constants::Grid::max_cols;
-	}
-}
-#endif
-/*
-namespace MPCD {
-	class Grid
-	{
+	class Grid {
 	public:
-		Grid(int minNumberPerCell);
-		~Grid();
-
-		
-		
-		
-		
-		double getCellDim();
-		double getMaxShift();
-		int getMinParticlesPerCell();
-		int getMinNumCells();
-		int getWantedNumCells();
-		int getRows();
-		int getCols();
-
+		Grid();
+		//void updateCell(Particle p, Eigen::Vector2d positionBefore);
+		//void shift();
+		//void shiftBack();
+		friend Grid operator+(const Grid& lhs, const Grid& rhs);
+		std::map<std::pair<int, int>, Cell> _cells;
+		std::pair<int, int> getCoordinates(Eigen::Vector2d position);
+		void insert(Particle p);
 	private:
-		int min_particles_per_cell;
-		int min_num_cells = MPCD::Constants::number / min_particles_per_cell;
-		int wanted_num_cells = min_num_cells * 2;
-		double cell_dim; // cutting dim by x has x^2 effect on area, and therefore on expected particle number.
-		double max_shift;
-		int rows;
-		int cols;
+		double _a;
 	};
 }
 #endif
-*/

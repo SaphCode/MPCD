@@ -1,25 +1,75 @@
 #include "Grid.h"
 #include "Constants.h"
-//
-//int MPCD::Grid::convertToLinearIndex(Eigen::Vector2i index) {
-//	return index[0] * MPCD::Constants::Grid::max_cols + index[1];
-//}
-//
-//Eigen::Vector2i MPCD::Grid::convertToIndex(int linearIndex) {
-//	Eigen::Vector2i index(0, 0);
-//	int max_cols = MPCD::Constants::Grid::max_cols;
-//	index[0] = std::floor(linearIndex / max_cols);
-//	index[1] = linearIndex % max_cols;
-//	return index;
-//}
-//
-//int MPCD::Grid::convertToLinearIndex(Eigen::Vector2i index, int cols) {
-//	return index[0] * cols + index[1];
-//}
-//
-//Eigen::Vector2i MPCD::Grid::convertToIndex(int linearIndex, int cols) {
-//	Eigen::Vector2i index(0, 0);
-//	index[0] = std::floor(linearIndex / cols);
-//	index[1] = linearIndex % cols;
-//	return index;
-//}
+
+MPCD::Grid::Grid() {
+	_a = MPCD::Constants::Grid::cell_dim;
+}
+
+/*
+void MPCD::Grid::updateCell(Particle p, Eigen::Vector2d positionBeforeMove) {
+	Eigen::Vector2d zero(0, 0);
+	if (_shift == zero) {
+		shift();
+	}
+
+	Eigen::Vector2d position = p.getPosition();
+	const std::pair<int, int> coordsBeforeMove = getCoordinates(positionBeforeMove);
+	const std::pair<int, int> coords = getCoordinates(position);
+	const std::pair<int, int> coordsAfterShift = getCoordinates(position + _shift);
+	if (coords != coordsBeforeMove) {
+		_cells[coordsBeforeMove].remove(p);
+
+		bool cellExists = _cells.count(coords) > 0;
+		if (!cellExists) {
+			MPCD::Cell cell;
+			_cells.insert(std::make_pair(coords, cell));
+		}
+		_cells[coords].add(p);
+	}
+	if (coords != coordsAfterShift) {
+		_cellsShifted[coords].remove(p); // this is sure to exits, since it is a copy of _cells
+
+		bool cellExists = _cellsShifted.count(coordsAfterShift) > 0;
+		if (!cellExists) {
+			MPCD::Cell cell;
+			_cellsShifted.insert(std::make_pair(coordsAfterShift, cell));
+		}
+		_cellsShifted[coordsAfterShift].add(p);
+	}
+	
+}
+*/
+std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) {
+	int i = std::floor(position[1] / _a);
+	int j = std::floor(position[0] / _a);
+	return std::make_pair(i, j);
+}
+
+void MPCD::Grid::insert(Particle p) {
+	std::pair<int, int> key = getCoordinates(p.getPosition());
+	_cells[key].add(p);
+}
+
+/*
+void MPCD::Grid::shift() {
+	Eigen::Vector2d shift(_rgShiftX.next(), _rgShiftY.next());
+	_shift = shift;
+	_cellsShifted = _cells;
+}
+
+void MPCD::Grid::shiftBack() {
+	Eigen::Vector2d zero(0, 0);
+	_shift = zero;
+	_cellsShifted = _cells;
+}
+*/
+
+MPCD::Grid MPCD::operator+(const Grid& lhs, const Grid& rhs)
+{
+	Grid grid;
+	grid._cells = lhs._cells;
+	for (const auto& [key, val] : rhs._cells) {
+		grid._cells[key] = grid._cells[key] + val;
+	}
+	return grid;
+}

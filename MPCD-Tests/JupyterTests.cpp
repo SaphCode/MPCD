@@ -104,14 +104,14 @@ TEST_F(JupyterNotebookTests, MersWrite) { // DISABLED_
 	out.writeToOut(mers_particles, "mersenne_particles.csv");
 
 	for (int i = 0; i < MPCD::Constants::number; i++) { // initial + 1 move
-		mers_particles[i].move();
+		mers_particles[i].stream(MPCD::Constants::time_lapse);
 	}
 	out.writeToOut(mers_particles, "mersenne_particles_after_move.csv");
 
 	int timesteps = 10;
 	for (int t = 0; t < timesteps; t++) { // timesteps moves
 		for (int i = 0; i < MPCD::Constants::number; i++) {
-			mers_particles[i].move();
+			mers_particles[i].stream(MPCD::Constants::time_lapse);
 		}
 	}
 	out.writeToOut(mers_particles, "mersenne_particles_after_xx_timesteps.csv");
@@ -125,14 +125,14 @@ TEST_F(JupyterNotebookTests, XSWrite) { // DISABLED_
 	out.writeToOut(xs_particles, "xoshiro_particles.csv");
 
 	for (int i = 0; i < MPCD::Constants::number; i++) { // initial + 1 move
-		xs_particles[i].move();
+		xs_particles[i].stream(MPCD::Constants::time_lapse);
 	}
 	out.writeToOut(xs_particles, "xoshiro_particles_after_move.csv");
 
 	int timesteps = 10;
 	for (int t = 0; t < timesteps; t++) { // timesteps moves
 		for (int i = 0; i < MPCD::Constants::number; i++) {
-			xs_particles[i].move();
+			xs_particles[i].stream(MPCD::Constants::time_lapse);
 		}
 	}
 	out.writeToOut(xs_particles, "xoshiro_particles_after_xx_timesteps.csv");

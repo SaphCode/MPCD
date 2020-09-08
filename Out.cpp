@@ -1,8 +1,6 @@
 #include "Out.h"
 #include "Grid.h"
 #include "Constants.h"
-#include "VectorCompare.h"
-
 #include <filesystem>
 #include <fstream>
 

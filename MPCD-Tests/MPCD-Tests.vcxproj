@@ -49,6 +49,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CellTests.cpp" />
     <ClCompile Include="compare.cpp" />
     <ClCompile Include="GridTest.cpp" />
     <ClCompile Include="JupyterTests.cpp" />

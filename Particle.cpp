@@ -9,7 +9,6 @@ using namespace MPCD;
 Particle::Particle(Eigen::Vector2d position, Eigen::Vector2d velocity) {
 	_position = position;
 	_velocity = velocity;
-	_updateCellIndex();
 }
 
 Particle::Particle() {}
@@ -42,9 +41,12 @@ void Particle::setVelocity(Eigen::Vector2d newVelocity) {
 
 /* If you make the variables PRIVATE */
 
-void Particle::move() {
-	_position += MPCD::Constants::time_lapse * _velocity;
-	_updateCellIndex();
+void Particle::stream(double timeLapse) {
+	_position += timeLapse * _velocity;
+}
+
+void Particle::shift(Eigen::Vector2d amount) {
+	_position += amount;
 }
 
 void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
@@ -54,21 +56,16 @@ void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotatio
 	_velocity = mean_cell_velocity + rotationMatrix * (_velocity - mean_cell_velocity);
 }
 
-Eigen::Vector2i Particle::getCellIndex() {
-	return _cell_index;
-}
-
+/*
 void Particle::shift(Eigen::Vector2d amount) {
 	_position += amount;
-	_updateCellIndex();
+}
+*/
+bool MPCD::operator==(const Particle& lhs, const Particle& rhs) {
+	return (lhs._position == rhs._position) && (lhs._velocity == rhs._velocity);
 }
 
-
-std::ostream& MPCD::operator<<(std::ostream& output, const Particle& p) {
-	output << "Particle:\nLocation(\n" << p._position << "\n)\nVelocity(\n" << p._velocity << "\n)\n" << std::endl;
-	return output;
-}
-
+/*
 void Particle::_updateCellIndex() {
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
 	double grid_shifted_x = _position(0) - MPCD::Constants::Grid::grid_x_shift;
@@ -79,6 +76,7 @@ void Particle::_updateCellIndex() {
 	_cell_index = cell_index;
 }
 
+/*
 bool Particle::operator<(const Particle& p) {
 	Eigen::Vector2i other_index = p._cell_index;
 	int size = _cell_index.size();
@@ -93,3 +91,4 @@ bool Particle::operator<(const Particle& p) {
 	}
 	return false;
 }
+*/

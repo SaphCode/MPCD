@@ -11,11 +11,9 @@ namespace MPCD {
 	private:
 		Eigen::Vector2d _position;
 		Eigen::Vector2d _velocity;
-		Eigen::Vector2i _cell_index;
 		//Eigen::Vector2i _cell_index; //should not need to store this
 		//Eigen::Vector2i _shifted_cell_index;
 		// Eigen::Vector2d _shifted_position; should not need to store this
-		void _updateCellIndex();
 		
 
 		//Vector2d _position;
@@ -23,7 +21,6 @@ namespace MPCD {
 		//double mass; // could this be int?, do i need this
 	public:
 		/* Update the Cell index */
-		Eigen::Vector2i getCellIndex();
 		//Eigen::Vector2d _position;
 		//Eigen::Vector2d _velocity;
 		/* Creates a particle with @param position, @param velocity and unit mass. */
@@ -43,11 +40,13 @@ namespace MPCD {
 		 @param amount: the amount of the shift.
 		 @param cell_dim: the cell_dim of the grid.
 		 @return the new cell index of the particle*/
-		void shift(Eigen::Vector2d amount);
+		//void shift(Eigen::Vector2d amount);
 		//void setPosition(Eigen::Vector2d position);
 		//void setVelocity(Eigen::Vector2d velocity);
 		/* Moves the particle according to its current velocity. */
-		void move();
+		void stream(double timeLapse);
+
+		void shift(Eigen::Vector2d amount);
 
 		/* Updates the velocity of the particle using the MPCD cell collision algorithm.
 		@param mean_cell_velocity: the mean velocity of the cell the particle belongs to. NOTE:
@@ -56,10 +55,9 @@ namespace MPCD {
 		@param rotationMatrix: the rotation Matrix for the cell the particle belongs to. NOTE: same as above
 		*/
 		void updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle);
-		friend std::ostream& operator<<(std::ostream& output, const Particle& p);
-		bool operator <(const Particle& p);
+
+		friend bool operator==(const Particle& lhs, const Particle& rhs);
 	};
 
-	std::ostream& operator<<(std::ostream& output, const Particle& H);
 }
 #endif

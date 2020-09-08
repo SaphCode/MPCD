@@ -7,8 +7,8 @@
 
 namespace MPCD {
 	namespace Constants {
-		constexpr int number = 1000000;
-		constexpr int seed = 3453453453;
+		constexpr int number = 500000;
+		constexpr int seed = 34534211;
 		constexpr double time_lapse = 0.1;
 		constexpr int timesteps = 1000;
 		namespace Pipe {
