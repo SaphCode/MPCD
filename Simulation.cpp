@@ -90,18 +90,24 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 	
 
 	if (_draw) {
-		std::stringstream header("x,y,vx,vy");
+		std::stringstream header("x,y");//,vx,vy"
 		outFile << header.str() << '\n';
 	}
 	Grid g;
 	double lapse = _timelapse;
 
+	bool draw = _draw;
 	std::mutex m;
-	std::for_each(std::execution::par, _particles.begin(), _particles.end(),  [lapse, shift, &g, &m](Particle p) {
+	std::for_each(std::execution::par, _particles.begin(), _particles.end(),  [&outFile, lapse, shift, &g, &m, draw](Particle p) {
 		//for (auto& p : _particles) {
 		p.stream(lapse);
 		p.shift(shift);
+		
 		m.lock();
+		if (draw) {
+			Vector2d pos = p.getPosition();
+			outFile << pos[0] << "," << pos[1] << "\n";
+		}
 		g.insert(p);
 		m.unlock();
 		});
@@ -157,8 +163,30 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 
 /* O(N) */
 void MPCD::Simulation::collisionStep(Eigen::Vector2d shift) {
-	std::for_each(std::execution::par, _grid._cells.begin(), _grid._cells.end(), [shift](std::pair<std::pair<int, int>, Cell> entry) {
+	std::filesystem::path cwd;
+	std::stringstream s;
+	std::stringstream av;
+	std::string filename;
+
+	cwd = std::filesystem::current_path();
+	s << std::setfill('0') << std::setw(_w) << _t;
+	av << "av" << MPCD::Constants::Grid::average_particles_per_cell << "_";
+	filename = cwd.string() + l_data + "cells_" + av.str() + "timestep" + s.str() + ".csv";
+	std::ofstream outFile(filename);
+
+	if (_draw) {
+		std::stringstream header("i,j,meanX,meanY,num");//,vx,vy"
+		outFile << header.str() << '\n';
+	}
+	bool draw = _draw;
+	std::mutex m;
+	std::for_each(std::execution::par, _grid._cells.begin(), _grid._cells.end(), [&m, &outFile, shift, draw](std::pair<std::pair<int, int>, Cell> entry) {
 		entry.second.collide(shift);
+		if (draw) {
+			m.lock();
+			entry.second.draw(entry.first, outFile);
+			m.unlock();
+		}
 	});
 }
 //
