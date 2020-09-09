@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <boost/unordered/unordered_map.hpp>
 #include "Grid.h"
+#include <future>
 
 #include <map>
 
@@ -27,12 +28,15 @@ namespace MPCD {
 
 		void streamingStep(Eigen::Vector2d shift);
 		void collisionStep(Eigen::Vector2d shift);
+		
 	public:
 		Simulation(std::vector<Particle>& particles, bool draw);
 		~Simulation() {}
 		/* One timestep */
 		void timestep();
 	};
+
+	void calculateGrid(Grid& g, std::vector<Particle>& particles, const Eigen::Vector2d shift, const double timelapse);
 	
 }
 

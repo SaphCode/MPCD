@@ -7,6 +7,7 @@
 #include "Cell.h"
 #include "Particle.h"
 #include <map>
+#include <mutex>
 
 namespace MPCD {
 	class Grid {

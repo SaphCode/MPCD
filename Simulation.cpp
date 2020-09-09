@@ -15,6 +15,8 @@
 #include <execution>
 #include <chrono>
 #include <algorithm>
+#include <thread>
+#include <future>
 
 
 #define _USE_MATH_DEFINES
@@ -91,15 +93,66 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 		std::stringstream header("x,y,vx,vy");
 		outFile << header.str() << '\n';
 	}
+	Grid g;
+	double lapse = _timelapse;
 
-	Grid grid;
-	//#pragma omp parallel for reduction(+ : grid)
-	for (auto& p : _particles) {
+	std::mutex m;
+	std::for_each(std::execution::par, _particles.begin(), _particles.end(),  [lapse, shift, &g, &m](Particle p) {
+		//for (auto& p : _particles) {
+		p.stream(lapse);
+		p.shift(shift);
+		m.lock();
+		g.insert(p);
+		m.unlock();
+		});
+	_grid = g;
+
+
+	//reduction(+ : grid)
+	//#pragma omp parallel
+	//#pragma omp for
+	/*const auto processor_count = std::thread::hardware_concurrency();
+	int size = _particles.size();
+	std::vector<Grid> grids;
+	int endBefore = -1;
+	std::cout << "Size of particles: " << size << std::endl;
+	/*std::vector<std::thread> threads;
+	for (int p = 0; p < processor_count; p++) {
+		// make new thread
+		//, _particles, shift
+		Grid g;
+		grids.push_back(g);
+		double sizeToProcess = size / processor_count;
+		int start = std::round(p * sizeToProcess);
+		int end = std::round((p + 1) * sizeToProcess);
+		if (start == endBefore) {
+			start++;
+		}
+		//std::cout << "Start: " << start << ", End: " << end << std::endl;
+		Vector2d shiftT = shift;
+		std::vector<Particle> particlesT(_particles.begin() + start, _particles.begin() + end);
+		std::thread t(&MPCD::calculateGrid, std::ref(g), std::ref(particlesT), shift, _timelapse);
+		threads.push_back(std::move(t));
+		//t.detach();
+		//calculateGrid(g, particlesT, shift, _timelapse);
+		endBefore = end;
+	}
+	for (int i = 0; i < threads.size(); i++) {
+		threads[i].join();
+	}
+	threads.clear();
+	Grid realGrid;
+	for (const auto& g : grids) {
+		realGrid = realGrid + g;
+	}
+	std::pair<int, int> coords({ 0,0 });
+	std::cout << realGrid._cells[coords];
+	/*std::for_each(std::execution::par, _particles.begin(), _particles.end(), [_timelapse, shift, grid](Particle p) {
 		p.stream(_timelapse);
 		p.shift(shift);
 		grid.insert(p);
-	}
-	_grid = grid;
+		});
+	_grid = grid;*/
 }
 
 /* O(N) */
@@ -107,4 +160,12 @@ void MPCD::Simulation::collisionStep(Eigen::Vector2d shift) {
 	std::for_each(std::execution::par, _grid._cells.begin(), _grid._cells.end(), [shift](std::pair<std::pair<int, int>, Cell> entry) {
 		entry.second.collide(shift);
 	});
+}
+//
+void MPCD::calculateGrid(Grid& grid, std::vector<Particle>& particles, const Eigen::Vector2d shift, const double timelapse) {
+	//for (auto& p : particles) {
+	//	p.stream(timelapse);
+	//	p.shift(shift);
+	//	grid.insert(p);
+	//}
 }

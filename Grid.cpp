@@ -47,6 +47,10 @@ std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) {
 
 void MPCD::Grid::insert(Particle p) {
 	std::pair<int, int> key = getCoordinates(p.getPosition());
+	if (_cells.count(key) == 0) {
+		Cell c;
+		_cells.insert(std::make_pair(key, c));
+	}
 	_cells[key].add(p);
 }
 
