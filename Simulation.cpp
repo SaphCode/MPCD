@@ -90,7 +90,7 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 	
 
 	if (_draw) {
-		std::stringstream header("x,y");//,vx,vy"
+		std::stringstream header("x,y,vx,vy");//,vx,vy"
 		outFile << header.str() << '\n';
 	}
 	Grid g;
@@ -106,7 +106,8 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 		m.lock();
 		if (draw) {
 			Vector2d pos = p.getPosition();
-			outFile << pos[0] << "," << pos[1] << "\n";
+			Vector2d vel = p.getVelocity();
+			outFile << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
 		}
 		g.insert(p);
 		m.unlock();
