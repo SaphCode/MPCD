@@ -23,14 +23,6 @@ void MPCD::Cell::add(MPCD::Particle& p) {
 	_num += 1;
 }
 
-/*
-void MPCD::Cell::remove(MPCD::Particle& p) {
-	_particles.erase(std::remove(_particles.begin(), _particles.end(), p), _particles.end());
-	_vel -= p.getVelocity();
-	_num -= 1;
-}
-*/
-
 void MPCD::Cell::collide(Eigen::Vector2d shift) {
 	double rotationAngle = _angleGen.next();
 	double s = _signGen.next();
@@ -45,8 +37,6 @@ void MPCD::Cell::collide(Eigen::Vector2d shift) {
 void MPCD::Cell::draw(std::pair<int, int> index, std::ofstream& ofs) {
 	ofs << index.first << "," << index.second << "," << _vel[0] << "," << _vel[1] << "," << _num << "\n";
 }
-
-
 
 MPCD::Cell MPCD::operator+(const Cell& lhs, const Cell& rhs)
 {
