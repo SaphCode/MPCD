@@ -20,7 +20,11 @@ namespace MPCD {
 		std::map<std::pair<int, int>, Cell> _cells;
 		std::pair<int, int> getCoordinates(Eigen::Vector2d position);
 		void insert(Particle p);
+		void shift();
+		void undoShift();
 	private:
+		Xoshiro _shiftGen;
+		Eigen::Vector2d _shift;
 		double _a;
 	};
 }

@@ -46,7 +46,7 @@ namespace MPCD {
 		/* Moves the particle according to its current velocity. */
 		void stream(double timeLapse);
 
-		void shift(Eigen::Vector2d amount);
+		//void shift(Eigen::Vector2d amount);
 
 		/* Updates the velocity of the particle using the MPCD cell collision algorithm.
 		@param mean_cell_velocity: the mean velocity of the cell the particle belongs to. NOTE:

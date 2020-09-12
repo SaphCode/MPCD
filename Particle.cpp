@@ -45,9 +45,11 @@ void Particle::stream(double timeLapse) {
 	_position += timeLapse * _velocity;
 }
 
+/*
 void Particle::shift(Eigen::Vector2d amount) {
 	_position += amount;
 }
+*/
 
 void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
 	Eigen::Matrix2d rotationMatrix;

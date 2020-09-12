@@ -22,9 +22,11 @@ namespace MPCD {
 		}
 		namespace Grid {
 			constexpr int average_particles_per_cell = 10;
+			constexpr int num_rows = (Pipe::y_max - Pipe::y_0) / cell_dim;
+			constexpr int num_cols = (Pipe::x_max - Pipe::x_0) / cell_dim;
 			constexpr int num_cells = MPCD::Constants::number / average_particles_per_cell;
 			//constexpr int wanted_num_cells = min_num_cells * 2;
-			constexpr double cell_dim = 1;
+			constexpr int cell_dim = 1;
 			constexpr double max_shift = cell_dim / 2;
 		}
 	}
