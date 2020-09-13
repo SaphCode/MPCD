@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <thread>
 #include <future>
+#include "MaxwellBoltzmann.h"
 
 
 #define _USE_MATH_DEFINES
@@ -26,9 +27,8 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(std::vector<Particle>& particles, bool draw) {
+MPCD::Simulation::Simulation(bool draw) {
 	_timelapse = MPCD::Constants::time_lapse;
-	_particles = particles;
 	_draw = draw;
 	int timesteps = MPCD::Constants::timesteps;
 
@@ -48,12 +48,46 @@ MPCD::Simulation::Simulation(std::vector<Particle>& particles, bool draw) {
 		throw std::exception("timesteps too large or too short: " + timesteps);
 	}
 	
-	_maxShift = MPCD::Constants::Grid::max_shift;
-	Xoshiro rgShiftX(-_maxShift, _maxShift);
-	Xoshiro rgShiftY(-_maxShift, _maxShift);
-	_rgShiftX = rgShiftX;
-	_rgShiftY = rgShiftY;
 	_t = 0;
+
+	int av_particles = MPCD::Constants::average_particles_per_cell;
+	double cell_dim = MPCD::Constants::cell_dim;
+	double x_0 = MPCD::Constants::x_0;
+	double x_max = MPCD::Constants::x_max;
+	double y_0 = MPCD::Constants::y_0;
+	double y_max = MPCD::Constants::y_max;
+
+	int number = av_particles * ((x_max - x_0) / cell_dim) * ((y_max - y_0) / cell_dim); // will be a func of Grid
+	
+	std::vector<Obstacle> obstacles;
+
+	std::vector<Particle> particles;
+	particles.reserve(number);
+
+	//dont worry the numbers are just seeds 
+	Xoshiro xs_xpos(x_0, x_max);
+	Xoshiro xs_ypos(y_0, y_max);
+
+	// MAXWELL BOLTZMANN
+	double mass = 2.988e-26; // h2o kg mass
+	double mean = 0;
+	double temperature = 309.15; // = 36Celsius
+	MaxwellBoltzmann mb_vel(mean, temperature, mass);
+
+	for (int i = 0; i < number; i++) {
+		double xs_x = xs_xpos.next();
+		double xs_y = xs_ypos.next();
+		Eigen::Vector2d pos(xs_x, xs_y);
+
+		Eigen::Vector2d vel = mb_vel.next();
+
+		Particle p(pos, vel);
+
+		particles.push_back(p);
+	}
+	
+	_pipe.setParticles(particles);
+	_pipe.setObstacles(obstacles);
 }
 
 void MPCD::Simulation::timestep()
@@ -84,7 +118,7 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 	
 	cwd = std::filesystem::current_path();
 	s << std::setfill('0') << std::setw(_w) << _t;
-	av << "av" << MPCD::Constants::Grid::average_particles_per_cell << "_";
+	av << "av" << _grid.getAverageParticlesPerCell() << "_";
 	filename = cwd.string() + l_data + "particles_" + av.str() + "timestep" + s.str() + ".csv";
 	std::ofstream outFile(filename);
 	
@@ -93,26 +127,9 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 		std::stringstream header("x,y,vx,vy");//,vx,vy"
 		outFile << header.str() << '\n';
 	}
-	Grid g;
-	double lapse = _timelapse;
 
-	bool draw = _draw;
-	std::mutex m;
-	std::for_each(std::execution::par, _particles.begin(), _particles.end(),  [&outFile, lapse, shift, &g, &m, draw](Particle p) {
-		//for (auto& p : _particles) {
-		p.stream(lapse);
-		p.shift(shift);
-		
-		m.lock();
-		if (draw) {
-			Vector2d pos = p.getPosition();
-			Vector2d vel = p.getVelocity();
-			outFile << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
-		}
-		g.insert(p);
-		m.unlock();
-		});
-	_grid = g;
+	_pipe.stream(_timelapse, _draw, outFile);
+	_grid.updateCoordinates(_pipe.getParticles());
 
 
 	//reduction(+ : grid)
@@ -171,7 +188,7 @@ void MPCD::Simulation::collisionStep(Eigen::Vector2d shift) {
 
 	cwd = std::filesystem::current_path();
 	s << std::setfill('0') << std::setw(_w) << _t;
-	av << "av" << MPCD::Constants::Grid::average_particles_per_cell << "_";
+	av << "av" << _grid.getAverageParticlesPerCell() << "_";
 	filename = cwd.string() + l_data + "cells_" + av.str() + "timestep" + s.str() + ".csv";
 	std::ofstream outFile(filename);
 
@@ -179,16 +196,7 @@ void MPCD::Simulation::collisionStep(Eigen::Vector2d shift) {
 		std::stringstream header("i,j,meanX,meanY,num");//,vx,vy"
 		outFile << header.str() << '\n';
 	}
-	bool draw = _draw;
-	std::mutex m;
-	std::for_each(std::execution::par, _grid._cells.begin(), _grid._cells.end(), [&m, &outFile, shift, draw](std::pair<std::pair<int, int>, Cell> entry) {
-		entry.second.collide(shift);
-		if (draw) {
-			m.lock();
-			entry.second.draw(entry.first, outFile);
-			m.unlock();
-		}
-	});
+	_grid.collision(_draw, outFile);
 }
 //
 void MPCD::calculateGrid(Grid& grid, std::vector<Particle>& particles, const Eigen::Vector2d shift, const double timelapse) {

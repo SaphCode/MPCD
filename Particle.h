@@ -46,6 +46,8 @@ namespace MPCD {
 		/* Moves the particle according to its current velocity. */
 		void stream(double timeLapse);
 
+		void correctPosition(Eigen::Vector2d newPos);
+
 		//void shift(Eigen::Vector2d amount);
 
 		/* Updates the velocity of the particle using the MPCD cell collision algorithm.

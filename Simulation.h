@@ -5,9 +5,8 @@
 
 #include "Particle.h"
 #include <Eigen/Dense>
-#include <boost/unordered/unordered_map.hpp>
 #include "Grid.h"
-#include <future>
+#include "Pipe.h"
 
 #include <map>
 
@@ -15,10 +14,10 @@ namespace MPCD {
 	class Simulation {
 	private:
 		bool _draw = false;
-		std::vector<Particle> _particles;
 		double _timelapse;
 
 		Grid _grid;
+		Pipe _pipe;
 		int _w;
 
 		Xoshiro _rgShiftX;
@@ -30,7 +29,7 @@ namespace MPCD {
 		void collisionStep(Eigen::Vector2d shift);
 		
 	public:
-		Simulation(std::vector<Particle>& particles, bool draw);
+		Simulation(bool draw);
 		~Simulation() {}
 		/* One timestep */
 		void timestep();

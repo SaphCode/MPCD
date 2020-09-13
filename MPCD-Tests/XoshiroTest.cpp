@@ -14,9 +14,10 @@
 
 using namespace Eigen;
 using namespace MPCD;
-
+/*
 class XoshiroTest : public ::testing::Test {
 protected:
+
 	const double time_lapse = MPCD::Constants::time_lapse;
 	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
 	const double min_x_position = MPCD::Constants::Pipe::x_0;
@@ -38,7 +39,6 @@ protected:
 		xs_velocities.reserve(number);
 		xs_angles.reserve(number);
 
-		/* dont worry the numbers are just seeds */
 		Xoshiro xs_xpos(min_x_position, max_x_position);
 		Xoshiro xs_ypos(min_y_position, max_y_position);
 		Xoshiro xs_xvel(-max_x_velocity, max_x_velocity);
@@ -94,7 +94,6 @@ TEST_F(XoshiroTest, RandomBoundsTest) {
 
 TEST_F(XoshiroTest, DISABLED_ChiSquaredTest) {
 
-	/* Chi Squared Testing */
 	std::vector<double> chi_2_alpha05; // at least 2 degrees of freedom, 1 undefined for alpha = 0.99
 	chi_2_alpha05.push_back(3.841); // undefined for 1 and alpha .01
 	chi_2_alpha05.push_back(5.991); // 2
@@ -215,3 +214,4 @@ TEST_F(XoshiroTest, DISABLED_ChiSquaredTest) {
 		EXPECT_LE(xs_obs_chi_2_angle, chi_2_alpha05[buckets - 1]);
 	}
 }
+*/

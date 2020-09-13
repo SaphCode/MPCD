@@ -13,9 +13,10 @@
 
 using namespace Eigen;
 using namespace MPCD;
-
+/*
 class MersenneTwisterTest : public ::testing::Test {
 protected:
+
 	const double time_step = 1.0;
 	const double aspect_ratio = MPCD::Constants::Pipe::width / MPCD::Constants::Pipe::height;
 	const double min_x_position = MPCD::Constants::Pipe::x_0;
@@ -71,6 +72,7 @@ protected:
 
 };
 
+/*
 TEST_F(MersenneTwisterTest, RandomBoundsTest) {
 
 	for (int i = 0; i < MPCD::Constants::number; i++) {
@@ -94,7 +96,6 @@ TEST_F(MersenneTwisterTest, RandomBoundsTest) {
 
 TEST_F(MersenneTwisterTest, ChiSquaredTest) {
 
-	/* Chi Squared Testing */
 	std::vector<double> chi_2_alpha05; // at least 2 degrees of freedom, 1 undefined for alpha = 0.99
 	chi_2_alpha05.push_back(3.841);
 	chi_2_alpha05.push_back(5.991); // 2
@@ -221,3 +222,4 @@ TEST_F(MersenneTwisterTest, ChiSquaredTest) {
 
 }
 
+*/

@@ -14,8 +14,9 @@
 using namespace MPCD;
 using namespace Eigen;
 
-const int average_particles_per_cell = MPCD::Constants::Grid::average_particles_per_cell;
+//const int average_particles_per_cell = MPCD::Constants::Grid::average_particles_per_cell;
 
+/*
 TEST(Grid, Constants) {
 	double cell_dim = MPCD::Constants::Grid::cell_dim;
 	int num_hypothetical_x_cells = std::round(MPCD::Constants::Pipe::width / cell_dim);
@@ -47,7 +48,7 @@ TEST(Grid, Constants) {
 		MPCD::Constants::Pipe::x_max << "," << MPCD::Constants::Pipe::y_max << "," << MPCD::Constants::Grid::average_particles_per_cell << "," << MPCD::Constants::number << std::endl;
 	outFile.close();
 }
-
+*/
 /*
 TEST(Grid, GridStartsAtRightPos) {
 	Grid grid(MPCD::Constants::Grid::cell_dim);

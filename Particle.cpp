@@ -45,6 +45,11 @@ void Particle::stream(double timeLapse) {
 	_position += timeLapse * _velocity;
 }
 
+void MPCD::Particle::correctPosition(Eigen::Vector2d newPos)
+{
+	_position = newPos;
+}
+
 /*
 void Particle::shift(Eigen::Vector2d amount) {
 	_position += amount;

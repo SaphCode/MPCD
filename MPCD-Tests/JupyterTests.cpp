@@ -26,7 +26,7 @@
 
 using namespace Eigen;
 using namespace MPCD;
-
+/*
 class JupyterNotebookTests : public ::testing::Test {
 protected:
 	const double time_step = 1.0;
@@ -56,7 +56,6 @@ protected:
 		MersenneTwister rg_yvel(-max_y_velocity, max_y_velocity, DistributionType::UNIFORM);
 		MersenneTwister rg_angle(0.0, max_angle, DistributionType::UNIFORM);
 
-		/* dont worry the numbers are just seeds */
 		Xoshiro xs_xpos(0.0, max_x_position);
 		Xoshiro xs_ypos(0.0, max_y_position);
 		Xoshiro xs_xvel(-max_x_velocity, max_x_velocity);
@@ -95,7 +94,7 @@ protected:
 	}
 };
 
-/* Draw a histogram somehow, also check by hand. */
+
 TEST_F(JupyterNotebookTests, MersWrite) { // DISABLED_
 
 	std::filesystem::path cwd = std::filesystem::current_path();
@@ -117,7 +116,7 @@ TEST_F(JupyterNotebookTests, MersWrite) { // DISABLED_
 	out.writeToOut(mers_particles, "mersenne_particles_after_xx_timesteps.csv");
 }
 
-/* Draw a histogram somehow, also check by hand. */
+
 TEST_F(JupyterNotebookTests, XSWrite) { // DISABLED_
 	std::filesystem::path cwd = std::filesystem::current_path();
 	Out out(cwd.string() + l_data + l_rng);
@@ -137,3 +136,4 @@ TEST_F(JupyterNotebookTests, XSWrite) { // DISABLED_
 	}
 	out.writeToOut(xs_particles, "xoshiro_particles_after_xx_timesteps.csv");
 }
+*/

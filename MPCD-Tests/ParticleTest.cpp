@@ -18,7 +18,7 @@
 
 using namespace Eigen;
 using namespace MPCD;
-
+/*
 class ParticleTest : public ::testing::Test {
 protected:
 	const double time_step = MPCD::Constants::time_lapse;
@@ -41,7 +41,6 @@ protected:
 		number = MPCD::Constants::number;
 		particles.reserve(number);	
 
-		/* dont worry the numbers are just seeds */
 		Xoshiro xs_xpos(0.0, max_x_position);
 		Xoshiro xs_ypos(0.0, max_y_position);
 		Xoshiro xs_xvel(-max_x_velocity, max_x_velocity);

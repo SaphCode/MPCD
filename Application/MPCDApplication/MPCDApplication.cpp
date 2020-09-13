@@ -22,31 +22,8 @@ using namespace MPCD;
 
 int main()
 {
-	std::vector<Particle> particles;
-	particles.reserve(MPCD::Constants::number);
-
-	//dont worry the numbers are just seeds 
-	Xoshiro xs_xpos(MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::x_max);
-	Xoshiro xs_ypos(MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::y_max);
-	Xoshiro xs_xvel(-MPCD::Constants::Pipe::width / 100, MPCD::Constants::Pipe::width / 100);
-	Xoshiro xs_yvel(-MPCD::Constants::Pipe::height / 100, MPCD::Constants::Pipe::height / 100);
-
-	for (int i = 0; i < MPCD::Constants::number; i++) {
-		double xs_x = xs_xpos.next();
-		double xs_y = xs_ypos.next();
-		double xs_vx = xs_xvel.next();
-		double xs_vy = xs_yvel.next();
-
-		Vector2d pos(xs_x, xs_y);
-		Vector2d vel(xs_vx, xs_vy);
-
-		Particle xs_p(pos, vel);
-
-		particles.push_back(xs_p);
-	}
-
 	bool draw = true;
-	Simulation sim(particles, draw);
+	Simulation sim(draw);
 
 	int timesteps = MPCD::Constants::timesteps;
 

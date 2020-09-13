@@ -1,8 +1,32 @@
 #include "Grid.h"
 #include "Constants.h"
+#include <execution>
 
 MPCD::Grid::Grid() {
-	_a = MPCD::Constants::Grid::cell_dim;
+	for (int i = 0; i < _num_cols; i++) {
+		for (int j = 0; j < _num_rows; j++) {
+			Cell cell;
+			std::pair<int, int> coords(i, j);
+			_cells.insert(std::make_pair(coords, cell));
+		}
+	}
+}
+
+void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
+{
+	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [&](std::pair<std::pair<int, int>, Cell> entry) {
+		entry.second.clear();
+		});
+	std::mutex m;
+	std::for_each(std::execution::par, particles.begin(), particles.end(), [&](Particle& p) {
+		Eigen::Vector2d particlePos = p.getPosition();
+		std::pair<int, int> coordinates = getCoordinates(particlePos);
+		assert(coordinates.first >= 0 && coordinates.first <= _num_rows);
+		assert(coordinates.second >= 0 && coordinates.second <= _num_cols);
+		m.lock();
+		_cells[coordinates].add(p);
+		m.unlock();
+		});
 }
 
 /*
@@ -41,14 +65,39 @@ void MPCD::Grid::updateCell(Particle p, Eigen::Vector2d positionBeforeMove) {
 */
 std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) {
 	Eigen::Vector2d shiftedPos = position + _shift;
-	div_t divresult_i = div(shiftedPos[1], 
-	int i = std::floor(position[1] / _a);
-	assert(i >= -1 && i <= MPCD::Constants::Grid::num_cols + 1);
-	int j = std::floor(position[0] / _a);
-	assert(j >= -1 && j <= MPCD::Constants::Grid::num_rows + 1);
+	int i = std::floor(shiftedPos[1] / _a);
+	assert(i >= -1 && i <= _num_rows + 1);
+	if (i == -1) {
+		i = _num_rows;
+	}
+	else if (i == _num_rows + 1) {
+		i = 0;
+	}
+	int j = std::floor(shiftedPos[0] / _a);
+	assert(j >= -1 && j <= _num_cols + 1);
+	if (j == -1) {
+		j = _num_cols;
+	}
+	else if (j == _num_cols + 1) {
+		j = 0;
+	}
 	return std::make_pair(i, j);
 }
 
+void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
+{
+	std::mutex m;
+	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [&m, &outFile, draw](std::pair<std::pair<int, int>, Cell> entry) {
+		entry.second.collide();
+		if (draw) {
+			m.lock();
+			entry.second.draw(entry.first, outFile);
+			m.unlock();
+		}
+		});
+}
+
+/*
 void MPCD::Grid::insert(Particle p) {
 	std::pair<int, int> key = getCoordinates(p.getPosition());
 	if (_cells.count(key) == 0) {
@@ -57,7 +106,7 @@ void MPCD::Grid::insert(Particle p) {
 	}
 	_cells[key].add(p);
 }
-
+*/
 
 void MPCD::Grid::shift() {
 	Eigen::Vector2d shift(_shiftGen.next(), _shiftGen.next());
@@ -69,7 +118,33 @@ void MPCD::Grid::undoShift() {
 	_shift = zero;
 }
 
+int MPCD::Grid::getAverageParticlesPerCell()
+{
+	return _average_particles_per_cell;
+}
 
+double MPCD::Grid::getA()
+{
+	return _a;
+}
+
+int MPCD::Grid::getNumRows()
+{
+	return _num_rows;
+}
+
+int MPCD::Grid::getNumCols()
+{
+	return _num_cols;
+}
+
+double MPCD::Grid::getMaxShift()
+{
+	return _max_shift;
+}
+
+
+/*
 MPCD::Grid MPCD::operator+(const Grid& lhs, const Grid& rhs)
 {
 	Grid grid;
@@ -79,3 +154,4 @@ MPCD::Grid MPCD::operator+(const Grid& lhs, const Grid& rhs)
 	}
 	return grid;
 }
+*/

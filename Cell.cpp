@@ -17,20 +17,26 @@ MPCD::Cell::Cell() {
 
 MPCD::Cell::~Cell() { }
 
+void MPCD::Cell::clear() {
+	_particles.clear();
+	Eigen::Vector2d zero(0, 0);
+	_vel = zero;
+	_num = 0;
+}
+
 void MPCD::Cell::add(MPCD::Particle& p) {
 	_particles.push_back(p);
 	_vel += p.getVelocity();
 	_num += 1;
 }
 
-void MPCD::Cell::collide(Eigen::Vector2d shift) {
+void MPCD::Cell::collide() {
 	double rotationAngle = _angleGen.next();
 	double s = _signGen.next();
 	int sign = (s < 0) ? -1 : 1;
 	Eigen::Vector2d mean = _vel / _num;
 	for (auto p : _particles) {
 		p.updateVelocity(mean, sign * rotationAngle);
-		p.shift(-shift);
 	}
 }
 
@@ -38,6 +44,7 @@ void MPCD::Cell::draw(std::pair<int, int> index, std::ofstream& ofs) {
 	ofs << index.first << "," << index.second << "," << _vel[0] << "," << _vel[1] << "," << _num << "\n";
 }
 
+/*
 MPCD::Cell MPCD::operator+(const Cell& lhs, const Cell& rhs)
 {
 	Cell cell;
@@ -52,3 +59,4 @@ MPCD::Cell MPCD::operator+(const Cell& lhs, const Cell& rhs)
 	}
 	return cell;
 }
+*/

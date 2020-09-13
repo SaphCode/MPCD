@@ -6,6 +6,7 @@
 using namespace MPCD;
 using namespace Eigen;
 
+/*
 TEST(Cell, DISABLED_OperatorPlus) {
 	Cell cell1;
 	Cell cell2;
@@ -19,3 +20,4 @@ TEST(Cell, DISABLED_OperatorPlus) {
 	Cell cell = cell1 + cell2;
 	
 }
+*/

@@ -17,11 +17,11 @@
 using namespace MPCD;
 using namespace Eigen;
 
+/*
 TEST(MPCD, Timestep) {
 	std::vector<Particle> particles;
 	particles.reserve(MPCD::Constants::number);
 
-	/* dont worry the numbers are just seeds */
 	Xoshiro xs_xpos(MPCD::Constants::Pipe::x_0, MPCD::Constants::Pipe::x_max);
 	Xoshiro xs_ypos(MPCD::Constants::Pipe::y_0, MPCD::Constants::Pipe::y_max);
 	Xoshiro xs_xvel(-MPCD::Constants::Pipe::width / 100, MPCD::Constants::Pipe::width / 100);
@@ -119,5 +119,6 @@ TEST(MPCD, Timestep) {
 	Out out(cwd.string() + l_data);
 	out.writeToOut(origMeanVelocities, "before_collision.csv", "cell_vx_b,cell_vy_b");
 	out.writeToOut(meanCellVelocities_new, "after_collision.csv", "cell_vx_a,cell_vy_a");
-	*/
+	
 }
+*/
