@@ -18,8 +18,7 @@ void MPCD::Pipe::setObstacles(std::vector<Obstacle> obstacles)
 }
 
 void MPCD::Pipe::stream(double lapse, bool draw, std::ofstream& file) {
-	std::mutex m;
-	std::for_each(std::execution::par, _particles.begin(), _particles.end(), [&, lapse](Particle p) {
+	for (auto& p : _particles) {
 		//for (auto& p : _particles) {
 		p.stream(lapse);
 		collide(p);
@@ -30,15 +29,13 @@ void MPCD::Pipe::stream(double lapse, bool draw, std::ofstream& file) {
 		fixOutOfBounds(p);
 		Eigen::Vector2d particlePos = p.getPosition();
 		assert(inBounds(particlePos));
-		
-		m.lock();
+
 		if (draw) {
 			Eigen::Vector2d pos = p.getPosition();
 			Eigen::Vector2d vel = p.getVelocity();
 			file << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
 		}
-		m.unlock();
-		});
+	}
 }
 
 bool MPCD::Pipe::inBounds(Eigen::Vector2d pos) {

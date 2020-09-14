@@ -3,8 +3,8 @@
 #include <execution>
 
 MPCD::Grid::Grid() {
-	for (int i = 0; i < _num_cols; i++) {
-		for (int j = 0; j < _num_rows; j++) {
+	for (int i = 0; i < _num_rows; i++) {
+		for (int j = 0; j < _num_cols; j++) {
 			Cell cell;
 			std::pair<int, int> coords(i, j);
 			_cells.insert(std::make_pair(coords, cell));
@@ -14,19 +14,16 @@ MPCD::Grid::Grid() {
 
 void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
 {
-	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [&](std::pair<std::pair<int, int>, Cell> entry) {
-		entry.second.clear();
-		});
-	std::mutex m;
-	std::for_each(std::execution::par, particles.begin(), particles.end(), [&](Particle& p) {
+	for (auto& [key, cell] : _cells) {
+		cell.clear();
+	}
+	for (auto& p : particles) {
 		Eigen::Vector2d particlePos = p.getPosition();
 		std::pair<int, int> coordinates = getCoordinates(particlePos);
 		assert(coordinates.first >= 0 && coordinates.first <= _num_rows);
 		assert(coordinates.second >= 0 && coordinates.second <= _num_cols);
-		m.lock();
 		_cells[coordinates].add(p);
-		m.unlock();
-		});
+	}
 }
 
 /*
@@ -87,14 +84,13 @@ std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) {
 void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
 {
 	std::mutex m;
-	std::for_each(std::execution::par, _cells.begin(), _cells.end(), [&m, &outFile, draw](std::pair<std::pair<int, int>, Cell> entry) {
-		entry.second.collide();
+	for (auto& [key, cell] : _cells) {
+		cell.collide();
 		if (draw) {
-			m.lock();
-			entry.second.draw(entry.first, outFile);
-			m.unlock();
+			cell.draw(m, key, outFile);
 		}
-		});
+	}
+		
 }
 
 /*

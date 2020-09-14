@@ -40,8 +40,10 @@ void MPCD::Cell::collide() {
 	}
 }
 
-void MPCD::Cell::draw(std::pair<int, int> index, std::ofstream& ofs) {
+void MPCD::Cell::draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs) {
+	m.lock();
 	ofs << index.first << "," << index.second << "," << _vel[0] << "," << _vel[1] << "," << _num << "\n";
+	m.unlock();
 }
 
 /*
