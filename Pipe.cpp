@@ -2,6 +2,7 @@
 #include "Grid.h"
 #include <execution>
 #include <fstream>
+#include <iostream>
 
 MPCD::Pipe::Pipe() {
 }
@@ -29,6 +30,7 @@ void MPCD::Pipe::stream(double lapse, bool draw, std::ofstream& file) {
 		fixOutOfBounds(p);
 		Eigen::Vector2d particlePos = p.getPosition();
 		assert(inBounds(particlePos));
+		
 		m.lock();
 		if (draw) {
 			Eigen::Vector2d pos = p.getPosition();
@@ -50,43 +52,44 @@ bool MPCD::Pipe::inBounds(Eigen::Vector2d pos) {
 	return false;
 }
 
-void MPCD::Pipe::fixOutOfBounds(Particle p) {
+void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 	Eigen::Vector2d particlePos = p.getPosition();
 	Eigen::Vector2d newPos = particlePos;
 	double diff_posx = particlePos[0] - _x_max;
 	double diff_negx = particlePos[0] - _x_0;
 	double diff_posy = particlePos[1] - _y_max;
 	double diff_negy = particlePos[1] - _y_0;
+	double width = _x_max - _x_0;
+	double height = _y_max - _y_0;
 
 	if (diff_posx > 0) {
-		double rem = remainder(diff_posx, _x_max - _x_0);
+		double rem = std::fmod(diff_posx, width);
 		assert(rem > 0);
 		newPos[0] = rem;
 	}
 	else if (diff_negx < 0) {
-		double rem = remainder(diff_negx, _x_max - _x_0);
+		double rem = std::fmod(diff_negx, width);
 		assert(rem < 0);
 		newPos[0] = _x_max + rem;
 	}
 	if (diff_posy > 0) {
-		double rem = remainder(diff_posy, _y_max - _y_0);
+		double rem = std::fmod(diff_posy, height);
 		assert(rem > 0);
 		newPos[1] = rem;
 	}
 	else if (diff_negy < 0) {
-		double rem = remainder(diff_negy, _y_max - _y_0);
+		double rem = std::fmod(diff_negy, height);
 		assert(rem < 0);
 		newPos[1] = _y_max + rem;
 	}
 	p.correctPosition(newPos);
-
 	/*if ((newPos[0] >= _x_0) && (newPos[0] <= _x_max) && (newPos[1] >= _y_0) && (newPos[1] <= _y_max)) {
 		return true;
 	}
 	else return false;*/
 }
 
-void MPCD::Pipe::collide(Particle p) {
+void MPCD::Pipe::collide(Particle& p) {
 
 }
 

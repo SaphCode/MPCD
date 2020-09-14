@@ -18,9 +18,10 @@ namespace MPCD {
 		double _x_max = MPCD::Constants::x_max;
 		double _y_0 = MPCD::Constants::y_0;
 		double _y_max = MPCD::Constants::y_max;
-		void collide(Particle p);
-		void fixOutOfBounds(Particle p);
+		void collide(Particle& p);
+		void fixOutOfBounds(Particle& p);
 		bool inBounds(Eigen::Vector2d pos);
+		
 	public:
 		Pipe();
 		~Pipe() {}

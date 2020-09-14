@@ -54,10 +54,13 @@ MPCD::Simulation::Simulation(bool draw) {
 	double cell_dim = MPCD::Constants::cell_dim;
 	double x_0 = MPCD::Constants::x_0;
 	double x_max = MPCD::Constants::x_max;
+	double width = x_max - x_0;
 	double y_0 = MPCD::Constants::y_0;
 	double y_max = MPCD::Constants::y_max;
+	double height = y_max - y_0;
+	double timelapse = MPCD::Constants::time_lapse;
 
-	int number = av_particles * ((x_max - x_0) / cell_dim) * ((y_max - y_0) / cell_dim); // will be a func of Grid
+	int number = av_particles * (width / cell_dim) * (height / cell_dim); // will be a func of Grid
 	
 	std::vector<Obstacle> obstacles;
 
@@ -88,6 +91,35 @@ MPCD::Simulation::Simulation(bool draw) {
 	
 	_pipe.setParticles(particles);
 	_pipe.setObstacles(obstacles);
+
+	if (_draw) {
+		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles, timesteps);
+	}
+}
+
+void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps) {
+	int num_hypothetical_x_cells = std::round(width / cell_dim);
+	int num_hypothetical_y_cells = std::round(height / cell_dim);
+
+	if (width > height) {
+		assert(num_hypothetical_x_cells >= num_hypothetical_y_cells);
+	}
+	else {
+		assert(num_hypothetical_x_cells < num_hypothetical_y_cells);
+	}
+
+	double epsilon = 0.05;
+
+	std::filesystem::path cwd = std::filesystem::current_path();
+
+	std::string filename("//Data//constants_");
+	std::string num("av" + std::to_string(averageParticlesPerCell));
+	std::string csv(".csv");
+
+	std::ofstream outFile(cwd.string() + filename + num + csv);
+	outFile << "timesteps,time_lapse,cell_dim,width,height,average_particles_per_cell,total_number_of_particles" << "\n"; // header columns
+	outFile << timesteps << "," << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << std::endl;
+	outFile.close();
 }
 
 void MPCD::Simulation::timestep()

@@ -27,6 +27,8 @@ namespace MPCD {
 
 		void streamingStep(Eigen::Vector2d shift);
 		void collisionStep(Eigen::Vector2d shift);
+
+		void writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps);
 		
 	public:
 		Simulation(bool draw);
