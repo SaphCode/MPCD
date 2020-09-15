@@ -25,7 +25,7 @@ void MPCD::Cell::clear() {
 }
 
 void MPCD::Cell::add(MPCD::Particle& p) {
-	_particles.push_back(p);
+	_particles.push_back(&p);
 	_vel += p.getVelocity();
 	_num += 1;
 }
@@ -35,8 +35,8 @@ void MPCD::Cell::collide() {
 	double s = _signGen.next();
 	int sign = (s < 0) ? -1 : 1;
 	Eigen::Vector2d mean = _vel / _num;
-	for (auto p : _particles) {
-		p.updateVelocity(mean, sign * rotationAngle);
+	for (auto& p : _particles) {
+		p->updateVelocity(mean, sign * rotationAngle);
 	}
 }
 

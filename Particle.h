@@ -11,6 +11,7 @@ namespace MPCD {
 	private:
 		Eigen::Vector2d _position;
 		Eigen::Vector2d _velocity;
+		double _mass;
 		//Eigen::Vector2i _cell_index; //should not need to store this
 		//Eigen::Vector2i _shifted_cell_index;
 		// Eigen::Vector2d _shifted_position; should not need to store this
@@ -24,7 +25,7 @@ namespace MPCD {
 		//Eigen::Vector2d _position;
 		//Eigen::Vector2d _velocity;
 		/* Creates a particle with @param position, @param velocity and unit mass. */
-		Particle(Eigen::Vector2d position, Eigen::Vector2d velocity);
+		Particle(Eigen::Vector2d position, Eigen::Vector2d velocity, double mass);
 		/* Constructor strictly for std::vector<Particle> */
 		Particle(); // default constructor needed for custom class array
 
@@ -32,8 +33,8 @@ namespace MPCD {
 
 		/* If you make the variables PRIVATE */
 
-		Eigen::Vector2d getPosition();
-		Eigen::Vector2d getVelocity();
+		Eigen::Vector2d getPosition() const;
+		Eigen::Vector2d getVelocity() const;
 		
 
 		/* Shifts the position of the particle by @param amount and updates the particle's cell position.

@@ -6,9 +6,10 @@
 
 using namespace MPCD;
 
-Particle::Particle(Eigen::Vector2d position, Eigen::Vector2d velocity) {
+Particle::Particle(Eigen::Vector2d position, Eigen::Vector2d velocity, double mass) {
 	_position = position;
 	_velocity = velocity;
+	_mass = mass;
 }
 
 Particle::Particle() {}
@@ -16,11 +17,11 @@ Particle::Particle() {}
 Particle::~Particle() {}
 
 /* If you make the variables PRIVATE */
-Eigen::Vector2d Particle::getPosition() {
+Eigen::Vector2d Particle::getPosition() const {
 	return _position;
 }
 
-Eigen::Vector2d Particle::getVelocity() {
+Eigen::Vector2d Particle::getVelocity() const {
 	return _velocity;
 }
 

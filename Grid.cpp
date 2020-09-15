@@ -60,22 +60,22 @@ void MPCD::Grid::updateCell(Particle p, Eigen::Vector2d positionBeforeMove) {
 	
 }
 */
-std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) {
-	Eigen::Vector2d shiftedPos = position + _shift;
+std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
+	Eigen::Vector2d shiftedPos = position - _shift;
 	int i = std::floor(shiftedPos[1] / _a);
-	assert(i >= -1 && i <= _num_rows + 1);
+	assert(i >= -1 && i <= _num_rows);
 	if (i == -1) {
-		i = _num_rows;
+		i = _num_rows - 1;
 	}
-	else if (i == _num_rows + 1) {
+	else if (i == _num_rows) {
 		i = 0;
 	}
 	int j = std::floor(shiftedPos[0] / _a);
-	assert(j >= -1 && j <= _num_cols + 1);
+	assert(j >= -1 && j <= _num_cols);
 	if (j == -1) {
-		j = _num_cols;
+		j = _num_cols - 1;
 	}
-	else if (j == _num_cols + 1) {
+	else if (j == _num_cols) {
 		j = 0;
 	}
 	return std::make_pair(i, j);
@@ -114,27 +114,27 @@ void MPCD::Grid::undoShift() {
 	_shift = zero;
 }
 
-int MPCD::Grid::getAverageParticlesPerCell()
+int MPCD::Grid::getAverageParticlesPerCell() const
 {
 	return _average_particles_per_cell;
 }
 
-double MPCD::Grid::getA()
+double MPCD::Grid::getA() const
 {
 	return _a;
 }
 
-int MPCD::Grid::getNumRows()
+int MPCD::Grid::getNumRows() const
 {
 	return _num_rows;
 }
 
-int MPCD::Grid::getNumCols()
+int MPCD::Grid::getNumCols() const
 {
 	return _num_cols;
 }
 
-double MPCD::Grid::getMaxShift()
+double MPCD::Grid::getMaxShift() const
 {
 	return _max_shift;
 }

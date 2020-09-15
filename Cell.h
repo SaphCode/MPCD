@@ -23,7 +23,7 @@ namespace MPCD {
 		}
 		void draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs);
 	private:
-		std::vector<Particle> _particles;
+		std::vector<Particle*> _particles;
 		Eigen::Vector2d _vel;
 		int _num;
 		Xoshiro _angleGen;

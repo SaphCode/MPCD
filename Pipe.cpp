@@ -7,29 +7,23 @@
 MPCD::Pipe::Pipe() {
 }
 
-void MPCD::Pipe::setParticles(std::vector<Particle> particles)
+/*
+void MPCD::Pipe::setParticles(std::vector<Particle>& particles)
 {
 	_particles = particles;
 }
-
-void MPCD::Pipe::setObstacles(std::vector<Obstacle> obstacles)
+*/
+void MPCD::Pipe::setObstacles(std::vector<Obstacle>& obstacles)
 {
 	_obstacles = obstacles;
 }
 
-void MPCD::Pipe::stream(double lapse, bool draw, std::ofstream& file) {
-	for (auto& p : _particles) {
-		//for (auto& p : _particles) {
+void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file) {
+	for (auto& p : particles) {
 		p.stream(lapse);
 		collide(p);
-		/*bool inBounds = false;
-		while (!inBounds) {
-			inBounds = fixOutOfBounds(p);
-		}*/
 		fixOutOfBounds(p);
-		Eigen::Vector2d particlePos = p.getPosition();
-		assert(inBounds(particlePos));
-
+		
 		if (draw) {
 			Eigen::Vector2d pos = p.getPosition();
 			Eigen::Vector2d vel = p.getVelocity();
@@ -38,7 +32,7 @@ void MPCD::Pipe::stream(double lapse, bool draw, std::ofstream& file) {
 	}
 }
 
-bool MPCD::Pipe::inBounds(Eigen::Vector2d pos) {
+bool MPCD::Pipe::inBounds(const Eigen::Vector2d& pos) {
 	double x = pos[0];
 	double y = pos[1];
 	bool xInBounds = (x >= _x_0 && x <= _x_max);
@@ -80,6 +74,7 @@ void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 		newPos[1] = _y_max + rem;
 	}
 	p.correctPosition(newPos);
+	assert(inBounds(newPos));
 	/*if ((newPos[0] >= _x_0) && (newPos[0] <= _x_max) && (newPos[1] >= _y_0) && (newPos[1] <= _y_max)) {
 		return true;
 	}
@@ -90,7 +85,3 @@ void MPCD::Pipe::collide(Particle& p) {
 
 }
 
-std::vector<MPCD::Particle>& MPCD::Pipe::getParticles()
-{
-	return _particles;
-}

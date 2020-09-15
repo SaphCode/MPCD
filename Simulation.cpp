@@ -72,9 +72,9 @@ MPCD::Simulation::Simulation(bool draw) {
 	Xoshiro xs_ypos(y_0, y_max);
 
 	// MAXWELL BOLTZMANN
-	double mass = 2.988e-26; // h2o kg mass
+	double mass = MPCD::Constants::particle_mass; // h2o kg mass
 	double mean = 0;
-	double temperature = 309.15; // = 36Celsius
+	double temperature = MPCD::Constants::temperature; 
 	MaxwellBoltzmann mb_vel(mean, temperature, mass);
 
 	for (int i = 0; i < number; i++) {
@@ -84,12 +84,11 @@ MPCD::Simulation::Simulation(bool draw) {
 
 		Eigen::Vector2d vel = mb_vel.next();
 
-		Particle p(pos, vel);
+		Particle p(pos, vel, mass);
 
-		particles.push_back(p);
+		_particles.push_back(p);
 	}
-	
-	_pipe.setParticles(particles);
+
 	_pipe.setObstacles(obstacles);
 
 	if (_draw) {
@@ -125,23 +124,22 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 void MPCD::Simulation::timestep()
 {
 	_t += 1;
-	Vector2d shift(_rgShiftX.next(), _rgShiftY.next());
 	
 	auto t1 = std::chrono::high_resolution_clock::now();
-	streamingStep(shift);
+	streamingStep();
 	auto t2 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 	std::cout << "Streaming Step: " << duration << std::endl;
 
 	t1 = std::chrono::high_resolution_clock::now();
-	collisionStep(shift);
+	collisionStep();
 	t2 = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 	std::cout << "Collision Step: " << duration << std::endl;
 }
 
 /* O(N) */
-void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
+void MPCD::Simulation::streamingStep() {
 	
 	std::filesystem::path cwd;
 	std::stringstream s;
@@ -160,8 +158,9 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 		outFile << header.str() << '\n';
 	}
 
-	_pipe.stream(_timelapse, _draw, outFile);
-	_grid.updateCoordinates(_pipe.getParticles());
+	_pipe.stream(_particles, _timelapse, _draw, outFile);
+	_grid.shift();
+	_grid.updateCoordinates(_particles);
 
 
 	//reduction(+ : grid)
@@ -212,7 +211,7 @@ void MPCD::Simulation::streamingStep(Eigen::Vector2d shift) {
 }
 
 /* O(N) */
-void MPCD::Simulation::collisionStep(Eigen::Vector2d shift) {
+void MPCD::Simulation::collisionStep() {
 	std::filesystem::path cwd;
 	std::stringstream s;
 	std::stringstream av;
@@ -229,12 +228,6 @@ void MPCD::Simulation::collisionStep(Eigen::Vector2d shift) {
 		outFile << header.str() << '\n';
 	}
 	_grid.collision(_draw, outFile);
+	_grid.undoShift();
 }
-//
-void MPCD::calculateGrid(Grid& grid, std::vector<Particle>& particles, const Eigen::Vector2d shift, const double timelapse) {
-	//for (auto& p : particles) {
-	//	p.stream(timelapse);
-	//	p.shift(shift);
-	//	grid.insert(p);
-	//}
-}
+

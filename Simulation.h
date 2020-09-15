@@ -20,13 +20,11 @@ namespace MPCD {
 		Pipe _pipe;
 		int _w;
 
-		Xoshiro _rgShiftX;
-		Xoshiro _rgShiftY;
-		double _maxShift;
 		int _t;
+		std::vector<Particle> _particles;
 
-		void streamingStep(Eigen::Vector2d shift);
-		void collisionStep(Eigen::Vector2d shift);
+		void streamingStep();
+		void collisionStep();
 
 		void writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps);
 		
@@ -36,8 +34,6 @@ namespace MPCD {
 		/* One timestep */
 		void timestep();
 	};
-
-	void calculateGrid(Grid& g, std::vector<Particle>& particles, const Eigen::Vector2d shift, const double timelapse);
 	
 }
 

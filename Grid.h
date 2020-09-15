@@ -22,13 +22,13 @@ namespace MPCD {
 			//void insert(Particle p);
 			void shift();
 			void undoShift();
-			int getAverageParticlesPerCell();
-			double getA();
-			int getNumRows();
-			int getNumCols();
-			double getMaxShift();
+			int getAverageParticlesPerCell() const;
+			double getA() const;
+			int getNumRows() const;
+			int getNumCols() const;
+			double getMaxShift() const;
 		private:
-			std::pair<int, int> getCoordinates(Eigen::Vector2d position);
+			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;
 			Xoshiro _shiftGen;
 			Eigen::Vector2d _shift;
 			const int _average_particles_per_cell = 10;

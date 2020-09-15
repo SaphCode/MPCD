@@ -12,7 +12,6 @@ namespace MPCD {
 	class Pipe
 	{
 	private:
-		std::vector<MPCD::Particle> _particles;
 		std::vector<MPCD::Obstacle> _obstacles;
 		double _x_0 = MPCD::Constants::x_0;
 		double _x_max = MPCD::Constants::x_max;
@@ -20,15 +19,15 @@ namespace MPCD {
 		double _y_max = MPCD::Constants::y_max;
 		void collide(Particle& p);
 		void fixOutOfBounds(Particle& p);
-		bool inBounds(Eigen::Vector2d pos);
+		bool inBounds(const Eigen::Vector2d& pos);
 		
 	public:
 		Pipe();
 		~Pipe() {}
-		void stream(double lapse, bool draw, std::ofstream& file);
-		std::vector<MPCD::Particle>& getParticles();
-		void setParticles(std::vector<Particle> particles);
-		void setObstacles(std::vector<Obstacle> obstacles);
+		void stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file);
+		//const std::vector<MPCD::Particle>& getParticles();
+		//void setParticles(std::vector<Particle>& particles);
+		void setObstacles(std::vector<Obstacle>& obstacles);
 	};
 }
 
