@@ -1,8 +1,3 @@
-```latex
-%%latex
-\newcommand{\matr}[1]\textbf{#1}
-\newcommand{\vect}[1]{\vec{#1}}
-```
 
 
 \newcommand{\matr}[1]\textbf{#1}
@@ -188,11 +183,14 @@ If particles go out of the simulation bounds due to the grid shift, they reappea
 
 #### Velocity updating
 
+_TODO_
+_Note: The floor is not rendering correctly at the moment, but it's a mistake that will be fixed in the final version._
+
 The velocities of the particles update according to equation (TODO: numbering equ). To calculate the mean velocity $\vec{V_{c}}$ of cell $c$, first a way to assign each particle a cell has to be established. Let the indices of the cell be $(i, j)$. The position of a cell can then be calculated as $x_c = j \cdot a + s_x$ and $y_c = i \cdot a + s_y$, where $a$ is the lattice constant, $s_x$ and $s_y$ are the $x$ and $y$ components of grid shift $\vect s$. So for the indices it follows,
 
 \begin{equation}
-i = \floor{\frac{y - s_y}{a}}\\
-j = \floor{\frac{x - s_x}{a}},
+i = floor{\frac{y - s_y}{a}}\\
+j = floor{\frac{x - s_x}{a}},
 \end{equation}
 where $(x,y)$ refers to the components of the particle's position vector. With this method to determine the cells, the total cell velocities and numbers of particles in each cell are calculated to obtain the mean cell velocity. Using a uniform randomly sampled rotation angle $\alpha$ and rule (TODO: numbering equ), the particles' velocities are updated.
 
@@ -210,1219 +208,27 @@ __An explanation of the plots__: Top left is a quiver plot, where I plot the vel
 
 _The animations were sent by mail. If you did not get them and would like to see them, you can access them here: https://www.dropbox.com/sh/ih11zkpzapvd7qm/AADgbdW_ejXumRROJbCgMxaUa?dl=0_
 
-_The animations will probably be more interesting once force, thermostat & obstacles have been implemented, but it was a good way to check the behavior of the simulation against the intuition._
+_The animations will probably be more interesting once force, thermostat & obstacles have been implemented, but it was a good way to check the behavior of the simulation against the intuition._    
 
 
-```python
-timesteps = []
-I = []
-J = []
-U = []
-V = []
-pivot = []
-```
 
 
-```python
-from math import floor
-import pandas as pd
-import glob
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
-import os.path
-
-path = "../Application/MPCDApplication/Data/"
-csv = ".csv"
-av = 10
-constants = 'constants_av' + str(av) + csv
-
-constants = pd.read_csv(path + constants)
-num_timesteps = int(constants['timesteps'])
-```
-
-
-```python
-shown_x = float(constants['width'])
-shown_y = float(constants['height'])
-
-saved = './Saved'
-saved_particles = '/particles.pkl'
-file_particles = saved + saved_particles
-
-def load_particles(path):
-    columns = []
-    x_columns = ['x{}'.format(it) for it in range(0, num_timesteps)]
-    vx_columns = ['vx{}'.format(it) for it in range(0, num_timesteps)]
-    y_columns = ['y{}'.format(it) for it in range(0, num_timesteps)]
-    vy_columns = ['vy{}'.format(it) for it in range(0, num_timesteps)]
-    columns.extend(x_columns)
-    columns.extend(y_columns)
-    columns.extend(vx_columns)
-    columns.extend(vy_columns)
-    particles = pd.DataFrame(columns = columns)
-
-    if (os.path.isfile(file_particles)):
-        print('Found saved particles_x and particles_y files!')
-        particles = pd.read_pickle(file_particles)
-        print('Loaded particles files.')
-    else:
-        # Loading particles
-        print('Loading particles ..')
-        filenames_particles = glob.glob('{}*.csv'.format(path))
-        it = 0
-        for file in filenames_particles:
-            df = pd.read_csv(file)
-            df = df.loc[(df['x'] >= 0) & (df['x'] <= shown_x) & (df['y'] >= 0) & (df['y'] <= shown_y)]
-            particles[['x{}'.format(it), 'y{}'.format(it), 'vx{}'.format(it), 'vy{}'.format(it)]] = df[['x', 'y', 'vx', 'vy']]
-            #print('particles')
-            #print(particles[particles['x{}'.format(it)].notnull()])
-            it += 1
-            if (it % 100 == 0):
-                print('--loaded {}'.format(it))
-        particles.to_pickle(file_particles)
-        it = 0
-        print('Particles loaded and saved!\n')
-        # Particles loaded
-    return particles
-
-
-particles_path = '{parent}particles_av{av}'.format(parent = path, av=av)    
-particles = load_particles(path = particles_path)
-particles.to_csv('{}/particles.csv'.format(saved))
-print('Saved as .csv')
-#print(particles)
-```
-
-    Loading particles ..
-    --loaded 100
-    Particles loaded and saved!
-    
-    Saved as .csv
-    
-
-
-```python
-cell_dim = float(constants['cell_dim'])
-width = float(constants['width'])
-height = float(constants['height'])
-shown_cols = floor(width / cell_dim)
-shown_rows = floor(height / cell_dim)
-
-saved = './Saved'
-saved_cells = '/cells.pkl'
-file_cells = saved + saved_cells
-
-columns = ['i', 'j', 'meanX', 'meanY', 'num']
-
-def load_cells(path, columns, shown_rows, shown_cols):
-    
-    index = ['t']
-    if (os.path.isfile(file_cells)):
-        cells = pd.read_pickle(file_cells)
-        #print(cells)
-        #cells.set_index(index, inplace=True)
-    else:
-        # Loading cells
-        print('Loading cells')
-        
-        cells_timesteps = []
-        
-        it = 0
-        filenames_cells = glob.glob('{}*.csv'.format(path))
-        for file in filenames_cells:
-            df = pd.read_csv(file)
-            cells_timesteps.append(df)
-            #df[[i,j]] = (df[[i,j]] + 1/2) * cell_dim
-            #print(df.head())
-            it += 1
-            if (it % 100 == 0):
-                print('--loaded {}'.format(it))
-        #cells.to_pickle(file_cells)
-        print('Cells loaded and saved!\n')
-        # Cells loaded
-        return cells_timesteps
-    
-def prepare_cells(cells_timesteps, columns, shown_rows, shown_cols):
-    # Preparing cell values
-    print('Preparing cell values ..')
-
-    array_i = np.arange(0, shown_rows)
-    array_j = np.arange(0, shown_cols)
-    I,J = np.meshgrid(array_j, array_i)
-
-    U = []
-    V = []
-
-    i = columns[0]
-    j = columns[1]
-    vx = columns[2]
-    vy = columns[3]
-    num = columns[4]
-
-    pivots = []
-    for df in cells_timesteps:
-        # only the rows and cols above 0
-        # and below shown_rows, shown_cols
-        # this is to 
-        # --1. no vaccuum around simulated region
-        # --2. I,J are fixed size
-        U_inner = []
-        V_inner = []
-        for it in array_i: # TODO: check this code something seems foul (row, cols, but only using rows)
-            temp = df.loc[df[i] == it]
-            u = np.array(temp[vx])
-            U_inner.append(u)
-            v = np.array(temp[vy])
-            V_inner.append(v)
-        U.append(np.array(U_inner))#, dtype = object))
-        V.append(np.array(V_inner))#, dtype = object))
-
-        pivot = df.pivot(index = i, columns = j, values = num)
-        pivots.append(pivot)
-
-    print('Cell preparation complete!')
-    return I,J,U,V, pivots
-    # Cell preparation complete
-
-
-cells_path = path + 'cells_av{}'.format(av)
-cells_timesteps = load_cells(cells_path, columns, shown_rows, shown_cols)
-I,J,U,V,pivots = prepare_cells(cells_timesteps, columns, shown_rows, shown_cols)
-```
-
-    Loading cells
-    --loaded 100
-    Cells loaded and saved!
-    
-    Preparing cell values ..
-    Cell preparation complete!
-    
-
-
-```python
-# Plotting
-#with (sns.plotting_context(sns.set())):
-x_0_region = 200
-x_max_region = 240
-y_0_region = -1
-y_max_region = 20
-
-print('Plotting data ..')
-fig = plt.figure(figsize=(20,20))
-ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
-
-for a in ax:
-    a.set_xticklabels([])
-    a.set_yticklabels([])
-    #a.set_aspect('equal')
-    
-fig.subplots_adjust(wspace=0, hspace=0)
-
-color = np.sqrt(U[0]**2 + V[0]**2)
-point_size = 1
-
-ax[0].xaxis.set_ticks([])
-ax[0].yaxis.set_ticks([])
-ax[0].quiver(I, J, U[0], V[0], color)
-ax[0].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
-
-ax[1].xaxis.set_ticks([])
-ax[1].yaxis.set_ticks([])
-ax[1].streamplot(I, J, U[0], V[0], color=color) # grid
-ax[1].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
-
-ax[2].xaxis.set_ticks([])
-ax[2].yaxis.set_ticks([])
-ax[2].plot(particles['x0'], particles['y0'], "o", markersize = point_size)
-ax[2].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
-
-ax[3].xaxis.set_ticks([])
-ax[3].yaxis.set_ticks([])
-#img = ax[3].imshow(pivot, cmap='hot')
-#fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
-sns.heatmap(pivots[0], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.01})
-ax[3].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
-#ax[3].xticks('')
-#ax[3].yticks('')
-ax[3].set_ylabel('')
-ax[3].set_xlabel('')
-#ax[1,1].imshow(pivot, cmap='hot')
-
-plt.savefig("Assets/initial_region.png")
-plt.close()
-print('Data plotted and saved!')
-```
-
-    Plotting data ..
-    Data plotted and saved!
-    
 
 ![Initial State of region with barebones MPCD implementation](Assets/initial_region.png)
 
 
-```python
-print('Plotting data ..')
-fig = plt.figure(figsize=(20,20))
-ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
-
-timesteps = int(constants['timesteps']) - 1
-
-for a in ax:
-    a.set_xticklabels([])
-    a.set_yticklabels([])
-    #a.set_aspect('equal')
-    
-fig.subplots_adjust(wspace=0, hspace=0)
-
-color = np.sqrt(U[timesteps]**2 + V[timesteps]**2)
-point_size = 1
-
-ax[0].xaxis.set_ticks([])
-ax[0].yaxis.set_ticks([])
-ax[0].quiver(I, J, U[timesteps], V[timesteps], color)
-ax[0].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
-
-ax[1].xaxis.set_ticks([])
-ax[1].yaxis.set_ticks([])
-ax[1].streamplot(I, J, U[timesteps], V[timesteps], color=color) # grid
-ax[1].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
-
-ax[2].xaxis.set_ticks([])
-ax[2].yaxis.set_ticks([])
-ax[2].plot(particles['x{}'.format(timesteps)], particles['y{}'.format(timesteps)], "o", markersize = point_size)
-ax[2].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
-
-ax[3].xaxis.set_ticks([])
-ax[3].yaxis.set_ticks([])
-#img = ax[3].imshow(pivot, cmap='hot')
-#fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
-sns.heatmap(pivots[timesteps], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.005})
-ax[3].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
-#ax[3].xticks('')
-#ax[3].yticks('')
-ax[3].set_ylabel('')
-ax[3].set_xlabel('')
-#ax[1,1].imshow(pivot, cmap='hot')
-
-plt.savefig("Assets/stationary_region.png")
-plt.close()
-print('Data plotted and saved!')
-```
-
-    Plotting data ..
-    Data plotted and saved!
-    
 
 ![Ending (maybe stationary) state of region with barebones MPCD implementation](Assets/stationary_region.png)
 
 
-```python
-from matplotlib import animation
-print('Animating Quiver ...\n')
-
-# First set up the figure, the axis, and the plot element we want to animate
-fig = plt.figure()
-ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
-
-quiv = ax.quiver(I, J, 10**-5*U[0], 10**-5*V[0], scale = 1)
-
-# initialization function: plot the background of each frame
-def init():
-    #quiv.set_data([], [], [], [])
-    return quiv,
-
-# animation function.  This is called sequentially
-def animate(it, quiv, I, J):
-    #color = np.sqrt(U[it]**2 + V[it]**2)
-    quiv.set_UVC(10**-5*U[it], 10**-5*V[it])
-    print('--Created {} frame.\n'.format(it))
-    #quiv.set_color(color)
-    return quiv,
-
-# call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(fig, animate, fargs = (quiv, I, J),#init_func=init,
-                               frames=100, interval=1, blit=False)
-
-# save the animation as an mp4.  This requires ffmpeg or mencoder to be
-# installed.  The extra_args ensure that the x264 codec is used, so that
-# the video can be embedded in html5.  You may need to adjust this for
-# your system: for more information, see
-# http://matplotlib.sourceforge.net/api/animation_api.html
-anim.save('./Assets/quiver_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
-print('Animated and saved!')
-
-plt.close()
-```
-
-    Animating Quiver ...
-    
-    --Created 0 frame.
-    
-    --Created 0 frame.
-    
-    --Created 1 frame.
-    
-    --Created 2 frame.
-    
-    --Created 3 frame.
-    
-    --Created 4 frame.
-    
-    --Created 5 frame.
-    
-    --Created 6 frame.
-    
-    --Created 7 frame.
-    
-    --Created 8 frame.
-    
-    --Created 9 frame.
-    
-    --Created 10 frame.
-    
-    --Created 11 frame.
-    
-    --Created 12 frame.
-    
-    --Created 13 frame.
-    
-    --Created 14 frame.
-    
-    --Created 15 frame.
-    
-    --Created 16 frame.
-    
-    --Created 17 frame.
-    
-    --Created 18 frame.
-    
-    --Created 19 frame.
-    
-    --Created 20 frame.
-    
-    --Created 21 frame.
-    
-    --Created 22 frame.
-    
-    --Created 23 frame.
-    
-    --Created 24 frame.
-    
-    --Created 25 frame.
-    
-    --Created 26 frame.
-    
-    --Created 27 frame.
-    
-    --Created 28 frame.
-    
-    --Created 29 frame.
-    
-    --Created 30 frame.
-    
-    --Created 31 frame.
-    
-    --Created 32 frame.
-    
-    --Created 33 frame.
-    
-    --Created 34 frame.
-    
-    --Created 35 frame.
-    
-    --Created 36 frame.
-    
-    --Created 37 frame.
-    
-    --Created 38 frame.
-    
-    --Created 39 frame.
-    
-    --Created 40 frame.
-    
-    --Created 41 frame.
-    
-    --Created 42 frame.
-    
-    --Created 43 frame.
-    
-    --Created 44 frame.
-    
-    --Created 45 frame.
-    
-    --Created 46 frame.
-    
-    --Created 47 frame.
-    
-    --Created 48 frame.
-    
-    --Created 49 frame.
-    
-    --Created 50 frame.
-    
-    --Created 51 frame.
-    
-    --Created 52 frame.
-    
-    --Created 53 frame.
-    
-    --Created 54 frame.
-    
-    --Created 55 frame.
-    
-    --Created 56 frame.
-    
-    --Created 57 frame.
-    
-    --Created 58 frame.
-    
-    --Created 59 frame.
-    
-    --Created 60 frame.
-    
-    --Created 61 frame.
-    
-    --Created 62 frame.
-    
-    --Created 63 frame.
-    
-    --Created 64 frame.
-    
-    --Created 65 frame.
-    
-    --Created 66 frame.
-    
-    --Created 67 frame.
-    
-    --Created 68 frame.
-    
-    --Created 69 frame.
-    
-    --Created 70 frame.
-    
-    --Created 71 frame.
-    
-    --Created 72 frame.
-    
-    --Created 73 frame.
-    
-    --Created 74 frame.
-    
-    --Created 75 frame.
-    
-    --Created 76 frame.
-    
-    --Created 77 frame.
-    
-    --Created 78 frame.
-    
-    --Created 79 frame.
-    
-    --Created 80 frame.
-    
-    --Created 81 frame.
-    
-    --Created 82 frame.
-    
-    --Created 83 frame.
-    
-    --Created 84 frame.
-    
-    --Created 85 frame.
-    
-    --Created 86 frame.
-    
-    --Created 87 frame.
-    
-    --Created 88 frame.
-    
-    --Created 89 frame.
-    
-    --Created 90 frame.
-    
-    --Created 91 frame.
-    
-    --Created 92 frame.
-    
-    --Created 93 frame.
-    
-    --Created 94 frame.
-    
-    --Created 95 frame.
-    
-    --Created 96 frame.
-    
-    --Created 97 frame.
-    
-    --Created 98 frame.
-    
-    --Created 99 frame.
-    
-    Animated and saved!
-    
 
 
-```python
-from matplotlib import animation
-
-print('Animating Streamplot ...\n')
-
-# First set up the figure, the axis, and the plot element we want to animate
-fig = plt.figure()
-ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
-color = np.sqrt(U[0]**2 + V[0]**2)
-stream = ax.streamplot(I, J, U[0], V[0], color=color)
-
-# initialization function: plot the background of each frame
-def init():
-    #quiv.set_data([], [], [], [])
-    return stream
-
-# animation function.  This is called sequentially
-def animate(it):
-    ax.collections = [] # clear lines streamplot
-    ax.patches = [] # clear arrowheads streamplot
-    color = np.sqrt(U[it]**2 + V[it]**2)
-    stream = ax.streamplot(I, J, U[it], V[it], color=color)
-    print('--Created {} frame.\n'.format(it))
-    return stream
-
-# call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(fig, animate, #init_func=init,
-                               frames=100, interval=5, blit=False)
-
-# save the animation as an mp4.  This requires ffmpeg or mencoder to be
-# installed.  The extra_args ensure that the x264 codec is used, so that
-# the video can be embedded in html5.  You may need to adjust this for
-# your system: for more information, see
-# http://matplotlib.sourceforge.net/api/animation_api.html
-anim.save('./Assets/streamplot_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
-print('Animated and saved!')
-
-plt.close()
-```
-
-    Animating Streamplot ...
-    
-    --Created 0 frame.
-    
-    --Created 0 frame.
-    
-    --Created 1 frame.
-    
-    --Created 2 frame.
-    
-    --Created 3 frame.
-    
-    --Created 4 frame.
-    
-    --Created 5 frame.
-    
-    --Created 6 frame.
-    
-    --Created 7 frame.
-    
-    --Created 8 frame.
-    
-    --Created 9 frame.
-    
-    --Created 10 frame.
-    
-    --Created 11 frame.
-    
-    --Created 12 frame.
-    
-    --Created 13 frame.
-    
-    --Created 14 frame.
-    
-    --Created 15 frame.
-    
-    --Created 16 frame.
-    
-    --Created 17 frame.
-    
-    --Created 18 frame.
-    
-    --Created 19 frame.
-    
-    --Created 20 frame.
-    
-    --Created 21 frame.
-    
-    --Created 22 frame.
-    
-    --Created 23 frame.
-    
-    --Created 24 frame.
-    
-    --Created 25 frame.
-    
-    --Created 26 frame.
-    
-    --Created 27 frame.
-    
-    --Created 28 frame.
-    
-    --Created 29 frame.
-    
-    --Created 30 frame.
-    
-    --Created 31 frame.
-    
-    --Created 32 frame.
-    
-    --Created 33 frame.
-    
-    --Created 34 frame.
-    
-    --Created 35 frame.
-    
-    --Created 36 frame.
-    
-    --Created 37 frame.
-    
-    --Created 38 frame.
-    
-    --Created 39 frame.
-    
-    --Created 40 frame.
-    
-    --Created 41 frame.
-    
-    --Created 42 frame.
-    
-    --Created 43 frame.
-    
-    --Created 44 frame.
-    
-    --Created 45 frame.
-    
-    --Created 46 frame.
-    
-    --Created 47 frame.
-    
-    --Created 48 frame.
-    
-    --Created 49 frame.
-    
-    --Created 50 frame.
-    
-    --Created 51 frame.
-    
-    --Created 52 frame.
-    
-    --Created 53 frame.
-    
-    --Created 54 frame.
-    
-    --Created 55 frame.
-    
-    --Created 56 frame.
-    
-    --Created 57 frame.
-    
-    --Created 58 frame.
-    
-    --Created 59 frame.
-    
-    --Created 60 frame.
-    
-    --Created 61 frame.
-    
-    --Created 62 frame.
-    
-    --Created 63 frame.
-    
-    --Created 64 frame.
-    
-    --Created 65 frame.
-    
-    --Created 66 frame.
-    
-    --Created 67 frame.
-    
-    --Created 68 frame.
-    
-    --Created 69 frame.
-    
-    --Created 70 frame.
-    
-    --Created 71 frame.
-    
-    --Created 72 frame.
-    
-    --Created 73 frame.
-    
-    --Created 74 frame.
-    
-    --Created 75 frame.
-    
-    --Created 76 frame.
-    
-    --Created 77 frame.
-    
-    --Created 78 frame.
-    
-    --Created 79 frame.
-    
-    --Created 80 frame.
-    
-    --Created 81 frame.
-    
-    --Created 82 frame.
-    
-    --Created 83 frame.
-    
-    --Created 84 frame.
-    
-    --Created 85 frame.
-    
-    --Created 86 frame.
-    
-    --Created 87 frame.
-    
-    --Created 88 frame.
-    
-    --Created 89 frame.
-    
-    --Created 90 frame.
-    
-    --Created 91 frame.
-    
-    --Created 92 frame.
-    
-    --Created 93 frame.
-    
-    --Created 94 frame.
-    
-    --Created 95 frame.
-    
-    --Created 96 frame.
-    
-    --Created 97 frame.
-    
-    --Created 98 frame.
-    
-    --Created 99 frame.
-    
-    Animated and saved!
-    
-
-
-```python
-from matplotlib import animation
-import seaborn as sns
-
-print('Animating Heatmap ...\n')
-
-# First set up the figure, the axis, and the plot element we want to animate
-fig = plt.figure()
-ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
-sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
-
-# initialization function: plot the background of each frame
-def init():
-    plt.clf()
-    ax = sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
-    #return heatmap,
-
-# animation function.  This is called sequentially
-def animate(it):
-    plt.clf()
-    ax = sns.heatmap(pivots[it], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
-    ax.set_xlim((x_0_region, x_max_region))
-    ax.set_ylim((y_0_region, y_max_region))
-    print('--Created {} frame.\n'.format(it))
-    #return heatmap
-
-# call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=100, interval=5)
-
-# save the animation as an mp4.  This requires ffmpeg or mencoder to be
-# installed.  The extra_args ensure that the x264 codec is used, so that
-# the video can be embedded in html5.  You may need to adjust this for
-# your system: for more information, see
-# http://matplotlib.sourceforge.net/api/animation_api.html
-anim.save('./Assets/heatmap_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
-print('Animated and saved!')
-
-plt.close()
-```
-
-    Animating Heatmap ...
-    
-    --Created 0 frame.
-    
-    --Created 1 frame.
-    
-    --Created 2 frame.
-    
-    --Created 3 frame.
-    
-    --Created 4 frame.
-    
-    --Created 5 frame.
-    
-    --Created 6 frame.
-    
-    --Created 7 frame.
-    
-    --Created 8 frame.
-    
-    --Created 9 frame.
-    
-    --Created 10 frame.
-    
-    --Created 11 frame.
-    
-    --Created 12 frame.
-    
-    --Created 13 frame.
-    
-    --Created 14 frame.
-    
-    --Created 15 frame.
-    
-    --Created 16 frame.
-    
-    --Created 17 frame.
-    
-    --Created 18 frame.
-    
-    --Created 19 frame.
-    
-    --Created 20 frame.
-    
-    --Created 21 frame.
-    
-    --Created 22 frame.
-    
-    --Created 23 frame.
-    
-    --Created 24 frame.
-    
-    --Created 25 frame.
-    
-    --Created 26 frame.
-    
-    --Created 27 frame.
-    
-    --Created 28 frame.
-    
-    --Created 29 frame.
-    
-    --Created 30 frame.
-    
-    --Created 31 frame.
-    
-    --Created 32 frame.
-    
-    --Created 33 frame.
-    
-    --Created 34 frame.
-    
-    --Created 35 frame.
-    
-    --Created 36 frame.
-    
-    --Created 37 frame.
-    
-    --Created 38 frame.
-    
-    --Created 39 frame.
-    
-    --Created 40 frame.
-    
-    --Created 41 frame.
-    
-    --Created 42 frame.
-    
-    --Created 43 frame.
-    
-    --Created 44 frame.
-    
-    --Created 45 frame.
-    
-    --Created 46 frame.
-    
-    --Created 47 frame.
-    
-    --Created 48 frame.
-    
-    --Created 49 frame.
-    
-    --Created 50 frame.
-    
-    --Created 51 frame.
-    
-    --Created 52 frame.
-    
-    --Created 53 frame.
-    
-    --Created 54 frame.
-    
-    --Created 55 frame.
-    
-    --Created 56 frame.
-    
-    --Created 57 frame.
-    
-    --Created 58 frame.
-    
-    --Created 59 frame.
-    
-    --Created 60 frame.
-    
-    --Created 61 frame.
-    
-    --Created 62 frame.
-    
-    --Created 63 frame.
-    
-    --Created 64 frame.
-    
-    --Created 65 frame.
-    
-    --Created 66 frame.
-    
-    --Created 67 frame.
-    
-    --Created 68 frame.
-    
-    --Created 69 frame.
-    
-    --Created 70 frame.
-    
-    --Created 71 frame.
-    
-    --Created 72 frame.
-    
-    --Created 73 frame.
-    
-    --Created 74 frame.
-    
-    --Created 75 frame.
-    
-    --Created 76 frame.
-    
-    --Created 77 frame.
-    
-    --Created 78 frame.
-    
-    --Created 79 frame.
-    
-    --Created 80 frame.
-    
-    --Created 81 frame.
-    
-    --Created 82 frame.
-    
-    --Created 83 frame.
-    
-    --Created 84 frame.
-    
-    --Created 85 frame.
-    
-    --Created 86 frame.
-    
-    --Created 87 frame.
-    
-    --Created 88 frame.
-    
-    --Created 89 frame.
-    
-    --Created 90 frame.
-    
-    --Created 91 frame.
-    
-    --Created 92 frame.
-    
-    --Created 93 frame.
-    
-    --Created 94 frame.
-    
-    --Created 95 frame.
-    
-    --Created 96 frame.
-    
-    --Created 97 frame.
-    
-    --Created 98 frame.
-    
-    --Created 99 frame.
-    
-    Animated and saved!
-    
-
-
-```python
-from matplotlib import animation
-
-print('Animating particles ...')
-# First set up the figure, the axis, and the plot element we want to animate
-fig = plt.figure()
-ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(0, y_max_region))
-scatter, = ax.plot(particles['x0'], particles['y0'], "o", markersize = point_size)
-
-x = 'x'
-y = 'y'
-
-# initialization function: plot the background of each frame
-def init():
-    #quiv.set_data([], [], [], [])
-    return scatter,
-
-# animation function.  This is called sequentially
-def animate(it):
-    scatter.set_xdata(particles[x + str(it)])
-    scatter.set_ydata(particles[y + str(it)])
-    print('--Created {} frame'.format(it))
-    return scatter,
-
-# call the animator.  blit=True means only re-draw the parts that have changed.
-anim = animation.FuncAnimation(fig, animate, #init_func=init,
-                               frames=100, interval=5, blit=True)
-
-# save the animation as an mp4.  This requires ffmpeg or mencoder to be
-# installed.  The extra_args ensure that the x264 codec is used, so that
-# the video can be embedded in html5.  You may need to adjust this for
-# your system: for more information, see
-# http://matplotlib.sourceforge.net/api/animation_api.html
-anim.save('./Assets/scatterplot_animation.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
-print('Animated and saved!')
-
-plt.close()
-```
-
-    Animating particles ...
-    --Created 0 frame
-    --Created 0 frame
-    --Created 0 frame
-    --Created 1 frame
-    --Created 2 frame
-    --Created 3 frame
-    --Created 4 frame
-    --Created 5 frame
-    --Created 6 frame
-    --Created 7 frame
-    --Created 8 frame
-    --Created 9 frame
-    --Created 10 frame
-    --Created 11 frame
-    --Created 12 frame
-    --Created 13 frame
-    --Created 14 frame
-    --Created 15 frame
-    --Created 16 frame
-    --Created 17 frame
-    --Created 18 frame
-    --Created 19 frame
-    --Created 20 frame
-    --Created 21 frame
-    --Created 22 frame
-    --Created 23 frame
-    --Created 24 frame
-    --Created 25 frame
-    --Created 26 frame
-    --Created 27 frame
-    --Created 28 frame
-    --Created 29 frame
-    --Created 30 frame
-    --Created 31 frame
-    --Created 32 frame
-    --Created 33 frame
-    --Created 34 frame
-    --Created 35 frame
-    --Created 36 frame
-    --Created 37 frame
-    --Created 38 frame
-    --Created 39 frame
-    --Created 40 frame
-    --Created 41 frame
-    --Created 42 frame
-    --Created 43 frame
-    --Created 44 frame
-    --Created 45 frame
-    --Created 46 frame
-    --Created 47 frame
-    --Created 48 frame
-    --Created 49 frame
-    --Created 50 frame
-    --Created 51 frame
-    --Created 52 frame
-    --Created 53 frame
-    --Created 54 frame
-    --Created 55 frame
-    --Created 56 frame
-    --Created 57 frame
-    --Created 58 frame
-    --Created 59 frame
-    --Created 60 frame
-    --Created 61 frame
-    --Created 62 frame
-    --Created 63 frame
-    --Created 64 frame
-    --Created 65 frame
-    --Created 66 frame
-    --Created 67 frame
-    --Created 68 frame
-    --Created 69 frame
-    --Created 70 frame
-    --Created 71 frame
-    --Created 72 frame
-    --Created 73 frame
-    --Created 74 frame
-    --Created 75 frame
-    --Created 76 frame
-    --Created 77 frame
-    --Created 78 frame
-    --Created 79 frame
-    --Created 80 frame
-    --Created 81 frame
-    --Created 82 frame
-    --Created 83 frame
-    --Created 84 frame
-    --Created 85 frame
-    --Created 86 frame
-    --Created 87 frame
-    --Created 88 frame
-    --Created 89 frame
-    --Created 90 frame
-    --Created 91 frame
-    --Created 92 frame
-    --Created 93 frame
-    --Created 94 frame
-    --Created 95 frame
-    --Created 96 frame
-    --Created 97 frame
-    --Created 98 frame
-    --Created 99 frame
-    Animated and saved!
-    
 
 #### Conservation of number of particles
 
 The number of particles is (just for convenience) plotted and it stays constant.
 
 
-```python
-import matplotlib.pyplot as plt
-nums = []
-for pivot in pivots:
-    nums.append(sum(sum(lis) for lis in pivot.values))
-
-plt.plot(nums)
-plt.title('Variation in number of particles with timesteps')
-plt.ylabel('Number of Particles')
-plt.ylim((79990, 80010))
-plt.xlabel('Timestep')
-plt.savefig('./Assets/number_particles.png')
-plt.close()
-```
 
 ![Constant number of particles](Assets/number_particles.png)
 
@@ -1431,42 +237,6 @@ plt.close()
 Because the angle of rotation in the collision step is chosen randomly, and the streaming step does not change momentum, in a large system momentum should be conserved. The velocities of particles were taken and added up. The base momentum is the initial momentum, the error (or variation) from this base is plotted below.
 
 
-```python
-momentum_x = []
-momentum_y = []
-for it in range(0, timesteps-1):
-    vx = sum(particles['vx{}'.format(it)])
-    vy = sum(particles['vy{}'.format(it)])
-    momentum_x.append(vx)
-    momentum_y.append(vy)
-
-base_momentum_x = momentum_x[0]
-base_momentum_y = momentum_y[0]
-error_x = [base_momentum_x - m for m in momentum_x]
-error_y = [base_momentum_y - m for m in momentum_y]
-plt.plot(error_x)
-plt.title('Variation in x-Velocity, initially: {}'.format(round(base_momentum_x, 2)))
-plt.xlabel('Timestep')
-plt.ylabel('x-Velocity')
-plt.savefig('./Assets/x_velocity_variation.png')
-plt.close()
-plt.plot(error_y)
-plt.title('Variation in y-Velocity, initally: {}'.format(round(base_momentum_y, 2)))
-plt.xlabel('Timestep')
-plt.ylabel('y-Velocity')
-plt.savefig('./Assets/y_velocity_variation.png')
-plt.close()
-plt.plot(error_x, error_y, "o", markersize = 3)
-plt.title('Variation in velocity')
-plt.xlabel('Variation in x-velocity')
-plt.ylabel('Variation in y-velocity')
-plt.savefig('./Assets/velocity_variation.png')
-plt.close()
-# -----------------------------------
-
-
-#plt.close()
-```
 
 ![Variation in x-velocity throughout simulation](Assets/x_velocity_variation.png)
 
@@ -1483,61 +253,8 @@ The collision step of the MPCD algorithm conserves energy _locally_, which is to
 To inspect this, the energy of every particle is added up. The base energy is the initial energy, the error (or variation from this base) is calculated and plotted below.
 
 
-```python
-'''
-def square(lis):
-    for e in lis:
-        yield e**2
-
-xvels_squared = []
-for cell_xvels in U:
-    xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))
-#print(xvels)
-yvels_squared = []
-for cell_yvels in V:
-    yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))
-assert(len(xvels) == len(yvels))
-it = 0
-energy_cell_level = []
-mass = 2.988e-26
-for xvel_squared in xvels_squared:
-    yvel_squared = yvels_squared[it]
-    energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here
-    
-plt.plot(energy_cell_level)
-plt.title('Variation in energy, cell method')
-plt.xlabel('Timestep')
-plt.ylabel('Energy')
-plt.savefig('./Assets/constant_energy_cellcalc.png')
-plt.close()
-'''
-```
 
 
-
-
-    "\ndef square(lis):\n    for e in lis:\n        yield e**2\n\nxvels_squared = []\nfor cell_xvels in U:\n    xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))\n#print(xvels)\nyvels_squared = []\nfor cell_yvels in V:\n    yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))\nassert(len(xvels) == len(yvels))\nit = 0\nenergy_cell_level = []\nmass = 2.988e-26\nfor xvel_squared in xvels_squared:\n    yvel_squared = yvels_squared[it]\n    energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here\n    \nplt.plot(energy_cell_level)\nplt.title('Variation in energy, cell method')\nplt.xlabel('Timestep')\nplt.ylabel('Energy')\nplt.savefig('./Assets/constant_energy_cellcalc.png')\nplt.close()\n"
-
-
-
-
-```python
-energy = []
-for it in range(0, timesteps-1):
-    vx_squared = sum(particles['vx{}'.format(it)]**2)
-    vy_squared = sum(particles['vy{}'.format(it)]**2)
-    energy.append(vx_squared + vy_squared)
-
-base_energy = energy[0]
-error = [base_energy - e for e in energy]
-plt.plot(error)
-plt.title('Variation in energy, initially: {}'.format(base_energy))
-plt.xlabel('Timestep')
-plt.ylabel('Energy')
-plt.savefig('./Assets/constant_energy.png')
-plt.close()
-
-```
 
 ![Constant energy throughout simulation](Assets/constant_energy.png)
 
@@ -1576,91 +293,6 @@ If the test should have significance level $\alpha$, $H_0$ is rejected if $T \ge
 The results of the $\chi^2$ test are summarised in [TODO: Table, and table formatting].
 
 
-```python
-path = "../x64/Debug/Data/RNG/"
-mersenne = "mersenne_twister_chi2.csv"
-xoshiro = "xoshiro_chi2.csv"
-index = ["k", "chi^2 probability"]
-out_path = "Generated/"
-new_name = "chi2_results_dirty.csv"
-mersenne_twister_chi2 = pd.read_csv(path + mersenne).set_index(index)
-xoshiro256plusplus_chi2 = pd.read_csv(path + xoshiro).set_index(index)
-results = mersenne_twister_chi2.join(xoshiro256plusplus_chi2, on = index, how = "inner")
-results_csv = results.to_csv(out_path + new_name)
-```
-
-
-```latex
-%%latex
-\begin{table}[]
-\begin{tabular}{llll}
-\rowcolor[HTML]{4472C4} 
-{\color[HTML]{FFF} \textbf{k}} & {\color[HTML]{FFF} \textbf{chi\textasciicircum{}2   probability}} & {\color[HTML]{FFF} \textbf{observed   MT}} & {\color[HTML]{FFF} \textbf{observed XS256++}} \\
-\rowcolor[HTML]{D9E1F2} 
-1                              & 5.991                                                             & 0.292                                      & 0.068                                         \\
-2                              & 7.815                                                             & 1.626                                      & 3.682                                         \\
-\rowcolor[HTML]{D9E1F2} 
-3                              & 9.488                                                             & 3.735                                      & 2.124                                         \\
-4                              & 11.07                                                             & 4.255                                      & 4.525                                         \\
-\rowcolor[HTML]{D9E1F2} 
-5                              & 12.592                                                            & 2.86                                       & 6.345                                         \\
-6                              & 14.067                                                            & 4.071                                      & 6.377                                         \\
-\rowcolor[HTML]{D9E1F2} 
-7                              & 15.507                                                            & 8.662                                      & 11.731                                        \\
-8                              & 16.919                                                            & 14.426                                     & 8.693                                         \\
-\rowcolor[HTML]{D9E1F2} 
-9                              & 18.307                                                            & 11.732                                     & 6.932                                         \\
-10                             & 19.675                                                            & 9.857                                      & 5.939                                         \\
-\rowcolor[HTML]{D9E1F2} 
-11                             & 21.026                                                            & 10.438                                     & 11.73                                         \\
-12                             & 22.362                                                            & 10.985                                     & 15.543                                        \\
-\rowcolor[HTML]{D9E1F2} 
-13                             & 23.685                                                            & 22.603                                     & 12.022                                        \\
-14                             & 24.996                                                            & 13.988                                     & 12.923                                        \\
-\rowcolor[HTML]{D9E1F2} 
-15                             & 26.296                                                            & 15.526                                     & 20.71                                         \\
-16                             & 27.587                                                            & 16.288                                     & 11.501                                        \\
-\rowcolor[HTML]{D9E1F2} 
-17                             & 28.869                                                            & \cellcolor[HTML]{F8CBAD}32.26              & 12.478                                        \\
-18                             & 30.144                                                            & \cellcolor[HTML]{F8CBAD}31.787             & 13.882                                       
-\end{tabular}
-\end{table}
-```
-
-
-\begin{table}[]
-\begin{tabular}{llll}
-\rowcolor[HTML]{4472C4} 
-{\color[HTML]{FFF} \textbf{k}} & {\color[HTML]{FFF} \textbf{chi\textasciicircum{}2   probability}} & {\color[HTML]{FFF} \textbf{observed   MT}} & {\color[HTML]{FFF} \textbf{observed XS256++}} \\
-\rowcolor[HTML]{D9E1F2} 
-1                              & 5.991                                                             & 0.292                                      & 0.068                                         \\
-2                              & 7.815                                                             & 1.626                                      & 3.682                                         \\
-\rowcolor[HTML]{D9E1F2} 
-3                              & 9.488                                                             & 3.735                                      & 2.124                                         \\
-4                              & 11.07                                                             & 4.255                                      & 4.525                                         \\
-\rowcolor[HTML]{D9E1F2} 
-5                              & 12.592                                                            & 2.86                                       & 6.345                                         \\
-6                              & 14.067                                                            & 4.071                                      & 6.377                                         \\
-\rowcolor[HTML]{D9E1F2} 
-7                              & 15.507                                                            & 8.662                                      & 11.731                                        \\
-8                              & 16.919                                                            & 14.426                                     & 8.693                                         \\
-\rowcolor[HTML]{D9E1F2} 
-9                              & 18.307                                                            & 11.732                                     & 6.932                                         \\
-10                             & 19.675                                                            & 9.857                                      & 5.939                                         \\
-\rowcolor[HTML]{D9E1F2} 
-11                             & 21.026                                                            & 10.438                                     & 11.73                                         \\
-12                             & 22.362                                                            & 10.985                                     & 15.543                                        \\
-\rowcolor[HTML]{D9E1F2} 
-13                             & 23.685                                                            & 22.603                                     & 12.022                                        \\
-14                             & 24.996                                                            & 13.988                                     & 12.923                                        \\
-\rowcolor[HTML]{D9E1F2} 
-15                             & 26.296                                                            & 15.526                                     & 20.71                                         \\
-16                             & 27.587                                                            & 16.288                                     & 11.501                                        \\
-\rowcolor[HTML]{D9E1F2} 
-17                             & 28.869                                                            & \cellcolor[HTML]{F8CBAD}32.26              & 12.478                                        \\
-18                             & 30.144                                                            & \cellcolor[HTML]{F8CBAD}31.787             & 13.882                                       
-\end{tabular}
-\end{table}
 
 
 
@@ -1669,62 +301,6 @@ As we can see, both generators pass the $\chi^2$ test and we do not have to reje
 Visually, we can examine the generated buckets of both random generators in [TODO] the following plot. 
 
 
-```python
-mers = "mersenne_"
-xoshiro = "xoshiro_"
-csv = ".csv"
-angle = "alpha"
-name_angles = "angles"
-
-mers_random_angle = pd.read_csv(path + mers + name_angles + csv)
-angle_mers = mers_random_angle[angle]
-xs_random_angle = pd.read_csv(path + xoshiro + name_angles + csv)
-angle_xs = xs_random_angle[angle]
-
-with sns.plotting_context(sns.set()):
-    x_size_per_plot = 7
-    y_size_per_plot = 4
-    rows = 4
-    cols = 2
-    
-    fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
-    cols = ["Mersenne Twister", "xoshiro256++"]
-    for ax, col in zip(axes[0], cols):
-        ax.annotate(col, xy=(0.5, 1), xytext=(0, 10),
-                    textcoords='offset points', xycoords='axes fraction',
-                    size='24', ha='center', va='baseline')
-
-    axes[0,0].set_xlabel("5 buckets")
-    axes[0,0].set_ylabel("frequency of angle")
-    axes[0,0].hist(x=angle_mers,bins = 5)
-
-    axes[0,1].set_xlabel("5 buckets")
-    axes[0,1].hist(x=angle_xs, bins = 5)
-
-    axes[1,0].set_xlabel("10 buckets")
-    axes[1,0].set_ylabel("frequency of angle")
-    axes[1,0].hist(x=angle_mers,bins = 10)
-
-    axes[1,1].set_xlabel("10 buckets")
-    axes[1,1].hist(x=angle_xs, bins = 10)
-
-    axes[2,0].set_xlabel("50 buckets")
-    axes[2,0].set_ylabel("frequency of angle")
-    axes[2,0].hist(x=angle_mers,bins = 50)
-
-    axes[2,1].set_xlabel("50 buckets")
-    axes[2,1].hist(x=angle_xs, bins = 50)
-
-    axes[3,0].set_xlabel("100 buckets")
-    axes[3,0].set_ylabel("frequency of angle")
-    axes[3,0].hist(x=angle_mers,bins = 100)
-
-    axes[3,1].set_xlabel("100 buckets")
-    axes[3,1].hist(x=angle_xs, bins = 100)
-
-    plt.savefig("Assets/angle_buckets.png")
-    plt.close()
-```
 
 ![A histogram of different bucket sizes generated by MT and xoshiro256++](Assets/angle_buckets.png)
 
@@ -1739,79 +315,6 @@ For the implementation of the collision step, a regular lattice is needed.[@wink
 TODO: update situation
 
 
-```python
-import seaborn as sns
-import matplotlib.pyplot as plt
-import glob
-import pandas as pd
-
-path = '../x64/Debug/Data/CellFrequenciesTest/'
-csv = '.csv'
-name_frequencies = 'cell_frequencies_av'
-row = 'i'
-col = 'j'
-num = 'n'
-name_constants = 'constants_'
-average_particles = 'average_particles_per_cell'
-number_particles = 'total_number_of_particles'
-cell_dim = 'cell_dim'
-
-filenames_f = glob.glob('{}{}*{}'.format(path, name_frequencies, csv))
-filenames_c = glob.glob('{}{}*{}'.format(path, name_constants, csv))
-
-# get frequencies, sort by len
-pivots = []
-for file in filenames_f:
-    temp = pd.read_csv(file)
-    temp = temp[temp[row] != temp[row].max()]
-    temp = temp[temp[col] != temp[col].max()]
-    pivot = temp.pivot(index = row, columns = col, values = num)
-    pivots.append(pivot)
-pivots.sort(key=lambda l: len(l), reverse=True)
-    
-# get constants, sort by av_particles (same sort as above)
-info_df = pd.DataFrame(columns=['timesteps','time_lapse','cell_dim','x_0','y_0','x_max','y_max','average_particles_per_cell','total_number_of_particles'])
-for file in filenames_c:
-    info_df = pd.concat([info_df, pd.read_csv(file)], ignore_index=True)
-info_df = info_df.sort_values(average_particles)
-num = info_df[number_particles]
-average = info_df[average_particles]
-a = info_df[cell_dim]
-width = info_df['x_max'] - info_df['x_0']
-height = info_df['y_max'] - info_df['y_0']
-
-# plot data
-fig, ax = plt.subplots(2, 2, figsize = (15,10))
-fig.tight_layout(pad=3.0)
-
-ax[0,0].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[0]),
-                                                                                       av = int(average.iloc[0]),
-                                                                                       a = round(float(a.iloc[0]), 3), 
-                                                                                       w = round(float(width[0]), 3), 
-                                                                                       h = round(float(height[0]), 3)))
-sns.heatmap(pivots[0], ax = ax[0,0])#, ax=ax1)
-ax[0,1].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[1]),
-                                                                                       av = int(average.iloc[1]),
-                                                                                       a = round(float(a.iloc[1]), 3), 
-                                                                                       w = round(float(width[1]), 3), 
-                                                                                       h = round(float(height[1]), 3)))
-sns.heatmap(pivots[1], ax = ax[0,1])#, ax=ax2)
-ax[1,0].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[2]),
-                                                                                       av = int(average.iloc[2]),
-                                                                                       a = round(float(a.iloc[2]), 3), 
-                                                                                       w = round(float(width[2]), 3), 
-                                                                                       h = round(float(height[2]), 3)))
-sns.heatmap(pivots[2], ax = ax[1,0])
-ax[1,1].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[3]),
-                                                                                       av = int(average.iloc[3]),
-                                                                                       a = round(float(a.iloc[3]), 3), 
-                                                                                       w = round(float(width[3]), 3), 
-                                                                                       h = round(float(height[3]), 3)))
-sns.heatmap(pivots[3], ax = ax[1,1])
-
-plt.savefig("Assets/average_grid_particles.png")
-plt.close()
-```
 
 ![Average number of particles per Grid cell](Assets/average_grid_particles.png)
 
@@ -1822,106 +325,6 @@ The particle positions were drawn from a uniform real distribution in the same i
 TODO: update situation
 
 
-```python
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-path = "../x64/Debug/Data/RNG/"
-mers = "mersenne_"
-xoshiro = "xoshiro_"
-csv = ".csv"
-particles = "particles"
-moved_xy = "_after_move"
-timesteps_moved_xy = "_after_xx_timesteps"
-x = "x"
-y = "y"
-vx = "vx"
-vy = "vy"
-
-mers_particles = pd.read_csv(path + mers + particles + csv)
-x_mers = mers_particles[x]
-y_mers = mers_particles[y]
-vx_mers = mers_particles[vx]
-vy_mers = mers_particles[vy]
-
-xs_particles = pd.read_csv(path + xoshiro + particles + csv)
-x_xs = xs_particles[x]
-y_xs = xs_particles[y]
-vx_xs = xs_particles[vx]
-vy_xs = xs_particles[vy]
-
-mers_moved_particles = pd.read_csv(path + mers + particles + moved_xy + csv)
-moved_x_mers = mers_moved_particles[x]
-moved_y_mers = mers_moved_particles[y]
-moved_vx_mers = mers_moved_particles[vx]
-moved_vy_mers = mers_moved_particles[vy]
-
-xs_moved_particles = pd.read_csv(path + xoshiro + particles + moved_xy + csv)
-moved_x_xs = xs_moved_particles[x]
-moved_y_xs = xs_moved_particles[y]
-moved_vx_xs = xs_moved_particles[vx]
-moved_vy_xs = xs_moved_particles[vy]
-
-mers_timesteps_moved_particles = pd.read_csv(path + mers + particles + timesteps_moved_xy + csv)
-timesteps_moved_x_mers = mers_timesteps_moved_particles[x]
-timesteps_moved_y_mers = mers_timesteps_moved_particles[y]
-timesteps_moved_vx_mers = mers_timesteps_moved_particles[vx]
-timesteps_moved_vy_mers = mers_timesteps_moved_particles[vy]
-
-xs_timesteps_moved_particles = pd.read_csv(path + xoshiro + particles + timesteps_moved_xy + csv)
-timesteps_moved_x_xs = xs_timesteps_moved_particles[x]
-timesteps_moved_y_xs = xs_timesteps_moved_particles[y]
-timesteps_moved_vx_xs = xs_timesteps_moved_particles[vx]
-timesteps_moved_vy_xs = xs_timesteps_moved_particles[vy]
-
-
-with sns.plotting_context(sns.set()):
-    point_size = 0.01
-    x_size_per_plot = 7
-    y_size_per_plot = 4
-    rows = 4
-    cols = 2
-    #plt.figure(num = 1, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
-
-    fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
-    cols = ["Mersenne Twister", "xoshiro256++"]
-    for ax, col in zip(axes[0], cols):
-        ax.annotate(col, xy=(0.5, 1), xytext=(0, 10),
-                    textcoords='offset points', xycoords='axes fraction',
-                    size='24', ha='center', va='baseline')
-
-    axes[0,0].set_ylabel(y)
-    axes[0,0].plot(x_mers, y_mers, "o", markersize = point_size)
-    axes[0,0].set_xlabel(x)
-
-    axes[0,1].plot(x_xs, y_xs, "o", markersize = point_size)
-    axes[0,1].set_xlabel(x)
-
-    axes[1,0].set_ylabel("y-component of v")
-    axes[1,0].plot(vx_mers, vy_mers, "o", markersize = point_size)
-    axes[1,0].set_xlabel("x-component of v")
-
-    axes[1,1].plot(vx_xs, vy_xs, "o", markersize = point_size)
-    axes[1,1].set_xlabel("x-component of v")
-
-    axes[2,0].set_ylabel(y)
-    axes[2,0].plot(moved_x_mers, moved_y_mers, "o", markersize = point_size)
-    axes[2,0].set_xlabel(x)
-
-    axes[2,1].plot(moved_x_xs, moved_y_xs, "o", markersize = point_size)
-    axes[2,1].set_xlabel(x)
-
-    axes[3,0].set_ylabel(y)
-    axes[3,0].plot(timesteps_moved_x_mers, timesteps_moved_y_mers, "o", markersize = point_size)
-    axes[3,0].set_xlabel(x)
-
-    axes[3,1].plot(timesteps_moved_x_xs, timesteps_moved_y_xs, "o", markersize = point_size)
-    axes[3,1].set_xlabel(x)
-
-    plt.savefig("Assets/particle_streaming.png")
-    plt.close()
-```
 
 ![Particle streaming without collision with MT and with xoshiro](Assets/particle_streaming.png)
 
@@ -1947,46 +350,8 @@ $$
 ## Converting to Word doc (others possible too, f.ex. .tex)
 
 
-```python
-# just do it manually, it works on anaconda env datascience
 
-import subprocess
-#automatic document conversion to markdown and then to word
-#first convert the ipython notebook paper.ipynb to markdown
-subprocess.run("jupyter nbconvert --to markdown thesis.ipynb --output-dir='./Generated'") #--output-dir='./Generated'
-#next remove code
-path = "./Generated/thesis.md"
-with open(path, "r") as f:
-    lines = f.readlines()
-    idx = []
-    idx_files = []
-    for i, line in enumerate(lines):
-        if (line.startswith("```")):
-            idx.append(i)
-        if ("thesis_files" in line):
-            c = line.find("thesis_files")
-            lines[i] = line[0:c] + "" + line[c:]
-
-idx = sorted(idx, reverse=True) # reverse order so not deleting lines and then missing others
-for current, previous in zip(idx[::2], idx[1::2]):
-    print("Deleting {p}:{c}".format(p=previous, c=current+1))
-    print('\n'.join(lines[previous:current+1]))
-    del lines[previous:current+1]
-    
-with open(path, "w") as f:
-    #f.write("\\newcommand{\matr}[1]\\textbf{#1}")
-    #f.write("\\newcommand{\\vect}[1]{\\vec{#1}}")
-    for line in lines:
-        f.write("%s" % line)
-#next convert markdown to ms word
-conversion_tex = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.tex --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
-subprocess.run(conversion_tex)
-conversion_pdf = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
-subprocess.run(conversion_pdf)
-# LATEX TO DOCX pandoc -s math.tex -o example30.docx
-```
-
-    Deleting 3744:3752
+    Deleting 4689:4697
     ```javascript
     
     %%javascript
@@ -2003,7 +368,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 3730:3736
+    Deleting 4679:4685
     ```javascript
     
     %%javascript
@@ -2016,7 +381,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1949:1987
+    Deleting 1168:1206
     ```python
     
     # just do it manually, it works on anaconda env datascience
@@ -2093,7 +458,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1824:1924
+    Deleting 1043:1143
     ```python
     
     import pandas as pd
@@ -2294,7 +659,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1741:1814
+    Deleting 960:1033
     ```python
     
     import seaborn as sns
@@ -2441,7 +806,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1671:1727
+    Deleting 890:946
     ```python
     
     mers = "mersenne_"
@@ -2554,7 +919,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1592:1628
+    Deleting 848:884
     ```latex
     
     %%latex
@@ -2627,7 +992,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1578:1590
+    Deleting 834:846
     ```python
     
     path = "../x64/Debug/Data/RNG/"
@@ -2652,7 +1017,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1523:1540
+    Deleting 779:796
     ```python
     
     energy = []
@@ -2687,7 +1052,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1485:1514
+    Deleting 748:777
     ```python
     
     '''
@@ -2746,7 +1111,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1433:1469
+    Deleting 696:732
     ```python
     
     momentum_x = []
@@ -2819,7 +1184,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1411:1425
+    Deleting 674:688
     ```python
     
     import matplotlib.pyplot as plt
@@ -2848,7 +1213,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1261:1299
+    Deleting 630:668
     ```python
     
     from matplotlib import animation
@@ -2925,7 +1290,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 1014:1054
+    Deleting 588:628
     ```python
     
     from matplotlib import animation
@@ -3006,7 +1371,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 766:805
+    Deleting 547:586
     ```python
     
     from matplotlib import animation
@@ -3085,7 +1450,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 520:557
+    Deleting 508:545
     ```python
     
     from matplotlib import animation
@@ -3160,7 +1525,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 464:512
+    Deleting 456:504
     ```python
     
     print('Plotting data ..')
@@ -3257,7 +1622,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 403:456
+    Deleting 399:452
     ```python
     
     # Plotting
@@ -3364,7 +1729,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 305:393
+    Deleting 309:397
     ```python
     
     cell_dim = float(constants['cell_dim'])
@@ -3541,7 +1906,7 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 245:296
+    Deleting 248:299
     ```python
     
     shown_x = float(constants['width'])
@@ -3636,15 +2001,15 @@ subprocess.run(conversion_pdf)
     
     particles = load_particles(path = particles_path)
     
-    particles.to_csv('{}/particles.csv'.format(saved))
+    #particles.to_csv('{}/particles.csv'.format(saved))
     
-    print('Saved as .csv')
+    #print('Saved as .csv')
     
     #print(particles)
     
     ```
     
-    Deleting 225:243
+    Deleting 228:246
     ```python
     
     from math import floor
@@ -3681,7 +2046,1730 @@ subprocess.run(conversion_pdf)
     
     ```
     
-    Deleting 215:223
+    Deleting 218:226
+    ```python
+    
+    timesteps = []
+    
+    I = []
+    
+    J = []
+    
+    U = []
+    
+    V = []
+    
+    pivot = []
+    
+    ```
+    
+    Deleting 0:5
+    ```latex
+    
+    %%latex
+    
+    \newcommand{\matr}[1]\textbf{#1}
+    
+    \newcommand{\vect}[1]{\vec{#1}}
+    
+    ```
+    
+    Deleting 4689:4697
+    ```javascript
+    
+    %%javascript
+    
+    MathJax.Hub.Queue(
+    
+      ["resetEquationNumbers", MathJax.InputJax.TeX],
+    
+      ["PreProcess", MathJax.Hub],
+    
+      ["Reprocess", MathJax.Hub]
+    
+    );
+    
+    ```
+    
+    Deleting 4679:4685
+    ```javascript
+    
+    %%javascript
+    
+    MathJax.Hub.Config({
+    
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+    
+    });
+    
+    ```
+    
+    Deleting 1168:1206
+    ```python
+    
+    # just do it manually, it works on anaconda env datascience
+    
+    
+    
+    import subprocess
+    
+    #automatic document conversion to markdown and then to word
+    
+    #first convert the ipython notebook paper.ipynb to markdown
+    
+    subprocess.run("jupyter nbconvert --to markdown thesis.ipynb --output-dir='./Generated'") #--output-dir='./Generated'
+    
+    #next remove code
+    
+    path = "./Generated/thesis.md"
+    
+    with open(path, "r") as f:
+    
+        lines = f.readlines()
+    
+        idx = []
+    
+        idx_files = []
+    
+        for i, line in enumerate(lines):
+    
+            if (line.startswith("```")):
+    
+                idx.append(i)
+    
+            if ("thesis_files" in line):
+    
+                c = line.find("thesis_files")
+    
+                lines[i] = line[0:c] + "" + line[c:]
+    
+    
+    
+    idx = sorted(idx, reverse=True) # reverse order so not deleting lines and then missing others
+    
+    for current, previous in zip(idx[::2], idx[1::2]):
+    
+        print("Deleting {p}:{c}".format(p=previous, c=current+1))
+    
+        print('\n'.join(lines[previous:current+1]))
+    
+        del lines[previous:current+1]
+    
+        
+    
+    with open(path, "w") as f:
+    
+        #f.write("\\newcommand{\matr}[1]\\textbf{#1}")
+    
+        #f.write("\\newcommand{\\vect}[1]{\\vec{#1}}")
+    
+        for line in lines:
+    
+            f.write("%s" % line)
+    
+    #next convert markdown to ms word
+    
+    conversion_tex = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.tex --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
+    
+    subprocess.run(conversion_tex)
+    
+    conversion_pdf = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
+    
+    subprocess.run(conversion_pdf)
+    
+    # LATEX TO DOCX pandoc -s math.tex -o example30.docx
+    
+    ```
+    
+    Deleting 1043:1143
+    ```python
+    
+    import pandas as pd
+    
+    import matplotlib.pyplot as plt
+    
+    import seaborn as sns
+    
+    
+    
+    path = "../x64/Debug/Data/RNG/"
+    
+    mers = "mersenne_"
+    
+    xoshiro = "xoshiro_"
+    
+    csv = ".csv"
+    
+    particles = "particles"
+    
+    moved_xy = "_after_move"
+    
+    timesteps_moved_xy = "_after_xx_timesteps"
+    
+    x = "x"
+    
+    y = "y"
+    
+    vx = "vx"
+    
+    vy = "vy"
+    
+    
+    
+    mers_particles = pd.read_csv(path + mers + particles + csv)
+    
+    x_mers = mers_particles[x]
+    
+    y_mers = mers_particles[y]
+    
+    vx_mers = mers_particles[vx]
+    
+    vy_mers = mers_particles[vy]
+    
+    
+    
+    xs_particles = pd.read_csv(path + xoshiro + particles + csv)
+    
+    x_xs = xs_particles[x]
+    
+    y_xs = xs_particles[y]
+    
+    vx_xs = xs_particles[vx]
+    
+    vy_xs = xs_particles[vy]
+    
+    
+    
+    mers_moved_particles = pd.read_csv(path + mers + particles + moved_xy + csv)
+    
+    moved_x_mers = mers_moved_particles[x]
+    
+    moved_y_mers = mers_moved_particles[y]
+    
+    moved_vx_mers = mers_moved_particles[vx]
+    
+    moved_vy_mers = mers_moved_particles[vy]
+    
+    
+    
+    xs_moved_particles = pd.read_csv(path + xoshiro + particles + moved_xy + csv)
+    
+    moved_x_xs = xs_moved_particles[x]
+    
+    moved_y_xs = xs_moved_particles[y]
+    
+    moved_vx_xs = xs_moved_particles[vx]
+    
+    moved_vy_xs = xs_moved_particles[vy]
+    
+    
+    
+    mers_timesteps_moved_particles = pd.read_csv(path + mers + particles + timesteps_moved_xy + csv)
+    
+    timesteps_moved_x_mers = mers_timesteps_moved_particles[x]
+    
+    timesteps_moved_y_mers = mers_timesteps_moved_particles[y]
+    
+    timesteps_moved_vx_mers = mers_timesteps_moved_particles[vx]
+    
+    timesteps_moved_vy_mers = mers_timesteps_moved_particles[vy]
+    
+    
+    
+    xs_timesteps_moved_particles = pd.read_csv(path + xoshiro + particles + timesteps_moved_xy + csv)
+    
+    timesteps_moved_x_xs = xs_timesteps_moved_particles[x]
+    
+    timesteps_moved_y_xs = xs_timesteps_moved_particles[y]
+    
+    timesteps_moved_vx_xs = xs_timesteps_moved_particles[vx]
+    
+    timesteps_moved_vy_xs = xs_timesteps_moved_particles[vy]
+    
+    
+    
+    
+    
+    with sns.plotting_context(sns.set()):
+    
+        point_size = 0.01
+    
+        x_size_per_plot = 7
+    
+        y_size_per_plot = 4
+    
+        rows = 4
+    
+        cols = 2
+    
+        #plt.figure(num = 1, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
+    
+    
+    
+        fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
+    
+        cols = ["Mersenne Twister", "xoshiro256++"]
+    
+        for ax, col in zip(axes[0], cols):
+    
+            ax.annotate(col, xy=(0.5, 1), xytext=(0, 10),
+    
+                        textcoords='offset points', xycoords='axes fraction',
+    
+                        size='24', ha='center', va='baseline')
+    
+    
+    
+        axes[0,0].set_ylabel(y)
+    
+        axes[0,0].plot(x_mers, y_mers, "o", markersize = point_size)
+    
+        axes[0,0].set_xlabel(x)
+    
+    
+    
+        axes[0,1].plot(x_xs, y_xs, "o", markersize = point_size)
+    
+        axes[0,1].set_xlabel(x)
+    
+    
+    
+        axes[1,0].set_ylabel("y-component of v")
+    
+        axes[1,0].plot(vx_mers, vy_mers, "o", markersize = point_size)
+    
+        axes[1,0].set_xlabel("x-component of v")
+    
+    
+    
+        axes[1,1].plot(vx_xs, vy_xs, "o", markersize = point_size)
+    
+        axes[1,1].set_xlabel("x-component of v")
+    
+    
+    
+        axes[2,0].set_ylabel(y)
+    
+        axes[2,0].plot(moved_x_mers, moved_y_mers, "o", markersize = point_size)
+    
+        axes[2,0].set_xlabel(x)
+    
+    
+    
+        axes[2,1].plot(moved_x_xs, moved_y_xs, "o", markersize = point_size)
+    
+        axes[2,1].set_xlabel(x)
+    
+    
+    
+        axes[3,0].set_ylabel(y)
+    
+        axes[3,0].plot(timesteps_moved_x_mers, timesteps_moved_y_mers, "o", markersize = point_size)
+    
+        axes[3,0].set_xlabel(x)
+    
+    
+    
+        axes[3,1].plot(timesteps_moved_x_xs, timesteps_moved_y_xs, "o", markersize = point_size)
+    
+        axes[3,1].set_xlabel(x)
+    
+    
+    
+        plt.savefig("Assets/particle_streaming.png")
+    
+        plt.close()
+    
+    ```
+    
+    Deleting 960:1033
+    ```python
+    
+    import seaborn as sns
+    
+    import matplotlib.pyplot as plt
+    
+    import glob
+    
+    import pandas as pd
+    
+    
+    
+    path = '../x64/Debug/Data/CellFrequenciesTest/'
+    
+    csv = '.csv'
+    
+    name_frequencies = 'cell_frequencies_av'
+    
+    row = 'i'
+    
+    col = 'j'
+    
+    num = 'n'
+    
+    name_constants = 'constants_'
+    
+    average_particles = 'average_particles_per_cell'
+    
+    number_particles = 'total_number_of_particles'
+    
+    cell_dim = 'cell_dim'
+    
+    
+    
+    filenames_f = glob.glob('{}{}*{}'.format(path, name_frequencies, csv))
+    
+    filenames_c = glob.glob('{}{}*{}'.format(path, name_constants, csv))
+    
+    
+    
+    # get frequencies, sort by len
+    
+    pivots = []
+    
+    for file in filenames_f:
+    
+        temp = pd.read_csv(file)
+    
+        temp = temp[temp[row] != temp[row].max()]
+    
+        temp = temp[temp[col] != temp[col].max()]
+    
+        pivot = temp.pivot(index = row, columns = col, values = num)
+    
+        pivots.append(pivot)
+    
+    pivots.sort(key=lambda l: len(l), reverse=True)
+    
+        
+    
+    # get constants, sort by av_particles (same sort as above)
+    
+    info_df = pd.DataFrame(columns=['timesteps','time_lapse','cell_dim','x_0','y_0','x_max','y_max','average_particles_per_cell','total_number_of_particles'])
+    
+    for file in filenames_c:
+    
+        info_df = pd.concat([info_df, pd.read_csv(file)], ignore_index=True)
+    
+    info_df = info_df.sort_values(average_particles)
+    
+    num = info_df[number_particles]
+    
+    average = info_df[average_particles]
+    
+    a = info_df[cell_dim]
+    
+    width = info_df['x_max'] - info_df['x_0']
+    
+    height = info_df['y_max'] - info_df['y_0']
+    
+    
+    
+    # plot data
+    
+    fig, ax = plt.subplots(2, 2, figsize = (15,10))
+    
+    fig.tight_layout(pad=3.0)
+    
+    
+    
+    ax[0,0].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[0]),
+    
+                                                                                           av = int(average.iloc[0]),
+    
+                                                                                           a = round(float(a.iloc[0]), 3), 
+    
+                                                                                           w = round(float(width[0]), 3), 
+    
+                                                                                           h = round(float(height[0]), 3)))
+    
+    sns.heatmap(pivots[0], ax = ax[0,0])#, ax=ax1)
+    
+    ax[0,1].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[1]),
+    
+                                                                                           av = int(average.iloc[1]),
+    
+                                                                                           a = round(float(a.iloc[1]), 3), 
+    
+                                                                                           w = round(float(width[1]), 3), 
+    
+                                                                                           h = round(float(height[1]), 3)))
+    
+    sns.heatmap(pivots[1], ax = ax[0,1])#, ax=ax2)
+    
+    ax[1,0].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[2]),
+    
+                                                                                           av = int(average.iloc[2]),
+    
+                                                                                           a = round(float(a.iloc[2]), 3), 
+    
+                                                                                           w = round(float(width[2]), 3), 
+    
+                                                                                           h = round(float(height[2]), 3)))
+    
+    sns.heatmap(pivots[2], ax = ax[1,0])
+    
+    ax[1,1].set_title('Particles: {p}, Average: {av}, a={a}, w={w}, h={h}'.format(p = int(num.iloc[3]),
+    
+                                                                                           av = int(average.iloc[3]),
+    
+                                                                                           a = round(float(a.iloc[3]), 3), 
+    
+                                                                                           w = round(float(width[3]), 3), 
+    
+                                                                                           h = round(float(height[3]), 3)))
+    
+    sns.heatmap(pivots[3], ax = ax[1,1])
+    
+    
+    
+    plt.savefig("Assets/average_grid_particles.png")
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 890:946
+    ```python
+    
+    mers = "mersenne_"
+    
+    xoshiro = "xoshiro_"
+    
+    csv = ".csv"
+    
+    angle = "alpha"
+    
+    name_angles = "angles"
+    
+    
+    
+    mers_random_angle = pd.read_csv(path + mers + name_angles + csv)
+    
+    angle_mers = mers_random_angle[angle]
+    
+    xs_random_angle = pd.read_csv(path + xoshiro + name_angles + csv)
+    
+    angle_xs = xs_random_angle[angle]
+    
+    
+    
+    with sns.plotting_context(sns.set()):
+    
+        x_size_per_plot = 7
+    
+        y_size_per_plot = 4
+    
+        rows = 4
+    
+        cols = 2
+    
+        
+    
+        fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(x_size_per_plot * cols, y_size_per_plot * rows))
+    
+        cols = ["Mersenne Twister", "xoshiro256++"]
+    
+        for ax, col in zip(axes[0], cols):
+    
+            ax.annotate(col, xy=(0.5, 1), xytext=(0, 10),
+    
+                        textcoords='offset points', xycoords='axes fraction',
+    
+                        size='24', ha='center', va='baseline')
+    
+    
+    
+        axes[0,0].set_xlabel("5 buckets")
+    
+        axes[0,0].set_ylabel("frequency of angle")
+    
+        axes[0,0].hist(x=angle_mers,bins = 5)
+    
+    
+    
+        axes[0,1].set_xlabel("5 buckets")
+    
+        axes[0,1].hist(x=angle_xs, bins = 5)
+    
+    
+    
+        axes[1,0].set_xlabel("10 buckets")
+    
+        axes[1,0].set_ylabel("frequency of angle")
+    
+        axes[1,0].hist(x=angle_mers,bins = 10)
+    
+    
+    
+        axes[1,1].set_xlabel("10 buckets")
+    
+        axes[1,1].hist(x=angle_xs, bins = 10)
+    
+    
+    
+        axes[2,0].set_xlabel("50 buckets")
+    
+        axes[2,0].set_ylabel("frequency of angle")
+    
+        axes[2,0].hist(x=angle_mers,bins = 50)
+    
+    
+    
+        axes[2,1].set_xlabel("50 buckets")
+    
+        axes[2,1].hist(x=angle_xs, bins = 50)
+    
+    
+    
+        axes[3,0].set_xlabel("100 buckets")
+    
+        axes[3,0].set_ylabel("frequency of angle")
+    
+        axes[3,0].hist(x=angle_mers,bins = 100)
+    
+    
+    
+        axes[3,1].set_xlabel("100 buckets")
+    
+        axes[3,1].hist(x=angle_xs, bins = 100)
+    
+    
+    
+        plt.savefig("Assets/angle_buckets.png")
+    
+        plt.close()
+    
+    ```
+    
+    Deleting 848:884
+    ```latex
+    
+    %%latex
+    
+    \begin{table}[]
+    
+    \begin{tabular}{llll}
+    
+    \rowcolor[HTML]{4472C4} 
+    
+    {\color[HTML]{FFF} \textbf{k}} & {\color[HTML]{FFF} \textbf{chi\textasciicircum{}2   probability}} & {\color[HTML]{FFF} \textbf{observed   MT}} & {\color[HTML]{FFF} \textbf{observed XS256++}} \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    1                              & 5.991                                                             & 0.292                                      & 0.068                                         \\
+    
+    2                              & 7.815                                                             & 1.626                                      & 3.682                                         \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    3                              & 9.488                                                             & 3.735                                      & 2.124                                         \\
+    
+    4                              & 11.07                                                             & 4.255                                      & 4.525                                         \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    5                              & 12.592                                                            & 2.86                                       & 6.345                                         \\
+    
+    6                              & 14.067                                                            & 4.071                                      & 6.377                                         \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    7                              & 15.507                                                            & 8.662                                      & 11.731                                        \\
+    
+    8                              & 16.919                                                            & 14.426                                     & 8.693                                         \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    9                              & 18.307                                                            & 11.732                                     & 6.932                                         \\
+    
+    10                             & 19.675                                                            & 9.857                                      & 5.939                                         \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    11                             & 21.026                                                            & 10.438                                     & 11.73                                         \\
+    
+    12                             & 22.362                                                            & 10.985                                     & 15.543                                        \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    13                             & 23.685                                                            & 22.603                                     & 12.022                                        \\
+    
+    14                             & 24.996                                                            & 13.988                                     & 12.923                                        \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    15                             & 26.296                                                            & 15.526                                     & 20.71                                         \\
+    
+    16                             & 27.587                                                            & 16.288                                     & 11.501                                        \\
+    
+    \rowcolor[HTML]{D9E1F2} 
+    
+    17                             & 28.869                                                            & \cellcolor[HTML]{F8CBAD}32.26              & 12.478                                        \\
+    
+    18                             & 30.144                                                            & \cellcolor[HTML]{F8CBAD}31.787             & 13.882                                       
+    
+    \end{tabular}
+    
+    \end{table}
+    
+    ```
+    
+    Deleting 834:846
+    ```python
+    
+    path = "../x64/Debug/Data/RNG/"
+    
+    mersenne = "mersenne_twister_chi2.csv"
+    
+    xoshiro = "xoshiro_chi2.csv"
+    
+    index = ["k", "chi^2 probability"]
+    
+    out_path = "Generated/"
+    
+    new_name = "chi2_results_dirty.csv"
+    
+    mersenne_twister_chi2 = pd.read_csv(path + mersenne).set_index(index)
+    
+    xoshiro256plusplus_chi2 = pd.read_csv(path + xoshiro).set_index(index)
+    
+    results = mersenne_twister_chi2.join(xoshiro256plusplus_chi2, on = index, how = "inner")
+    
+    results_csv = results.to_csv(out_path + new_name)
+    
+    ```
+    
+    Deleting 779:796
+    ```python
+    
+    energy = []
+    
+    for it in range(0, timesteps-1):
+    
+        vx_squared = sum(particles['vx{}'.format(it)]**2)
+    
+        vy_squared = sum(particles['vy{}'.format(it)]**2)
+    
+        energy.append(vx_squared + vy_squared)
+    
+    
+    
+    base_energy = energy[0]
+    
+    error = [base_energy - e for e in energy]
+    
+    plt.plot(error)
+    
+    plt.title('Variation in energy, initially: {}'.format(base_energy))
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('Energy')
+    
+    plt.savefig('./Assets/constant_energy.png')
+    
+    plt.close()
+    
+    
+    
+    ```
+    
+    Deleting 748:777
+    ```python
+    
+    '''
+    
+    def square(lis):
+    
+        for e in lis:
+    
+            yield e**2
+    
+    
+    
+    xvels_squared = []
+    
+    for cell_xvels in U:
+    
+        xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))
+    
+    #print(xvels)
+    
+    yvels_squared = []
+    
+    for cell_yvels in V:
+    
+        yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))
+    
+    assert(len(xvels) == len(yvels))
+    
+    it = 0
+    
+    energy_cell_level = []
+    
+    mass = 2.988e-26
+    
+    for xvel_squared in xvels_squared:
+    
+        yvel_squared = yvels_squared[it]
+    
+        energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here
+    
+        
+    
+    plt.plot(energy_cell_level)
+    
+    plt.title('Variation in energy, cell method')
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('Energy')
+    
+    plt.savefig('./Assets/constant_energy_cellcalc.png')
+    
+    plt.close()
+    
+    '''
+    
+    ```
+    
+    Deleting 696:732
+    ```python
+    
+    momentum_x = []
+    
+    momentum_y = []
+    
+    for it in range(0, timesteps-1):
+    
+        vx = sum(particles['vx{}'.format(it)])
+    
+        vy = sum(particles['vy{}'.format(it)])
+    
+        momentum_x.append(vx)
+    
+        momentum_y.append(vy)
+    
+    
+    
+    base_momentum_x = momentum_x[0]
+    
+    base_momentum_y = momentum_y[0]
+    
+    error_x = [base_momentum_x - m for m in momentum_x]
+    
+    error_y = [base_momentum_y - m for m in momentum_y]
+    
+    plt.plot(error_x)
+    
+    plt.title('Variation in x-Velocity, initially: {}'.format(round(base_momentum_x, 2)))
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('x-Velocity')
+    
+    plt.savefig('./Assets/x_velocity_variation.png')
+    
+    plt.close()
+    
+    plt.plot(error_y)
+    
+    plt.title('Variation in y-Velocity, initally: {}'.format(round(base_momentum_y, 2)))
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('y-Velocity')
+    
+    plt.savefig('./Assets/y_velocity_variation.png')
+    
+    plt.close()
+    
+    plt.plot(error_x, error_y, "o", markersize = 3)
+    
+    plt.title('Variation in velocity')
+    
+    plt.xlabel('Variation in x-velocity')
+    
+    plt.ylabel('Variation in y-velocity')
+    
+    plt.savefig('./Assets/velocity_variation.png')
+    
+    plt.close()
+    
+    # -----------------------------------
+    
+    
+    
+    
+    
+    #plt.close()
+    
+    ```
+    
+    Deleting 674:688
+    ```python
+    
+    import matplotlib.pyplot as plt
+    
+    nums = []
+    
+    for pivot in pivots:
+    
+        nums.append(sum(sum(lis) for lis in pivot.values))
+    
+    
+    
+    plt.plot(nums)
+    
+    plt.title('Variation in number of particles with timesteps')
+    
+    plt.ylabel('Number of Particles')
+    
+    plt.ylim((79990, 80010))
+    
+    plt.xlabel('Timestep')
+    
+    plt.savefig('./Assets/number_particles.png')
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 630:668
+    ```python
+    
+    from matplotlib import animation
+    
+    
+    
+    print('Animating particles ...')
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(0, y_max_region))
+    
+    scatter, = ax.plot(particles['x0'], particles['y0'], "o", markersize = point_size)
+    
+    
+    
+    x = 'x'
+    
+    y = 'y'
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        #quiv.set_data([], [], [], [])
+    
+        return scatter,
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it):
+    
+        scatter.set_xdata(particles[x + str(it)])
+    
+        scatter.set_ydata(particles[y + str(it)])
+    
+        print('--Created {} frame'.format(it))
+    
+        return scatter,
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, #init_func=init,
+    
+                                   frames=100, interval=5, blit=True)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/scatterplot_animation.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 588:628
+    ```python
+    
+    from matplotlib import animation
+    
+    import seaborn as sns
+    
+    
+    
+    print('Animating Heatmap ...\n')
+    
+    
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+    
+    sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        plt.clf()
+    
+        ax = sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+        #return heatmap,
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it):
+    
+        plt.clf()
+    
+        ax = sns.heatmap(pivots[it], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+        ax.set_xlim((x_0_region, x_max_region))
+    
+        ax.set_ylim((y_0_region, y_max_region))
+    
+        print('--Created {} frame.\n'.format(it))
+    
+        #return heatmap
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, init_func=init,
+    
+                                   frames=100, interval=5)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/heatmap_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 547:586
+    ```python
+    
+    from matplotlib import animation
+    
+    
+    
+    print('Animating Streamplot ...\n')
+    
+    
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+    
+    color = np.sqrt(U[0]**2 + V[0]**2)
+    
+    stream = ax.streamplot(I, J, U[0], V[0], color=color)
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        #quiv.set_data([], [], [], [])
+    
+        return stream
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it):
+    
+        ax.collections = [] # clear lines streamplot
+    
+        ax.patches = [] # clear arrowheads streamplot
+    
+        color = np.sqrt(U[it]**2 + V[it]**2)
+    
+        stream = ax.streamplot(I, J, U[it], V[it], color=color)
+    
+        print('--Created {} frame.\n'.format(it))
+    
+        return stream
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, #init_func=init,
+    
+                                   frames=100, interval=5, blit=False)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/streamplot_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 508:545
+    ```python
+    
+    from matplotlib import animation
+    
+    print('Animating Quiver ...\n')
+    
+    
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+    
+    
+    
+    quiv = ax.quiver(I, J, 10**-5*U[0], 10**-5*V[0], scale = 1)
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        #quiv.set_data([], [], [], [])
+    
+        return quiv,
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it, quiv, I, J):
+    
+        #color = np.sqrt(U[it]**2 + V[it]**2)
+    
+        quiv.set_UVC(10**-5*U[it], 10**-5*V[it])
+    
+        print('--Created {} frame.\n'.format(it))
+    
+        #quiv.set_color(color)
+    
+        return quiv,
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, fargs = (quiv, I, J),#init_func=init,
+    
+                                   frames=100, interval=1, blit=False)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/quiver_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 456:504
+    ```python
+    
+    print('Plotting data ..')
+    
+    fig = plt.figure(figsize=(20,20))
+    
+    ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
+    
+    
+    
+    timesteps = int(constants['timesteps']) - 1
+    
+    
+    
+    for a in ax:
+    
+        a.set_xticklabels([])
+    
+        a.set_yticklabels([])
+    
+        #a.set_aspect('equal')
+    
+        
+    
+    fig.subplots_adjust(wspace=0, hspace=0)
+    
+    
+    
+    color = np.sqrt(U[timesteps]**2 + V[timesteps]**2)
+    
+    point_size = 1
+    
+    
+    
+    ax[0].xaxis.set_ticks([])
+    
+    ax[0].yaxis.set_ticks([])
+    
+    ax[0].quiver(I, J, U[timesteps], V[timesteps], color)
+    
+    ax[0].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+    
+    
+    
+    ax[1].xaxis.set_ticks([])
+    
+    ax[1].yaxis.set_ticks([])
+    
+    ax[1].streamplot(I, J, U[timesteps], V[timesteps], color=color) # grid
+    
+    ax[1].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+    
+    
+    
+    ax[2].xaxis.set_ticks([])
+    
+    ax[2].yaxis.set_ticks([])
+    
+    ax[2].plot(particles['x{}'.format(timesteps)], particles['y{}'.format(timesteps)], "o", markersize = point_size)
+    
+    ax[2].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
+    
+    
+    
+    ax[3].xaxis.set_ticks([])
+    
+    ax[3].yaxis.set_ticks([])
+    
+    #img = ax[3].imshow(pivot, cmap='hot')
+    
+    #fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
+    
+    sns.heatmap(pivots[timesteps], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+    ax[3].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
+    
+    #ax[3].xticks('')
+    
+    #ax[3].yticks('')
+    
+    ax[3].set_ylabel('')
+    
+    ax[3].set_xlabel('')
+    
+    #ax[1,1].imshow(pivot, cmap='hot')
+    
+    
+    
+    plt.savefig("Assets/stationary_region.png")
+    
+    plt.close()
+    
+    print('Data plotted and saved!')
+    
+    ```
+    
+    Deleting 399:452
+    ```python
+    
+    # Plotting
+    
+    #with (sns.plotting_context(sns.set())):
+    
+    x_0_region = 200
+    
+    x_max_region = 240
+    
+    y_0_region = -1
+    
+    y_max_region = 20
+    
+    
+    
+    print('Plotting data ..')
+    
+    fig = plt.figure(figsize=(20,20))
+    
+    ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
+    
+    
+    
+    for a in ax:
+    
+        a.set_xticklabels([])
+    
+        a.set_yticklabels([])
+    
+        #a.set_aspect('equal')
+    
+        
+    
+    fig.subplots_adjust(wspace=0, hspace=0)
+    
+    
+    
+    color = np.sqrt(U[0]**2 + V[0]**2)
+    
+    point_size = 1
+    
+    
+    
+    ax[0].xaxis.set_ticks([])
+    
+    ax[0].yaxis.set_ticks([])
+    
+    ax[0].quiver(I, J, U[0], V[0], color)
+    
+    ax[0].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+    
+    
+    
+    ax[1].xaxis.set_ticks([])
+    
+    ax[1].yaxis.set_ticks([])
+    
+    ax[1].streamplot(I, J, U[0], V[0], color=color) # grid
+    
+    ax[1].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+    
+    
+    
+    ax[2].xaxis.set_ticks([])
+    
+    ax[2].yaxis.set_ticks([])
+    
+    ax[2].plot(particles['x0'], particles['y0'], "o", markersize = point_size)
+    
+    ax[2].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
+    
+    
+    
+    ax[3].xaxis.set_ticks([])
+    
+    ax[3].yaxis.set_ticks([])
+    
+    #img = ax[3].imshow(pivot, cmap='hot')
+    
+    #fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
+    
+    sns.heatmap(pivots[0], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.01})
+    
+    ax[3].set(xlim=(x_0_region,x_max_region), ylim=(0,y_max_region))
+    
+    #ax[3].xticks('')
+    
+    #ax[3].yticks('')
+    
+    ax[3].set_ylabel('')
+    
+    ax[3].set_xlabel('')
+    
+    #ax[1,1].imshow(pivot, cmap='hot')
+    
+    
+    
+    plt.savefig("Assets/initial_region.png")
+    
+    plt.close()
+    
+    print('Data plotted and saved!')
+    
+    ```
+    
+    Deleting 309:397
+    ```python
+    
+    cell_dim = float(constants['cell_dim'])
+    
+    width = float(constants['width'])
+    
+    height = float(constants['height'])
+    
+    shown_cols = floor(width / cell_dim)
+    
+    shown_rows = floor(height / cell_dim)
+    
+    
+    
+    saved = './Saved'
+    
+    saved_cells = '/cells.pkl'
+    
+    file_cells = saved + saved_cells
+    
+    
+    
+    columns = ['i', 'j', 'meanX', 'meanY', 'num']
+    
+    
+    
+    def load_cells(path, columns, shown_rows, shown_cols):
+    
+        
+    
+        index = ['t']
+    
+        if (os.path.isfile(file_cells)):
+    
+            cells = pd.read_pickle(file_cells)
+    
+            #print(cells)
+    
+            #cells.set_index(index, inplace=True)
+    
+        else:
+    
+            # Loading cells
+    
+            print('Loading cells')
+    
+            
+    
+            cells_timesteps = []
+    
+            
+    
+            it = 0
+    
+            filenames_cells = glob.glob('{}*.csv'.format(path))
+    
+            for file in filenames_cells:
+    
+                df = pd.read_csv(file)
+    
+                cells_timesteps.append(df)
+    
+                #df[[i,j]] = (df[[i,j]] + 1/2) * cell_dim
+    
+                #print(df.head())
+    
+                it += 1
+    
+                if (it % 100 == 0):
+    
+                    print('--loaded {}'.format(it))
+    
+            #cells.to_pickle(file_cells)
+    
+            print('Cells loaded and saved!\n')
+    
+            # Cells loaded
+    
+            return cells_timesteps
+    
+        
+    
+    def prepare_cells(cells_timesteps, columns, shown_rows, shown_cols):
+    
+        # Preparing cell values
+    
+        print('Preparing cell values ..')
+    
+    
+    
+        array_i = np.arange(0, shown_rows)
+    
+        array_j = np.arange(0, shown_cols)
+    
+        I,J = np.meshgrid(array_j, array_i)
+    
+    
+    
+        U = []
+    
+        V = []
+    
+    
+    
+        i = columns[0]
+    
+        j = columns[1]
+    
+        vx = columns[2]
+    
+        vy = columns[3]
+    
+        num = columns[4]
+    
+    
+    
+        pivots = []
+    
+        for df in cells_timesteps:
+    
+            # only the rows and cols above 0
+    
+            # and below shown_rows, shown_cols
+    
+            # this is to 
+    
+            # --1. no vaccuum around simulated region
+    
+            # --2. I,J are fixed size
+    
+            U_inner = []
+    
+            V_inner = []
+    
+            for it in array_i: # TODO: check this code something seems foul (row, cols, but only using rows)
+    
+                temp = df.loc[df[i] == it]
+    
+                u = np.array(temp[vx])
+    
+                U_inner.append(u)
+    
+                v = np.array(temp[vy])
+    
+                V_inner.append(v)
+    
+            U.append(np.array(U_inner))#, dtype = object))
+    
+            V.append(np.array(V_inner))#, dtype = object))
+    
+    
+    
+            pivot = df.pivot(index = i, columns = j, values = num)
+    
+            pivots.append(pivot)
+    
+    
+    
+        print('Cell preparation complete!')
+    
+        return I,J,U,V, pivots
+    
+        # Cell preparation complete
+    
+    
+    
+    
+    
+    cells_path = path + 'cells_av{}'.format(av)
+    
+    cells_timesteps = load_cells(cells_path, columns, shown_rows, shown_cols)
+    
+    I,J,U,V,pivots = prepare_cells(cells_timesteps, columns, shown_rows, shown_cols)
+    
+    ```
+    
+    Deleting 248:299
+    ```python
+    
+    shown_x = float(constants['width'])
+    
+    shown_y = float(constants['height'])
+    
+    
+    
+    saved = './Saved'
+    
+    saved_particles = '/particles.pkl'
+    
+    file_particles = saved + saved_particles
+    
+    
+    
+    def load_particles(path):
+    
+        columns = []
+    
+        x_columns = ['x{}'.format(it) for it in range(0, num_timesteps)]
+    
+        vx_columns = ['vx{}'.format(it) for it in range(0, num_timesteps)]
+    
+        y_columns = ['y{}'.format(it) for it in range(0, num_timesteps)]
+    
+        vy_columns = ['vy{}'.format(it) for it in range(0, num_timesteps)]
+    
+        columns.extend(x_columns)
+    
+        columns.extend(y_columns)
+    
+        columns.extend(vx_columns)
+    
+        columns.extend(vy_columns)
+    
+        particles = pd.DataFrame(columns = columns)
+    
+    
+    
+        if (os.path.isfile(file_particles)):
+    
+            print('Found saved particles_x and particles_y files!')
+    
+            particles = pd.read_pickle(file_particles)
+    
+            print('Loaded particles files.')
+    
+        else:
+    
+            # Loading particles
+    
+            print('Loading particles ..')
+    
+            filenames_particles = glob.glob('{}*.csv'.format(path))
+    
+            it = 0
+    
+            for file in filenames_particles:
+    
+                df = pd.read_csv(file)
+    
+                df = df.loc[(df['x'] >= 0) & (df['x'] <= shown_x) & (df['y'] >= 0) & (df['y'] <= shown_y)]
+    
+                particles[['x{}'.format(it), 'y{}'.format(it), 'vx{}'.format(it), 'vy{}'.format(it)]] = df[['x', 'y', 'vx', 'vy']]
+    
+                #print('particles')
+    
+                #print(particles[particles['x{}'.format(it)].notnull()])
+    
+                it += 1
+    
+                if (it % 100 == 0):
+    
+                    print('--loaded {}'.format(it))
+    
+            particles.to_pickle(file_particles)
+    
+            it = 0
+    
+            print('Particles loaded and saved!\n')
+    
+            # Particles loaded
+    
+        return particles
+    
+    
+    
+    
+    
+    particles_path = '{parent}particles_av{av}'.format(parent = path, av=av)    
+    
+    particles = load_particles(path = particles_path)
+    
+    #particles.to_csv('{}/particles.csv'.format(saved))
+    
+    #print('Saved as .csv')
+    
+    #print(particles)
+    
+    ```
+    
+    Deleting 228:246
+    ```python
+    
+    from math import floor
+    
+    import pandas as pd
+    
+    import glob
+    
+    import numpy as np
+    
+    import matplotlib.pyplot as plt
+    
+    import matplotlib.gridspec as gridspec
+    
+    import seaborn as sns
+    
+    import os.path
+    
+    
+    
+    path = "../Application/MPCDApplication/Data/"
+    
+    csv = ".csv"
+    
+    av = 10
+    
+    constants = 'constants_av' + str(av) + csv
+    
+    
+    
+    constants = pd.read_csv(path + constants)
+    
+    num_timesteps = int(constants['timesteps'])
+    
+    ```
+    
+    Deleting 218:226
     ```python
     
     timesteps = []
@@ -3714,7 +3802,14 @@ subprocess.run(conversion_pdf)
 
 
 
-    CompletedProcess(args='pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography="list.bib" --csl="apa.csl"', returncode=43)
+    CompletedProcess(args='pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography="list.bib" --csl="apa.csl"', returncode=0)
+
+
+
+
+
+
+    CompletedProcess(args='pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography="list.bib" --csl="apa.csl"', returncode=0)
 
 
 
@@ -3728,31 +3823,9 @@ jupyter nbextension enable equation-numbering/main
 ### Turn equation numbering on/off
 
 
-```javascript
-%%javascript
-MathJax.Hub.Config({
-    TeX: { equationNumbers: { autoNumber: "AMS" } }
-});
-```
-
-
-    <IPython.core.display.Javascript object>
-
 
 ### Renumber equations
 
-
-```javascript
-%%javascript
-MathJax.Hub.Queue(
-  ["resetEquationNumbers", MathJax.InputJax.TeX],
-  ["PreProcess", MathJax.Hub],
-  ["Reprocess", MathJax.Hub]
-);
-```
-
-
-    <IPython.core.display.Javascript object>
 
 
 -->
