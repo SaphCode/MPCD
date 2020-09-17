@@ -157,10 +157,12 @@
   <ItemGroup>
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="CircularObstacle.cpp" />
+    <ClCompile Include="Force.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="MaxwellBoltzmann.cpp" />
     <ClCompile Include="MersenneTwister.cpp" />
     <ClCompile Include="Obstacle.cpp" />
+    <ClCompile Include="PhysicalObject.cpp" />
     <ClCompile Include="Pipe.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Out.cpp" />
@@ -178,12 +180,14 @@
   <ItemGroup>
     <ClInclude Include="Cell.h" />
     <ClInclude Include="CircularObstacle.h" />
+    <ClInclude Include="Force.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Locations.h" />
     <ClInclude Include="MaxwellBoltzmann.h" />
     <ClInclude Include="MersenneTwister.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Obstacle.h" />
+    <ClInclude Include="PhysicalObject.h" />
     <ClInclude Include="Pipe.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="Out.h" />

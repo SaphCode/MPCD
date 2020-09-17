@@ -12,6 +12,7 @@ namespace MPCD {
 		Eigen::Vector2d _position;
 		Eigen::Vector2d _velocity;
 		double _mass;
+		Force<double> _f;
 		//Eigen::Vector2i _cell_index; //should not need to store this
 		//Eigen::Vector2i _shifted_cell_index;
 		// Eigen::Vector2d _shifted_position; should not need to store this
