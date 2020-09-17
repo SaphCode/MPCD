@@ -1,8 +1,10 @@
 #pragma once
-class Force
-{
-public:
-	double getEffect(double timelapse) const;
-private:
-	Type _object;
-};
+
+#ifndef FORCE_H
+#define FORCE_H
+
+#include "Constants.h"
+namespace Force {
+	constexpr double const_force = MPCD::Constants::particle_mass * 1000;
+}
+#endif // !FORCE_H

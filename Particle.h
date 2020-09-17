@@ -3,16 +3,13 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 #include <Eigen/Dense>
+#include "PhysicalObject.h"
 
 namespace MPCD {
 
-	class Particle
+	class Particle : public PhysicalObject
 	{
 	private:
-		Eigen::Vector2d _position;
-		Eigen::Vector2d _velocity;
-		double _mass;
-		Force<double> _f;
 		//Eigen::Vector2i _cell_index; //should not need to store this
 		//Eigen::Vector2i _shifted_cell_index;
 		// Eigen::Vector2d _shifted_position; should not need to store this
@@ -30,12 +27,7 @@ namespace MPCD {
 		/* Constructor strictly for std::vector<Particle> */
 		Particle(); // default constructor needed for custom class array
 
-		~Particle();
-
 		/* If you make the variables PRIVATE */
-
-		Eigen::Vector2d getPosition() const;
-		Eigen::Vector2d getVelocity() const;
 		
 
 		/* Shifts the position of the particle by @param amount and updates the particle's cell position.
@@ -58,7 +50,7 @@ namespace MPCD {
 				applied first
 		@param rotationMatrix: the rotation Matrix for the cell the particle belongs to. NOTE: same as above
 		*/
-		void updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle);
+		void updateVelocity(double timelapse, Eigen::Vector2d mean_cell_velocity, double rotationAngle);
 
 		friend bool operator==(const Particle& lhs, const Particle& rhs);
 	};

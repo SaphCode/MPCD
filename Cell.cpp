@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include <fstream>
+#include "Constants.h"
 
 MPCD::Cell::Cell() {
 	Xoshiro angle(0, 2 * M_PI);
@@ -36,7 +37,7 @@ void MPCD::Cell::collide() {
 	int sign = (s < 0) ? -1 : 1;
 	Eigen::Vector2d mean = _vel / _num;
 	for (auto& p : _particles) {
-		p->updateVelocity(mean, sign * rotationAngle);
+		p->updateVelocity(MPCD::Constants::time_lapse, mean, sign * rotationAngle);
 	}
 }
 

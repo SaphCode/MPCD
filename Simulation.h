@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include "Grid.h"
 #include "Pipe.h"
+#include "PhysicalObject.h"
 
 #include <map>
 
@@ -22,6 +23,8 @@ namespace MPCD {
 
 		int _t;
 		std::vector<Particle> _particles;
+
+		PhysicalObject _imaginaryAttractorWall;
 
 		void streamingStep();
 		void collisionStep();

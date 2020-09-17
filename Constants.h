@@ -8,7 +8,7 @@
 namespace MPCD {
 	namespace Constants {
 		//constexpr int number = Grid::average_particles_per_cell * (Pipe::x_max / Grid::cell_dim) * (Pipe::y_max / Grid::cell_dim); // will be a func of Grid
-		constexpr int seed = 34534211;
+		constexpr int seed = 39898899;
 		
 		constexpr int timesteps = 100;
 		constexpr int average_particles_per_cell = 10;

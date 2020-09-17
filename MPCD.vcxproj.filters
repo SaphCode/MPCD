@@ -57,9 +57,6 @@
     <ClCompile Include="MaxwellBoltzmann.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Force.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PhysicalObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -113,10 +110,13 @@
     <ClInclude Include="MaxwellBoltzmann.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Force.h">
+    <ClInclude Include="PhysicalObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhysicalObject.h">
+    <ClInclude Include="ForceType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Force.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

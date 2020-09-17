@@ -6,24 +6,12 @@
 
 using namespace MPCD;
 
-Particle::Particle(Eigen::Vector2d position, Eigen::Vector2d velocity, double mass) {
-	_position = position;
-	_velocity = velocity;
-	_mass = mass;
+Particle::Particle(Eigen::Vector2d position, Eigen::Vector2d velocity, double mass) : PhysicalObject(mass, position, velocity) {
+
 }
 
-Particle::Particle() {}
+Particle::Particle() : PhysicalObject() {}
 
-Particle::~Particle() {}
-
-/* If you make the variables PRIVATE */
-Eigen::Vector2d Particle::getPosition() const {
-	return _position;
-}
-
-Eigen::Vector2d Particle::getVelocity() const {
-	return _velocity;
-}
 
 /*
 Eigen::Vector2i Particle::getCellIndex() {
@@ -43,12 +31,12 @@ void Particle::setVelocity(Eigen::Vector2d newVelocity) {
 /* If you make the variables PRIVATE */
 
 void Particle::stream(double timeLapse) {
-	_position += timeLapse * _velocity;
+	_pos += timeLapse * _vel;
 }
 
 void MPCD::Particle::correctPosition(Eigen::Vector2d newPos)
 {
-	_position = newPos;
+	_pos = newPos;
 }
 
 /*
@@ -57,11 +45,12 @@ void Particle::shift(Eigen::Vector2d amount) {
 }
 */
 
-void Particle::updateVelocity(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
+void Particle::updateVelocity(double timelapse, Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
 	Eigen::Matrix2d rotationMatrix;
 	rotationMatrix << cos(rotationAngle), -sin(rotationAngle),
 					sin(rotationAngle), cos(rotationAngle);
-	_velocity = mean_cell_velocity + rotationMatrix * (_velocity - mean_cell_velocity);
+	_vel = mean_cell_velocity + rotationMatrix * (_vel - mean_cell_velocity);
+	PhysicalObject::updateVelocity(timelapse);
 }
 
 /*
@@ -70,7 +59,7 @@ void Particle::shift(Eigen::Vector2d amount) {
 }
 */
 bool MPCD::operator==(const Particle& lhs, const Particle& rhs) {
-	return (lhs._position == rhs._position) && (lhs._velocity == rhs._velocity);
+	return (lhs._pos == rhs._pos) && (lhs._vel == rhs._vel);
 }
 
 /*

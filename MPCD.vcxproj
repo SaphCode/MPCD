@@ -157,7 +157,6 @@
   <ItemGroup>
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="CircularObstacle.cpp" />
-    <ClCompile Include="Force.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="MaxwellBoltzmann.cpp" />
     <ClCompile Include="MersenneTwister.cpp" />
@@ -181,6 +180,7 @@
     <ClInclude Include="Cell.h" />
     <ClInclude Include="CircularObstacle.h" />
     <ClInclude Include="Force.h" />
+    <ClInclude Include="ForceType.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Locations.h" />
     <ClInclude Include="MaxwellBoltzmann.h" />

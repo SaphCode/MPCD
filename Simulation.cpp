@@ -18,6 +18,8 @@
 #include <thread>
 #include <future>
 #include "MaxwellBoltzmann.h"
+#include "ForceType.h"
+#include "PhysicalObject.h"
 
 
 #define _USE_MATH_DEFINES
@@ -67,6 +69,9 @@ MPCD::Simulation::Simulation(bool draw) {
 	std::vector<Particle> particles;
 	particles.reserve(number);
 
+	PhysicalObject im(ForceType::CONST_X);
+	_imaginaryAttractorWall = im;
+
 	//dont worry the numbers are just seeds 
 	Xoshiro xs_xpos(x_0, x_max);
 	Xoshiro xs_ypos(y_0, y_max);
@@ -85,6 +90,7 @@ MPCD::Simulation::Simulation(bool draw) {
 		Eigen::Vector2d vel = mb_vel.next();
 
 		Particle p(pos, vel, mass);
+		p.registerObject(_imaginaryAttractorWall);
 
 		_particles.push_back(p);
 	}
