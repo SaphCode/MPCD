@@ -389,6 +389,13 @@ between the particles, the walls and obstacles.
 \hypertarget{constant-force}{%
 \subsection{Constant Force}\label{constant-force}}
 
+After the collision step, a constant force is applied in the positive x
+direction. If it is applied before the collision, the addiditional
+x-velocity gets smeared randomly and the result is just a heating up of
+the liquid. Because now a force acts on the particles, as seen in figure
+(TODO figure\#), additional energy is coming into the system which needs
+to be controlled. The tool to do this in MPCD is called a thermostat.
+
 \hypertarget{thermostat}{%
 \subsection{Thermostat}\label{thermostat}}
 
@@ -545,19 +552,8 @@ thermostat \& obstacles have been implemented, but it was a good way to
 check the behavior of the simulation against the intuition.}
 
 \begin{verbatim}
-Loading particles ..
---loaded 10
---loaded 20
---loaded 30
---loaded 40
---loaded 50
---loaded 60
---loaded 70
---loaded 80
---loaded 90
---loaded 100
-Particles loaded and saved!
-
+Found saved particles_x and particles_y files!
+Loaded particles files.
 
 
 
@@ -992,16 +988,6 @@ Animating Streamplot ...
 --Created 86 frame.
 
 --Created 87 frame.
-
---Created 88 frame.
-
---Created 89 frame.
-
---Created 90 frame.
-
---Created 91 frame.
-
---Created 92 frame.
 \end{verbatim}
 
 \hypertarget{conservation-of-number-of-particles}{%

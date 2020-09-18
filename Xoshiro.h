@@ -12,14 +12,14 @@ public:
 	Xoshiro(double min, double max);
 	Xoshiro();
 	~Xoshiro() {}
-	double next();
+	double next() const;
 
-	void setMax(double max);
-	void setMin(double min);
+	//void setMax(double max);
+	//void setMin(double min);
 
 private:
-	double _min;
-	double _max;
+	const double _min;
+	const double _max;
 };
 
 #endif
