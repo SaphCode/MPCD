@@ -39,6 +39,27 @@ void PhysicalObject::updateVelocity(double timelapse)
     _vel += timelapse * force/_mass;
 }
 
+void PhysicalObject::updatePosition(double timelapse) {
+    Vector2d force = calculateForceOnThis();
+    _pos += timelapse * _vel;
+    switch (_f) {
+    case ForceType::CONST: {
+        _pos += force / _mass * timelapse * timelapse / 2;
+    }
+    break;
+    case ForceType::CONST_X: {
+        _pos += force / _mass * timelapse * timelapse / 2;
+    }
+    break;
+    case ForceType::CONST_Y: {
+        _pos += force / _mass * timelapse * timelapse / 2;
+    }
+    break;
+    default:
+        throw std::exception();
+    }
+}
+
 Vector2d PhysicalObject::calculateForceOnThis() const
 {
     Vector2d force(0,0);

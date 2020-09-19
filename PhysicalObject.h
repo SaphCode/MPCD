@@ -17,6 +17,7 @@ public:
 	Eigen::Vector2d getPosition() const;
 	Eigen::Vector2d getVelocity() const;
 	void updateVelocity(double timelapse);
+	void updatePosition(double timelapse);
 	void registerObject(PhysicalObject& o);
 	void unregisterObject(PhysicalObject& o);
 protected:

@@ -17,14 +17,14 @@ namespace MPCD {
 	private:
 		double calculateSum(const double scalingFactor, const std::vector<Particle>& particles) const;
 		double calculateA(const double scalingFactor, const std::vector<Particle>& particles, const int dimension) const;
-		const double _c;
-		const double _T0;
-		const double _particleMass;
-		const double _boltzmannConst;
+		const double _c = 0.28;
+		const double _T0 = MPCD::Constants::temperature;
+		const double _particleMass = MPCD::Constants::particle_mass;
+		const double _boltzmannConst = MPCD::Constants::k_boltzmann;
 		Eigen::Vector2d _u;
-		const Xoshiro _scalingFactorGen;
-		const Xoshiro _50percentGen;
-		const Xoshiro _doWeScaleGen;
+		Xoshiro _scalingFactorGen;
+		Xoshiro _50percentGen;
+		Xoshiro _doWeScaleGen;
 	};
 
 }

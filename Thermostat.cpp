@@ -5,11 +5,6 @@
 using namespace Eigen;
 
 MPCD::Thermostat::Thermostat() {
-    _particleMass = MPCD::Constants::particle_mass;
-    _T0 = MPCD::Constants::temperature;
-    _boltzmannConst = MPCD::Constants::k_boltzmann;
-    _c = 0.28; // TODO
-
     Xoshiro scalingFactorGen(1, 1 + _c);
     _scalingFactorGen = scalingFactorGen;
     Xoshiro fiftyPercentGen(-1, 1);
@@ -17,7 +12,7 @@ MPCD::Thermostat::Thermostat() {
     Xoshiro doWeScaleGen(0, 1);
     _doWeScaleGen = doWeScaleGen;
 
-    _u = ? ? ? ;
+    // _u = ; TODO
 }
 
 double MPCD::Thermostat::getScalingFactor(const std::vector<Particle>& particles, const int dimension) const

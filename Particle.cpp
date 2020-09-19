@@ -31,7 +31,7 @@ void Particle::setVelocity(Eigen::Vector2d newVelocity) {
 /* If you make the variables PRIVATE */
 
 void Particle::stream(double timeLapse) {
-	_pos += timeLapse * _vel;
+	PhysicalObject::updatePosition(timeLapse);
 }
 
 void MPCD::Particle::correctPosition(Eigen::Vector2d newPos)
