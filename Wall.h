@@ -12,13 +12,13 @@ namespace MPCD {
     class Wall : public ImmovableObstacle
     {
     public:
-        Wall(const Rectangle rect, const ForceType type);
+        Wall(const double yPos, const ForceType type);
 
         bool isInBounds(const PhysicalObject& o) const override;
-        Eigen::Vector2d getCollisionPoint(const PhysicalObject& o) const override;
+        Eigen::Vector2d getOvershoot(const PhysicalObject& o) const override;
 
     private:
-        const Rectangle _bounds;
+        const double _yPos;
     };
 }
 #endif // !WALL_H

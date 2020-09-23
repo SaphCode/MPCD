@@ -16,7 +16,7 @@ namespace MPCD {
 		}
 		//virtual std::map<std::pair<int, int>, bool> occupied();
 		virtual bool isInBounds(const PhysicalObject& o) const = 0;
-		virtual Eigen::Vector2d getCollisionPoint(const PhysicalObject& o) const = 0;
+		virtual Eigen::Vector2d getOvershoot(const PhysicalObject& o) const = 0;
 	private:
 		//std::map<std::pair<int, int>, bool> _occupied;
 

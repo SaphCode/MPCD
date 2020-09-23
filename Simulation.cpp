@@ -65,7 +65,21 @@ MPCD::Simulation::Simulation(bool draw) : _imaginaryAttractorWall(ForceType::CON
 	int number = av_particles * (width / cell_dim) * (height / cell_dim); // will be a func of Grid
 	
 	std::vector<Obstacle> obstacles;
+	_obstacles = obstacles;
+	_pipe.setObstacles(_obstacles);
 
+	_walls = setUpWalls();
+	// TODO: make walls, assert condition for in bounds after colliding with walls. bc if you do the same thing again it will end up in endless loop
+
+	_particles = setUpParticles(number, x_0, x_max, y_0, y_max, _imaginaryAttractorWall);
+
+
+	if (_draw) {
+		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles, timesteps);
+	}
+}
+
+std::vector<Particle> setUpParticles(int number, double x_0, double x_max, double y_0, double y_max, PhysicalObject& imaginaryAttractorWall) {
 	std::vector<Particle> particles;
 	particles.reserve(number);
 
@@ -76,7 +90,7 @@ MPCD::Simulation::Simulation(bool draw) : _imaginaryAttractorWall(ForceType::CON
 	// MAXWELL BOLTZMANN
 	double mass = MPCD::Constants::particle_mass; // h2o kg mass
 	double mean = 0;
-	double temperature = MPCD::Constants::temperature; 
+	double temperature = MPCD::Constants::temperature;
 	MaxwellBoltzmann mb_vel(mean, temperature, mass);
 
 	for (int i = 0; i < number; i++) {
@@ -87,16 +101,15 @@ MPCD::Simulation::Simulation(bool draw) : _imaginaryAttractorWall(ForceType::CON
 		Eigen::Vector2d vel = mb_vel.next();
 
 		Particle p(pos, vel, mass);
-		p.registerObject(_imaginaryAttractorWall);
+		p.registerObject(imaginaryAttractorWall);
 
-		_particles.push_back(p);
+		particles.push_back(p);
 	}
+	return particles;
+}
 
-	_pipe.setObstacles(obstacles);
+std::vector<ImmovableObstacle> setUpWalls() {
 
-	if (_draw) {
-		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles, timesteps);
-	}
 }
 
 void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps) {

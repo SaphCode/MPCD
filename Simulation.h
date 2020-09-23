@@ -8,6 +8,7 @@
 #include "Grid.h"
 #include "Pipe.h"
 #include "PhysicalObject.h"
+#include "ImmovableObstacle.h"
 
 #include <map>
 
@@ -23,6 +24,9 @@ namespace MPCD {
 
 		int _t;
 		std::vector<Particle> _particles;
+		std::vector<Obstacle> _obstacles;
+
+		std::vector<ImmovableObstacle> _walls;
 
 		PhysicalObject _imaginaryAttractorWall;
 
