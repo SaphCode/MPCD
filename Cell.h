@@ -21,13 +21,13 @@ namespace MPCD {
 			os << "Vel: " << std::to_string(c._vel[0]) << ", Num: " << std::to_string(c._num);
 			return os;
 		}
-		void draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs);
+		void draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs) const;
 	private:
 		std::vector<Particle*> _particles;
 		Eigen::Vector2d _vel;
 		int _num;
-		Xoshiro _angleGen;
-		Xoshiro _signGen;
+		const Xoshiro _angleGen;
+		const Xoshiro _signGen;
 	};
 }
 #endif // !CELL_H

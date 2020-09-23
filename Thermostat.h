@@ -21,10 +21,10 @@ namespace MPCD {
 		const double _T0 = MPCD::Constants::temperature;
 		const double _particleMass = MPCD::Constants::particle_mass;
 		const double _boltzmannConst = MPCD::Constants::k_boltzmann;
-		Eigen::Vector2d _u;
-		Xoshiro _scalingFactorGen;
-		Xoshiro _50percentGen;
-		Xoshiro _doWeScaleGen;
+		const Xoshiro _scalingFactorGen;
+		const Xoshiro _50percentGen;
+		const Xoshiro _doWeScaleGen;
+		Eigen::Vector2d _flowProfile(Eigen::Vector2d pos) const;
 	};
 
 }

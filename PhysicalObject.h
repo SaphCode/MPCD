@@ -26,8 +26,8 @@ protected:
 	Eigen::Vector2d _vel;
 private:
 	Eigen::Vector2d calculateForceOnThis() const;
-	Eigen::Vector2d getEffect(PhysicalObject o) const;
-	ForceType _f;
+	Eigen::Vector2d getEffect(const PhysicalObject& o) const;
+	const ForceType _f;
 	std::vector<PhysicalObject*> _registeredObjects;
 };
 

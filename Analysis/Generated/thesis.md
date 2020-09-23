@@ -53,6 +53,21 @@ Half discussed: How large can the timestep be? - _The timestep will be a functio
 
 How should I choose the units, e.g. mass, Temperature? (In Arash's paper f.ex., T=1 was chosen) At the time I'm working with the mass of H2O[kg] and Body Temperature[K]. - _Still open._
 
+
+https://en.wikipedia.org/wiki/Hagen%E2%80%93Poiseuille_equation
+
+Does the equation for pressure difference hold?
+
+In standard fluid-kinetics notation:[5][6][7]
+
+{\displaystyle \Delta p={\frac {8\mu LQ}{\pi R^{4}}}={\frac {8\pi \mu LQ}{A^{2}}}}{\displaystyle \Delta p={\frac {8\mu LQ}{\pi R^{4}}}={\frac {8\pi \mu LQ}{A^{2}}}}
+where:
+
+The ratio of length to radius of a pipe should be greater than one forty-eighth of the Reynolds number for the Hagen–Poiseuille law to be valid.[9] If the pipe is too short, the Hagen–Poiseuille equation may result in unphysically high flow rates; the flow is bounded by Bernoulli's principle, under less restrictive conditions, by
+
+{\displaystyle \Delta p={\frac {1}{2}}\rho v_{\text{max}}^{2}={\frac {1}{2}}\rho \left({\frac {Q_{\max }{}}{\pi R^{2}}}\right)^{2}\,\,\,\rightarrow \,\,\,Q_{\max }{}=\pi R^{2}{\sqrt {\frac {2\Delta p}{\rho }}},}{\displaystyle \Delta p={\frac {1}{2}}\rho v_{\text{max}}^{2}={\frac {1}{2}}\rho \left({\frac {Q_{\max }{}}{\pi R^{2}}}\right)^{2}\,\,\,\rightarrow \,\,\,Q_{\max }{}=\pi R^{2}{\sqrt {\frac {2\Delta p}{\rho }}},}
+because it's impossible to have less-than-zero (absolute) pressure (not to be confused with gauge pressure) in an incompressible flow.
+
 # Next Steps
 
 1. _Check the conservation of energy, momentum, do the grid shift or the wall + particles + obstacles shift. - _Done.__
@@ -140,11 +155,34 @@ The ballistics step might be called a substep of particle streaming. After the p
 
 ## Constant Force
 
-After the collision step, a constant force is applied in the positive x direction. If it is applied before the collision, the addiditional x-velocity gets smeared randomly and the result is just a heating up of the liquid. Because now a force acts on the particles, as seen in figure (TODO figure#), additional energy is coming into the system which needs to be controlled. The tool to do this in MPCD is called a thermostat.
+Several methods exist to model poseuille flow. Here, a gravitational approach is chosen. This means an external force acts on the unit volume of the fluid, which is given by,
 
+\begin{equation}
+\vect{F} = \rho_S g \hat x,
+\end{equation}
 
+where $\rho_S$ is the mass density of the solvent, $g$ is the acceleration constant and $\hat x$ is the unit vector in the $x$-direction. This force is incorporated into the simulation by updating the position and velocity of a particle according to the solution for constant force Newton's equations.[@nikoubashman2013]
+
+Because now a force acts on the particles, as seen in figure (TODO figure#), additional energy is coming into the system which needs to be controlled. The tool to do this in MPCD is called a thermostat.
+
+![Increasing energy of system. Difference in energy at timestep t vs. t=0](Release/Assets/increasing_energy.png)
 
 ## Thermostat
+
+To counteract the heating up of the fluid by the constant force on every particle, a thermostat is needed. As described in Winkler[@winkl2009], the computationally efficient cell-level thermostat was used. For this, the macroscopic flow profile is needed. Fluid flow through the cross section of a pipe with parallel walls and interaction modeled by no-slip boundary condition is called poseuille flow, the macroscopic flow profile is known. It is calculated as,
+
+\begin{equation}
+u(r) = \frac{\Delta p}{4\eta L_x} (R^2 - r^2),
+\end{equation}
+
+where $u$ is the macroscopic velocity in the x-direction, $\Delta p$ is the difference in pressure from beginning to end of the pipe, $\eta$ is the dynamic viscosity of the fluid, $L_x$ is the length of the pipe, $R$ is the radius of the pipe and $r$ is the $y$-coordinate of the particle relative to the center of the pipe.[@wiki:poseuille_equation] The situation is displayed in figure (TODO: make a figure)
+
+TODO:
+The pressure difference is on the order of $\Delta p \sim g$, where g is the acceleration constant of the force.[@nikoubashman2013]
+END TODO
+
+TODO:
+The dynamic viscosity of water at body temperature is about $\eta \sim 0.6947$. END TODO
 
 ## Anything else maybe ??
 
@@ -222,8 +260,19 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    Found saved particles_x and particles_y files!
-    Loaded particles files.
+    Loading particles ..
+    --loaded 10
+    --loaded 20
+    --loaded 30
+    --loaded 40
+    --loaded 50
+    --loaded 60
+    --loaded 70
+    --loaded 80
+    --loaded 90
+    --loaded 100
+    Particles loaded and saved!
+    
     
 
 
@@ -652,6 +701,16 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 87 frame.
     
+    --Created 88 frame.
+    
+    --Created 89 frame.
+    
+    --Created 90 frame.
+    
+    --Created 91 frame.
+    
+    --Created 92 frame.
+    
     
 
 
@@ -685,6 +744,8 @@ Error $\sim 10^{-5}$
 The collision step of the MPCD algorithm conserves energy _locally_, which is to say on a cell level. [@winkl2009] The energy should also be conserved globally, since no force is acting upon the particles _yet_, the streaming and collision steps conserve energy, and the particle number remains the same.
 
 To inspect this, the energy of every particle is added up. The base energy is the initial energy, the error (or variation from this base) is calculated and plotted below.
+
+
 
 
 

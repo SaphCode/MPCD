@@ -3,6 +3,8 @@
 #ifndef XOSHIRO_H
 #define XOSHIRO_H
 
+#include "xoshiro256plusplus.h"
+
 class Xoshiro
 {
 public:

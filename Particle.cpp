@@ -46,11 +46,11 @@ void Particle::shift(Eigen::Vector2d amount) {
 */
 
 void Particle::updateVelocity(double timelapse, Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
+	PhysicalObject::updateVelocity(timelapse);
 	Eigen::Matrix2d rotationMatrix;
 	rotationMatrix << cos(rotationAngle), -sin(rotationAngle),
 					sin(rotationAngle), cos(rotationAngle);
 	_vel = mean_cell_velocity + rotationMatrix * (_vel - mean_cell_velocity);
-	PhysicalObject::updateVelocity(timelapse);
 }
 
 /*

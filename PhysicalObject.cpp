@@ -3,7 +3,7 @@
 
 using namespace Eigen;
 
-Vector2d PhysicalObject::getEffect(PhysicalObject o) const
+Vector2d PhysicalObject::getEffect(const PhysicalObject& o) const
 {
     switch (_f) {
     case ForceType::CONST_X:
@@ -19,7 +19,7 @@ Vector2d PhysicalObject::getEffect(PhysicalObject o) const
     }
     break;
     default:
-        throw std::exception();
+        throw std::exception("Not implemented for this force type yet.");
     }
 }
 
@@ -42,9 +42,10 @@ void PhysicalObject::updateVelocity(double timelapse)
 void PhysicalObject::updatePosition(double timelapse) {
     Vector2d force = calculateForceOnThis();
     _pos += timelapse * _vel;
-    switch (_f) {
+    _pos += force / _mass * timelapse * timelapse / 2;
+    /*switch (_f) {
     case ForceType::CONST: {
-        _pos += force / _mass * timelapse * timelapse / 2;
+        
     }
     break;
     case ForceType::CONST_X: {
@@ -56,8 +57,10 @@ void PhysicalObject::updatePosition(double timelapse) {
     }
     break;
     default:
-        throw std::exception();
+    {
+        throw std::exception("Force type not implemented yet.");
     }
+    }*/
 }
 
 Vector2d PhysicalObject::calculateForceOnThis() const

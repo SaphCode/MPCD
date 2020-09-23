@@ -29,7 +29,7 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw) {
+MPCD::Simulation::Simulation(bool draw) : _imaginaryAttractorWall(ForceType::CONST_X) {
 	_timelapse = MPCD::Constants::time_lapse;
 	_draw = draw;
 	int timesteps = MPCD::Constants::timesteps;
@@ -68,9 +68,6 @@ MPCD::Simulation::Simulation(bool draw) {
 
 	std::vector<Particle> particles;
 	particles.reserve(number);
-
-	PhysicalObject im(ForceType::CONST_X);
-	_imaginaryAttractorWall = im;
 
 	//dont worry the numbers are just seeds 
 	Xoshiro xs_xpos(x_0, x_max);
