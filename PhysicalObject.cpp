@@ -28,6 +28,13 @@ Eigen::Vector2d PhysicalObject::getPosition() const
     return _pos;
 }
 
+Eigen::Vector2d PhysicalObject::getOldPosition(double timelapse) const {
+    Eigen::Vector2d oldPos;
+    Vector2d force = calculateForceOnThis();
+    oldPos = _pos - timelapse * _vel - force / _mass * timelapse * timelapse / 2;
+    return oldPos;
+}
+
 Eigen::Vector2d PhysicalObject::getVelocity() const
 {
     return _vel;

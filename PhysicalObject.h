@@ -15,6 +15,7 @@ public:
 	PhysicalObject() : _mass(0), _pos(0,0), _vel(0,0), _f(ForceType::NO_FORCE) {}
 	PhysicalObject(ForceType type) : _mass(0), _pos(0, 0), _vel(0, 0), _f(type) {}
 	Eigen::Vector2d getPosition() const;
+	Eigen::Vector2d getOldPosition(double timelapse) const;
 	Eigen::Vector2d getVelocity() const;
 	void updateVelocity(double timelapse);
 	void updatePosition(double timelapse);

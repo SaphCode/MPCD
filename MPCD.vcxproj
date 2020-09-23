@@ -158,11 +158,15 @@
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="CircularObstacle.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="ImmovableObstacle.cpp" />
     <ClCompile Include="MaxwellBoltzmann.cpp" />
     <ClCompile Include="MersenneTwister.cpp" />
     <ClCompile Include="Obstacle.cpp" />
     <ClCompile Include="PhysicalObject.cpp" />
     <ClCompile Include="Pipe.cpp" />
+    <ClCompile Include="Rectangle.cpp" />
+    <ClCompile Include="Circle.cpp" />
+    <ClCompile Include="Shape.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Out.cpp" />
     <ClCompile Include="Particle.cpp" />
@@ -183,6 +187,7 @@
     <ClInclude Include="Force.h" />
     <ClInclude Include="ForceType.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="ImmovableObstacle.h" />
     <ClInclude Include="Locations.h" />
     <ClInclude Include="MaxwellBoltzmann.h" />
     <ClInclude Include="MersenneTwister.h" />
@@ -190,6 +195,9 @@
     <ClInclude Include="Obstacle.h" />
     <ClInclude Include="PhysicalObject.h" />
     <ClInclude Include="Pipe.h" />
+    <ClInclude Include="Rectangle.h" />
+    <ClInclude Include="Circle.h" />
+    <ClInclude Include="Shape.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="Out.h" />
     <ClInclude Include="Particle.h" />
