@@ -28,6 +28,7 @@ namespace MPCD {
 			int getNumCols() const;
 			double getMaxShift() const;
 		private:
+			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const int firstRow, const int lastRow, const double cell_dim);
 			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;
 			Xoshiro _shiftGen;
 			Eigen::Vector2d _shift;

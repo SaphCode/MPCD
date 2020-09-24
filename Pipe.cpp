@@ -13,14 +13,14 @@ void MPCD::Pipe::setParticles(std::vector<Particle>& particles)
 	_particles = particles;
 }
 */
-void MPCD::Pipe::setObstacles(std::vector<Obstacle>& obstacles)
+void MPCD::Pipe::setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles)
 {
 	_obstacles = obstacles;
 }
 
 void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file) {
 	for (auto& p : particles) {
-		p.stream(lapse);
+		p.move(lapse);
 		collide(p);
 		fixOutOfBounds(p);
 		
@@ -63,7 +63,7 @@ void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 		assert(rem < 0);
 		newPos[0] = _x_max + rem;
 	}
-	if (diff_posy > 0) {
+	/*if (diff_posy > 0) {
 		double rem = std::fmod(diff_posy, height);
 		assert(rem > 0);
 		newPos[1] = rem;
@@ -72,8 +72,8 @@ void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 		double rem = std::fmod(diff_negy, height);
 		assert(rem < 0);
 		newPos[1] = _y_max + rem;
-	}
-	p.correctPosition(newPos);
+	}*/
+	p.correct(newPos);
 	assert(inBounds(newPos));
 	/*if ((newPos[0] >= _x_0) && (newPos[0] <= _x_max) && (newPos[1] >= _y_0) && (newPos[1] <= _y_max)) {
 		return true;
@@ -82,6 +82,16 @@ void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 }
 
 void MPCD::Pipe::collide(Particle& p) {
-
+	for (auto& o : _obstacles) {
+		if (o->isInBounds(p)) {
+			Eigen::Vector2d overshoot = o->getOvershoot(p);
+			// no slip
+			p.correct(p.getPosition() - 2 * overshoot);
+			assert(!(o->isInBounds(p)));
+		}
+	}
+	for (auto& o : _obstacles) {
+		assert(!(o->isInBounds(p))); // double check for now, TODO maybe remove
+	}
 }
 

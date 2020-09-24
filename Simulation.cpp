@@ -1,6 +1,3 @@
-// MPCD.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <Eigen/Dense>
 #include "Particle.h"
@@ -18,8 +15,9 @@
 #include <thread>
 #include <future>
 #include "MaxwellBoltzmann.h"
-#include "ForceType.h"
-#include "PhysicalObject.h"
+#include "Wall.h"
+#include "Obstacle.h"
+#include "ConstForce.h"
 
 
 #define _USE_MATH_DEFINES
@@ -29,7 +27,7 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw) : _imaginaryAttractorWall(ForceType::CONST_X) {
+MPCD::Simulation::Simulation(bool draw) {
 	_timelapse = MPCD::Constants::time_lapse;
 	_draw = draw;
 	int timesteps = MPCD::Constants::timesteps;
@@ -52,6 +50,13 @@ MPCD::Simulation::Simulation(bool draw) : _imaginaryAttractorWall(ForceType::CON
 	
 	_t = 0;
 
+	
+
+	setup();
+	
+}
+
+void Simulation::setup() {
 	int av_particles = MPCD::Constants::average_particles_per_cell;
 	double cell_dim = MPCD::Constants::cell_dim;
 	double x_0 = MPCD::Constants::x_0;
@@ -63,23 +68,31 @@ MPCD::Simulation::Simulation(bool draw) : _imaginaryAttractorWall(ForceType::CON
 	double timelapse = MPCD::Constants::time_lapse;
 
 	int number = av_particles * (width / cell_dim) * (height / cell_dim); // will be a func of Grid
-	
-	std::vector<Obstacle> obstacles;
-	_obstacles = obstacles;
+
+	//std::vector<std::shared_ptr<Obstacle>> obstacles = setUpObstacles(y_0, y_max);
+
+	Wall lower(y_0);
+	Wall upper(y_max);
+	ConstForce constForce(MPCD::Constants::force_const);
+
+	_obstacles.push_back(std::make_shared<IObstacle>(lower));
+	_obstacles.push_back(std::make_shared<IObstacle>(upper));
+
+	_interactors.push_back(std::make_shared<InteractingBody>(lower));
+	_interactors.push_back(std::make_shared<InteractingBody>(upper));
+	_interactors.push_back(std::make_shared<InteractingBody>(constForce));
+
+	_particles = setUpParticles(number, x_0, x_max, y_0, y_max);
 	_pipe.setObstacles(_obstacles);
 
-	_walls = setUpWalls();
-	// TODO: make walls, assert condition for in bounds after colliding with walls. bc if you do the same thing again it will end up in endless loop
-
-	_particles = setUpParticles(number, x_0, x_max, y_0, y_max, _imaginaryAttractorWall);
-
-
 	if (_draw) {
+		int timesteps = MPCD::Constants::timesteps;
 		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles, timesteps);
 	}
+
 }
 
-std::vector<Particle> setUpParticles(int number, double x_0, double x_max, double y_0, double y_max, PhysicalObject& imaginaryAttractorWall) {
+std::vector<Particle>& Simulation::setUpParticles(int number, double x_0, double x_max, double y_0, double y_max) {
 	std::vector<Particle> particles;
 	particles.reserve(number);
 
@@ -100,16 +113,11 @@ std::vector<Particle> setUpParticles(int number, double x_0, double x_max, doubl
 
 		Eigen::Vector2d vel = mb_vel.next();
 
-		Particle p(pos, vel, mass);
-		p.registerObject(imaginaryAttractorWall);
+		Particle p(mass, pos, vel);
 
 		particles.push_back(p);
 	}
 	return particles;
-}
-
-std::vector<ImmovableObstacle> setUpWalls() {
-
 }
 
 void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps) {

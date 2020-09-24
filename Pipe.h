@@ -5,18 +5,18 @@
 
 #include <Eigen/Dense>
 #include "Particle.h"
-#include "Obstacle.h"
+#include "IObstacle.h"
 #include "Constants.h"
 
 namespace MPCD {
 	class Pipe
 	{
 	private:
-		std::vector<MPCD::Obstacle> _obstacles;
-		double _x_0 = MPCD::Constants::x_0;
-		double _x_max = MPCD::Constants::x_max;
-		double _y_0 = MPCD::Constants::y_0;
-		double _y_max = MPCD::Constants::y_max;
+		std::vector<std::shared_ptr<IObstacle>> _obstacles;
+		double _x_0 = Constants::x_0;
+		double _x_max = Constants::x_max;
+		double _y_0 = Constants::y_0;
+		double _y_max = Constants::y_max;
 		void collide(Particle& p);
 		void fixOutOfBounds(Particle& p);
 		bool inBounds(const Eigen::Vector2d& pos);
@@ -27,7 +27,7 @@ namespace MPCD {
 		void stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file);
 		//const std::vector<MPCD::Particle>& getParticles();
 		//void setParticles(std::vector<Particle>& particles);
-		void setObstacles(std::vector<Obstacle>& obstacles);
+		void setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles);
 	};
 }
 

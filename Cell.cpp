@@ -30,7 +30,7 @@ void MPCD::Cell::collide() {
 	int sign = (s < 0) ? -1 : 1;
 	Eigen::Vector2d mean = _vel / _num;
 	for (auto& p : _particles) {
-		p->updateVelocity(MPCD::Constants::time_lapse, mean, sign * rotationAngle);
+		p->collide(mean, sign * rotationAngle);
 	}
 }
 
@@ -38,6 +38,11 @@ void MPCD::Cell::draw(std::mutex& m, std::pair<int, int> index, std::ofstream& o
 	m.lock();
 	ofs << index.first << "," << index.second << "," << _vel[0] << "," << _vel[1] << "," << _num << "\n";
 	m.unlock();
+}
+
+int MPCD::Cell::number() const
+{
+	return _num;
 }
 
 /*

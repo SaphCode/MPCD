@@ -2,11 +2,11 @@
 
 #ifndef CIRCULAR_OBSTCLE_H
 #define CIRCULAR_OBSTCLE_H
-#include "Obstacle.h"
+#include "IObstacle.h"
 
 namespace MPCD {
     class CircularObstacle :
-        public Obstacle
+        public IObstacle
     {
     };
 }

@@ -16,6 +16,7 @@ namespace MPCD {
 		constexpr double k_boltzmann = 1.38064852e-23;
 		constexpr double temperature = 309.15; // = 36Celsius
 		constexpr double viscosity = 0.6947;
+		constexpr double force_const = 1000;
 		constexpr double particle_mass = 2.988e-26;
 		const double unit_of_time = std::sqrt((particle_mass * std::pow(cell_dim, 2) / (k_boltzmann * temperature)));
 		const double time_lapse = 0.1 * unit_of_time; // will be a func of diff parameters

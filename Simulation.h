@@ -7,8 +7,8 @@
 #include <Eigen/Dense>
 #include "Grid.h"
 #include "Pipe.h"
-#include "PhysicalObject.h"
-#include "ImmovableObstacle.h"
+#include "InteractingBody.h"
+#include "IObstacle.h"
 
 #include <map>
 
@@ -24,17 +24,18 @@ namespace MPCD {
 
 		int _t;
 		std::vector<Particle> _particles;
-		std::vector<Obstacle> _obstacles;
+		std::vector<std::shared_ptr<IObstacle>> _obstacles;
+		std::vector<std::shared_ptr<InteractingBody>> _interactors;
 
-		std::vector<ImmovableObstacle> _walls;
-
-		PhysicalObject _imaginaryAttractorWall;
+		void setup();
 
 		void streamingStep();
 		void collisionStep();
 
 		void writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps);
 		
+		std::vector<Particle>& setUpParticles(int number, double x_0, double x_max, double y_0, double y_max);
+
 	public:
 		Simulation(bool draw);
 		~Simulation() {}

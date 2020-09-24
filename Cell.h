@@ -22,6 +22,7 @@ namespace MPCD {
 			return os;
 		}
 		void draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs) const;
+		int number() const;
 	private:
 		std::vector<Particle*> _particles;
 		Eigen::Vector2d _vel;

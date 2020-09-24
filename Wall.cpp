@@ -4,11 +4,7 @@
 using namespace MPCD;
 using namespace Eigen;
 
-Wall::Wall(const double yPos, const ForceType type) : ImmovableObstacle(Eigen::Vector2d(0, yPos), type), _yPos(yPos) {
-
-}
-
-bool MPCD::Wall::isInBounds(const PhysicalObject& o) const
+bool MPCD::Wall::isInBounds(const Body& o) const
 {
 	const Eigen::Vector2d pos = o.getPosition();
 	if ((pos[1] > MPCD::Constants::y_0) && (pos[1] <= MPCD::Constants::y_max)) {
@@ -17,7 +13,7 @@ bool MPCD::Wall::isInBounds(const PhysicalObject& o) const
 	return true;
 }
 
-Eigen::Vector2d MPCD::Wall::getOvershoot(const PhysicalObject& o) const
+Eigen::Vector2d MPCD::Wall::getOvershoot(const Body& o) const
 {
 	const Eigen::Vector2d pos = o.getPosition();
 	const Eigen::Vector2d oldPos = o.getOldPosition(MPCD::Constants::time_lapse);
@@ -25,10 +21,16 @@ Eigen::Vector2d MPCD::Wall::getOvershoot(const PhysicalObject& o) const
 
 	double k = rel[1] / rel[0];
 
-	double yDiff = pos[1] - _yPos;
+	double yDiff = pos[1] - m_yPos;
 	double xDiff = yDiff * 1 / k;
 	Eigen::Vector2d overshoot(xDiff, yDiff);
 
 	return overshoot;
+}
+
+Eigen::Vector2d MPCD::Wall::interact(InteractingBody& b)
+{
+	// do nothing for now
+	return Vector2d(0, 0);
 }
 
