@@ -79,7 +79,7 @@ void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 		assert(rem < 0);
 		newPos[1] = _y_max + rem;
 	}*/
-	p.correct(newPos);
+	p.correctPosition(newPos);
 	assert(inBounds(newPos));
 	/*if ((newPos[0] >= _x_0) && (newPos[0] <= _x_max) && (newPos[1] >= _y_0) && (newPos[1] <= _y_max)) {
 		return true;
@@ -92,7 +92,7 @@ void MPCD::Pipe::collide(Particle& p) {
 		if (o->isInBounds(p)) {
 			Eigen::Vector2d overshoot = o->getOvershoot(p);
 			// no slip
-			p.correct(p.getPosition() - 2 * overshoot);
+			p.collided(overshoot);
 			assert(!(o->isInBounds(p)));
 		}
 	}

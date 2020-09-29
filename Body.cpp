@@ -16,9 +16,14 @@ void Body::move(const double timelapse)
 	m_pos += m_vel * timelapse;
 }
 
-void Body::correct(const Eigen::Vector2d newPos)
+void Body::correctPosition(const Eigen::Vector2d newPos)
 {
 	m_pos = newPos;
+}
+
+void Body::collided(const Eigen::Vector2d overshoot)
+{
+	m_pos = m_pos - 2 * overshoot;
 	m_vel = -m_vel;
 }
 

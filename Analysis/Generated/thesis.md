@@ -516,6 +516,186 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 90 frame.
     
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
+    
+    --Created 490 frame.
+    
+    --Created 500 frame.
+    
+    --Created 510 frame.
+    
+    --Created 520 frame.
+    
+    --Created 530 frame.
+    
+    --Created 540 frame.
+    
+    --Created 550 frame.
+    
+    --Created 560 frame.
+    
+    --Created 570 frame.
+    
+    --Created 580 frame.
+    
+    --Created 590 frame.
+    
+    --Created 600 frame.
+    
+    --Created 610 frame.
+    
+    --Created 620 frame.
+    
+    --Created 630 frame.
+    
+    --Created 640 frame.
+    
+    --Created 650 frame.
+    
+    --Created 660 frame.
+    
+    --Created 670 frame.
+    
+    --Created 680 frame.
+    
+    --Created 690 frame.
+    
+    --Created 700 frame.
+    
+    --Created 710 frame.
+    
+    --Created 720 frame.
+    
+    --Created 730 frame.
+    
+    --Created 740 frame.
+    
+    --Created 750 frame.
+    
+    --Created 760 frame.
+    
+    --Created 770 frame.
+    
+    --Created 780 frame.
+    
+    --Created 790 frame.
+    
+    --Created 800 frame.
+    
+    --Created 810 frame.
+    
+    --Created 820 frame.
+    
+    --Created 830 frame.
+    
+    --Created 840 frame.
+    
+    --Created 850 frame.
+    
+    --Created 860 frame.
+    
+    --Created 870 frame.
+    
+    --Created 880 frame.
+    
+    --Created 890 frame.
+    
+    --Created 900 frame.
+    
+    --Created 910 frame.
+    
+    --Created 920 frame.
+    
+    --Created 930 frame.
+    
+    --Created 940 frame.
+    
+    --Created 950 frame.
+    
+    --Created 960 frame.
+    
+    --Created 970 frame.
+    
+    --Created 980 frame.
+    
+    --Created 990 frame.
+    
     Animated and saved!
     
 
@@ -542,6 +722,186 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --Created 80 frame.
     
     --Created 90 frame.
+    
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
+    
+    --Created 490 frame.
+    
+    --Created 500 frame.
+    
+    --Created 510 frame.
+    
+    --Created 520 frame.
+    
+    --Created 530 frame.
+    
+    --Created 540 frame.
+    
+    --Created 550 frame.
+    
+    --Created 560 frame.
+    
+    --Created 570 frame.
+    
+    --Created 580 frame.
+    
+    --Created 590 frame.
+    
+    --Created 600 frame.
+    
+    --Created 610 frame.
+    
+    --Created 620 frame.
+    
+    --Created 630 frame.
+    
+    --Created 640 frame.
+    
+    --Created 650 frame.
+    
+    --Created 660 frame.
+    
+    --Created 670 frame.
+    
+    --Created 680 frame.
+    
+    --Created 690 frame.
+    
+    --Created 700 frame.
+    
+    --Created 710 frame.
+    
+    --Created 720 frame.
+    
+    --Created 730 frame.
+    
+    --Created 740 frame.
+    
+    --Created 750 frame.
+    
+    --Created 760 frame.
+    
+    --Created 770 frame.
+    
+    --Created 780 frame.
+    
+    --Created 790 frame.
+    
+    --Created 800 frame.
+    
+    --Created 810 frame.
+    
+    --Created 820 frame.
+    
+    --Created 830 frame.
+    
+    --Created 840 frame.
+    
+    --Created 850 frame.
+    
+    --Created 860 frame.
+    
+    --Created 870 frame.
+    
+    --Created 880 frame.
+    
+    --Created 890 frame.
+    
+    --Created 900 frame.
+    
+    --Created 910 frame.
+    
+    --Created 920 frame.
+    
+    --Created 930 frame.
+    
+    --Created 940 frame.
+    
+    --Created 950 frame.
+    
+    --Created 960 frame.
+    
+    --Created 970 frame.
+    
+    --Created 980 frame.
+    
+    --Created 990 frame.
     
     Animated and saved!
     
@@ -573,6 +933,186 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 90 frame.
     
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
+    
+    --Created 490 frame.
+    
+    --Created 500 frame.
+    
+    --Created 510 frame.
+    
+    --Created 520 frame.
+    
+    --Created 530 frame.
+    
+    --Created 540 frame.
+    
+    --Created 550 frame.
+    
+    --Created 560 frame.
+    
+    --Created 570 frame.
+    
+    --Created 580 frame.
+    
+    --Created 590 frame.
+    
+    --Created 600 frame.
+    
+    --Created 610 frame.
+    
+    --Created 620 frame.
+    
+    --Created 630 frame.
+    
+    --Created 640 frame.
+    
+    --Created 650 frame.
+    
+    --Created 660 frame.
+    
+    --Created 670 frame.
+    
+    --Created 680 frame.
+    
+    --Created 690 frame.
+    
+    --Created 700 frame.
+    
+    --Created 710 frame.
+    
+    --Created 720 frame.
+    
+    --Created 730 frame.
+    
+    --Created 740 frame.
+    
+    --Created 750 frame.
+    
+    --Created 760 frame.
+    
+    --Created 770 frame.
+    
+    --Created 780 frame.
+    
+    --Created 790 frame.
+    
+    --Created 800 frame.
+    
+    --Created 810 frame.
+    
+    --Created 820 frame.
+    
+    --Created 830 frame.
+    
+    --Created 840 frame.
+    
+    --Created 850 frame.
+    
+    --Created 860 frame.
+    
+    --Created 870 frame.
+    
+    --Created 880 frame.
+    
+    --Created 890 frame.
+    
+    --Created 900 frame.
+    
+    --Created 910 frame.
+    
+    --Created 920 frame.
+    
+    --Created 930 frame.
+    
+    --Created 940 frame.
+    
+    --Created 950 frame.
+    
+    --Created 960 frame.
+    
+    --Created 970 frame.
+    
+    --Created 980 frame.
+    
+    --Created 990 frame.
+    
     Animated and saved!
     
 
@@ -602,7 +1142,160 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 90 frame.
     
-    Animated and saved!
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
+    
+    --Created 490 frame.
+    
+    --Created 500 frame.
+    
+    --Created 510 frame.
+    
+    --Created 520 frame.
+    
+    --Created 530 frame.
+    
+    --Created 540 frame.
+    
+    --Created 550 frame.
+    
+    --Created 560 frame.
+    
+    --Created 570 frame.
+    
+    --Created 580 frame.
+    
+    --Created 590 frame.
+    
+    --Created 600 frame.
+    
+    --Created 610 frame.
+    
+    --Created 620 frame.
+    
+    --Created 630 frame.
+    
+    --Created 640 frame.
+    
+    --Created 650 frame.
+    
+    --Created 660 frame.
+    
+    --Created 670 frame.
+    
+    --Created 680 frame.
+    
+    --Created 690 frame.
+    
+    --Created 700 frame.
+    
+    --Created 710 frame.
+    
+    --Created 720 frame.
+    
+    --Created 730 frame.
+    
+    --Created 740 frame.
+    
+    --Created 750 frame.
+    
+    --Created 760 frame.
+    
+    --Created 770 frame.
+    
+    --Created 780 frame.
+    
+    --Created 790 frame.
+    
+    --Created 800 frame.
+    
+    --Created 810 frame.
+    
+    --Created 820 frame.
+    
+    --Created 830 frame.
+    
+    --Created 840 frame.
+    
+    --Created 850 frame.
+    
+    --Created 860 frame.
+    
     
 
 #### Conservation of number of particles
@@ -632,13 +1325,6 @@ Error $\sim 10^{-5}$
 The collision step of the MPCD algorithm conserves energy _locally_, which is to say on a cell level. [@winkl2009] The energy should also be conserved globally, since no force is acting upon the particles _yet_, the streaming and collision steps conserve energy, and the particle number remains the same.
 
 To inspect this, the energy of every particle is added up. The base energy is the initial energy, the error (or variation from this base) is calculated and plotted below.
-
-
-
-
-
-
-    "\ndef square(lis):\n    for e in lis:\n        yield e**2\n\nxvels_squared = []\nfor cell_xvels in U:\n    xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))\n#print(xvels)\nyvels_squared = []\nfor cell_yvels in V:\n    yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))\nassert(len(xvels) == len(yvels))\nit = 0\nenergy_cell_level = []\nmass = 2.988e-26\nfor xvel_squared in xvels_squared:\n    yvel_squared = yvels_squared[it]\n    energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here\n    \nplt.plot(energy_cell_level)\nplt.title('Variation in energy, cell method')\nplt.xlabel('Timestep')\nplt.ylabel('Energy')\nplt.savefig('./Assets/constant_energy_cellcalc.png')\nplt.close()\n"
 
 
 
@@ -683,43 +1369,6 @@ If the test should have significance level $\alpha$, $H_0$ is rejected if $T \ge
 The results of the $\chi^2$ test are summarised in [TODO: Table, and table formatting].
 
 
-
-
-
-
-\begin{table}[]
-\begin{tabular}{llll}
-\rowcolor[HTML]{4472C4} 
-{\color[HTML]{FFF} \textbf{k}} & {\color[HTML]{FFF} \textbf{chi\textasciicircum{}2   probability}} & {\color[HTML]{FFF} \textbf{observed   MT}} & {\color[HTML]{FFF} \textbf{observed XS256++}} \\
-\rowcolor[HTML]{D9E1F2} 
-1                              & 5.991                                                             & 0.292                                      & 0.068                                         \\
-2                              & 7.815                                                             & 1.626                                      & 3.682                                         \\
-\rowcolor[HTML]{D9E1F2} 
-3                              & 9.488                                                             & 3.735                                      & 2.124                                         \\
-4                              & 11.07                                                             & 4.255                                      & 4.525                                         \\
-\rowcolor[HTML]{D9E1F2} 
-5                              & 12.592                                                            & 2.86                                       & 6.345                                         \\
-6                              & 14.067                                                            & 4.071                                      & 6.377                                         \\
-\rowcolor[HTML]{D9E1F2} 
-7                              & 15.507                                                            & 8.662                                      & 11.731                                        \\
-8                              & 16.919                                                            & 14.426                                     & 8.693                                         \\
-\rowcolor[HTML]{D9E1F2} 
-9                              & 18.307                                                            & 11.732                                     & 6.932                                         \\
-10                             & 19.675                                                            & 9.857                                      & 5.939                                         \\
-\rowcolor[HTML]{D9E1F2} 
-11                             & 21.026                                                            & 10.438                                     & 11.73                                         \\
-12                             & 22.362                                                            & 10.985                                     & 15.543                                        \\
-\rowcolor[HTML]{D9E1F2} 
-13                             & 23.685                                                            & 22.603                                     & 12.022                                        \\
-14                             & 24.996                                                            & 13.988                                     & 12.923                                        \\
-\rowcolor[HTML]{D9E1F2} 
-15                             & 26.296                                                            & 15.526                                     & 20.71                                         \\
-16                             & 27.587                                                            & 16.288                                     & 11.501                                        \\
-\rowcolor[HTML]{D9E1F2} 
-17                             & 28.869                                                            & \cellcolor[HTML]{F8CBAD}32.26              & 12.478                                        \\
-18                             & 30.144                                                            & \cellcolor[HTML]{F8CBAD}31.787             & 13.882                                       
-\end{tabular}
-\end{table}
 
 
 
