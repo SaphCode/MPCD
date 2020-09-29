@@ -8,9 +8,9 @@
 namespace MPCD {
 	namespace Constants {
 		//constexpr int number = Grid::average_particles_per_cell * (Pipe::x_max / Grid::cell_dim) * (Pipe::y_max / Grid::cell_dim); // will be a func of Grid
-		constexpr int seed = 39898899;
+		constexpr int seed = 5646542;
 		
-		constexpr int timesteps = 100;
+		constexpr int timesteps = 1000;
 		constexpr int average_particles_per_cell = 10;
 		constexpr double cell_dim = 1;
 		constexpr double k_boltzmann = 1.38064852e-23;
@@ -22,8 +22,8 @@ namespace MPCD {
 		const double time_lapse = 0.1 * unit_of_time; // will be a func of diff parameters
 		constexpr double x_0 = 0;
 		constexpr double y_0 = 0;
-		constexpr double x_max = 10;
-		constexpr double y_max = 5;
+		constexpr double x_max = 2;
+		constexpr double y_max = 20;
 		/*namespace Pipe {
 			
 			constexpr double width = x_max - x_0;

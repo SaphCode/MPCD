@@ -19,6 +19,7 @@ void Body::move(const double timelapse)
 void Body::correct(const Eigen::Vector2d newPos)
 {
 	m_pos = newPos;
+	m_vel = -m_vel;
 }
 
 Eigen::Vector2d Body::getPosition() const

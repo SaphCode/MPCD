@@ -6,7 +6,7 @@
 using namespace Eigen;
 
 MPCD::Grid::Grid() :
-	_shiftGen(0, MPCD::Constants::cell_dim / 2),
+	_shiftGen(-MPCD::Constants::cell_dim / 2, MPCD::Constants::cell_dim / 2),
 	_numRows(std::floor((MPCD::Constants::y_max - MPCD::Constants::y_0) / MPCD::Constants::cell_dim)),
 	_numCols(std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim)),
 	_a(MPCD::Constants::cell_dim),
@@ -96,7 +96,7 @@ void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
 	std::mutex m;
 	for (auto& [key, cell] : _cells) {
 		const double cell_dim = MPCD::Constants::cell_dim;
-		const int lastRow = std::round(MPCD::Constants::y_max / cell_dim);
+		const int lastRow = int(std::round(MPCD::Constants::y_max / cell_dim)) - 1;
 		const int firstRow = 0;
 		if ((key.first == firstRow) || (key.first == lastRow)) {
 			createVirtualParticles(key, cell, firstRow, lastRow, cell_dim);

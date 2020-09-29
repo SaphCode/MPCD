@@ -271,6 +271,96 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 80
     --loaded 90
     --loaded 100
+    --loaded 110
+    --loaded 120
+    --loaded 130
+    --loaded 140
+    --loaded 150
+    --loaded 160
+    --loaded 170
+    --loaded 180
+    --loaded 190
+    --loaded 200
+    --loaded 210
+    --loaded 220
+    --loaded 230
+    --loaded 240
+    --loaded 250
+    --loaded 260
+    --loaded 270
+    --loaded 280
+    --loaded 290
+    --loaded 300
+    --loaded 310
+    --loaded 320
+    --loaded 330
+    --loaded 340
+    --loaded 350
+    --loaded 360
+    --loaded 370
+    --loaded 380
+    --loaded 390
+    --loaded 400
+    --loaded 410
+    --loaded 420
+    --loaded 430
+    --loaded 440
+    --loaded 450
+    --loaded 460
+    --loaded 470
+    --loaded 480
+    --loaded 490
+    --loaded 500
+    --loaded 510
+    --loaded 520
+    --loaded 530
+    --loaded 540
+    --loaded 550
+    --loaded 560
+    --loaded 570
+    --loaded 580
+    --loaded 590
+    --loaded 600
+    --loaded 610
+    --loaded 620
+    --loaded 630
+    --loaded 640
+    --loaded 650
+    --loaded 660
+    --loaded 670
+    --loaded 680
+    --loaded 690
+    --loaded 700
+    --loaded 710
+    --loaded 720
+    --loaded 730
+    --loaded 740
+    --loaded 750
+    --loaded 760
+    --loaded 770
+    --loaded 780
+    --loaded 790
+    --loaded 800
+    --loaded 810
+    --loaded 820
+    --loaded 830
+    --loaded 840
+    --loaded 850
+    --loaded 860
+    --loaded 870
+    --loaded 880
+    --loaded 890
+    --loaded 900
+    --loaded 910
+    --loaded 920
+    --loaded 930
+    --loaded 940
+    --loaded 950
+    --loaded 960
+    --loaded 970
+    --loaded 980
+    --loaded 990
+    --loaded 1000
     Particles loaded and saved!
     
     
@@ -288,6 +378,96 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 80
     --loaded 90
     --loaded 100
+    --loaded 110
+    --loaded 120
+    --loaded 130
+    --loaded 140
+    --loaded 150
+    --loaded 160
+    --loaded 170
+    --loaded 180
+    --loaded 190
+    --loaded 200
+    --loaded 210
+    --loaded 220
+    --loaded 230
+    --loaded 240
+    --loaded 250
+    --loaded 260
+    --loaded 270
+    --loaded 280
+    --loaded 290
+    --loaded 300
+    --loaded 310
+    --loaded 320
+    --loaded 330
+    --loaded 340
+    --loaded 350
+    --loaded 360
+    --loaded 370
+    --loaded 380
+    --loaded 390
+    --loaded 400
+    --loaded 410
+    --loaded 420
+    --loaded 430
+    --loaded 440
+    --loaded 450
+    --loaded 460
+    --loaded 470
+    --loaded 480
+    --loaded 490
+    --loaded 500
+    --loaded 510
+    --loaded 520
+    --loaded 530
+    --loaded 540
+    --loaded 550
+    --loaded 560
+    --loaded 570
+    --loaded 580
+    --loaded 590
+    --loaded 600
+    --loaded 610
+    --loaded 620
+    --loaded 630
+    --loaded 640
+    --loaded 650
+    --loaded 660
+    --loaded 670
+    --loaded 680
+    --loaded 690
+    --loaded 700
+    --loaded 710
+    --loaded 720
+    --loaded 730
+    --loaded 740
+    --loaded 750
+    --loaded 760
+    --loaded 770
+    --loaded 780
+    --loaded 790
+    --loaded 800
+    --loaded 810
+    --loaded 820
+    --loaded 830
+    --loaded 840
+    --loaded 850
+    --loaded 860
+    --loaded 870
+    --loaded 880
+    --loaded 890
+    --loaded 900
+    --loaded 910
+    --loaded 920
+    --loaded 930
+    --loaded 940
+    --loaded 950
+    --loaded 960
+    --loaded 970
+    --loaded 980
+    --loaded 990
+    --loaded 1000
     Cells loaded and saved!
     
     Preparing cell values ..
@@ -341,6 +521,63 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
+    Animating Heatmap ...
+    
+    --Created 0 frame.
+    
+    --Created 10 frame.
+    
+    --Created 20 frame.
+    
+    --Created 30 frame.
+    
+    --Created 40 frame.
+    
+    --Created 50 frame.
+    
+    --Created 60 frame.
+    
+    --Created 70 frame.
+    
+    --Created 80 frame.
+    
+    --Created 90 frame.
+    
+    Animated and saved!
+    
+
+
+
+    Animating particles ...
+    --Created 0 frame.
+    
+    --Created 0 frame.
+    
+    --Created 0 frame.
+    
+    --Created 10 frame.
+    
+    --Created 20 frame.
+    
+    --Created 30 frame.
+    
+    --Created 40 frame.
+    
+    --Created 50 frame.
+    
+    --Created 60 frame.
+    
+    --Created 70 frame.
+    
+    --Created 80 frame.
+    
+    --Created 90 frame.
+    
+    Animated and saved!
+    
+
+
+
     Animating Streamplot ...
     
     --Created 0 frame.
@@ -365,11 +602,8 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 90 frame.
     
+    Animated and saved!
     
-
-
-
-
 
 #### Conservation of number of particles
 
@@ -398,6 +632,13 @@ Error $\sim 10^{-5}$
 The collision step of the MPCD algorithm conserves energy _locally_, which is to say on a cell level. [@winkl2009] The energy should also be conserved globally, since no force is acting upon the particles _yet_, the streaming and collision steps conserve energy, and the particle number remains the same.
 
 To inspect this, the energy of every particle is added up. The base energy is the initial energy, the error (or variation from this base) is calculated and plotted below.
+
+
+
+
+
+
+    "\ndef square(lis):\n    for e in lis:\n        yield e**2\n\nxvels_squared = []\nfor cell_xvels in U:\n    xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))\n#print(xvels)\nyvels_squared = []\nfor cell_yvels in V:\n    yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))\nassert(len(xvels) == len(yvels))\nit = 0\nenergy_cell_level = []\nmass = 2.988e-26\nfor xvel_squared in xvels_squared:\n    yvel_squared = yvels_squared[it]\n    energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here\n    \nplt.plot(energy_cell_level)\nplt.title('Variation in energy, cell method')\nplt.xlabel('Timestep')\nplt.ylabel('Energy')\nplt.savefig('./Assets/constant_energy_cellcalc.png')\nplt.close()\n"
 
 
 
@@ -442,6 +683,43 @@ If the test should have significance level $\alpha$, $H_0$ is rejected if $T \ge
 The results of the $\chi^2$ test are summarised in [TODO: Table, and table formatting].
 
 
+
+
+
+
+\begin{table}[]
+\begin{tabular}{llll}
+\rowcolor[HTML]{4472C4} 
+{\color[HTML]{FFF} \textbf{k}} & {\color[HTML]{FFF} \textbf{chi\textasciicircum{}2   probability}} & {\color[HTML]{FFF} \textbf{observed   MT}} & {\color[HTML]{FFF} \textbf{observed XS256++}} \\
+\rowcolor[HTML]{D9E1F2} 
+1                              & 5.991                                                             & 0.292                                      & 0.068                                         \\
+2                              & 7.815                                                             & 1.626                                      & 3.682                                         \\
+\rowcolor[HTML]{D9E1F2} 
+3                              & 9.488                                                             & 3.735                                      & 2.124                                         \\
+4                              & 11.07                                                             & 4.255                                      & 4.525                                         \\
+\rowcolor[HTML]{D9E1F2} 
+5                              & 12.592                                                            & 2.86                                       & 6.345                                         \\
+6                              & 14.067                                                            & 4.071                                      & 6.377                                         \\
+\rowcolor[HTML]{D9E1F2} 
+7                              & 15.507                                                            & 8.662                                      & 11.731                                        \\
+8                              & 16.919                                                            & 14.426                                     & 8.693                                         \\
+\rowcolor[HTML]{D9E1F2} 
+9                              & 18.307                                                            & 11.732                                     & 6.932                                         \\
+10                             & 19.675                                                            & 9.857                                      & 5.939                                         \\
+\rowcolor[HTML]{D9E1F2} 
+11                             & 21.026                                                            & 10.438                                     & 11.73                                         \\
+12                             & 22.362                                                            & 10.985                                     & 15.543                                        \\
+\rowcolor[HTML]{D9E1F2} 
+13                             & 23.685                                                            & 22.603                                     & 12.022                                        \\
+14                             & 24.996                                                            & 13.988                                     & 12.923                                        \\
+\rowcolor[HTML]{D9E1F2} 
+15                             & 26.296                                                            & 15.526                                     & 20.71                                         \\
+16                             & 27.587                                                            & 16.288                                     & 11.501                                        \\
+\rowcolor[HTML]{D9E1F2} 
+17                             & 28.869                                                            & \cellcolor[HTML]{F8CBAD}32.26              & 12.478                                        \\
+18                             & 30.144                                                            & \cellcolor[HTML]{F8CBAD}31.787             & 13.882                                       
+\end{tabular}
+\end{table}
 
 
 
