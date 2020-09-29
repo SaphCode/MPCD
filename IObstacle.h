@@ -16,14 +16,9 @@ namespace MPCD {
 		}
 		*/
 		//virtual std::map<std::pair<int, int>, bool> occupied();
-		virtual bool isInBounds(const Body& o) const {
-			return true;
-		}
-		virtual Eigen::Vector2d getOvershoot(const Body& o) const {
-			return Eigen::Vector2d(0, 0);
-		}
-		//virtual ~IObstacle();
-	private:
+		virtual bool isInBounds(const Body& o) const = 0;
+		virtual Eigen::Vector2d getOvershoot(const Body& o) const = 0;
+		virtual ~IObstacle() {}
 		//std::map<std::pair<int, int>, bool> _occupied;
 
 	};

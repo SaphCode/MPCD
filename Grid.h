@@ -30,16 +30,16 @@ namespace MPCD {
 		private:
 			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const int firstRow, const int lastRow, const double cell_dim);
 			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;
-			Xoshiro _shiftGen;
+			const Xoshiro _shiftGen;
 			Eigen::Vector2d _shift;
-			const int _average_particles_per_cell = 10;
-			const double _a = 1;
-			const int _num_rows = std::floor((MPCD::Constants::y_max - MPCD::Constants::y_0) / _a);
-			const int _num_cols = std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / _a);
+			const int _average_particles_per_cell;
+			const double _a;
+			const int _numRows;
+			const int _numCols;
 			//int _num_cells;
 			std::map<std::pair<int, int>, Cell> _cells;
 			//constexpr int wanted_num_cells = min_num_cells * 2;
-			const double _max_shift = _a / 2;
+			const double _maxShift;
 	};
 }
 #endif

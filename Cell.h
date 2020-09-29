@@ -18,15 +18,16 @@ namespace MPCD {
 		void clear();
 		//friend Cell operator+(const Cell& lhs, const Cell& rhs);
 		friend std::ostream& operator<<(std::ostream& os, Cell const& c) {
-			os << "Vel: " << std::to_string(c._vel[0]) << ", Num: " << std::to_string(c._num);
+			os << "Vel: " << std::to_string(c._vel[0]) << ", Num: " << std::to_string(c._particles.size());
 			return os;
 		}
 		void draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs) const;
 		int number() const;
+
+		Eigen::Vector2d getTotalCellVelocity() const;
 	private:
-		std::vector<Particle*> _particles;
+		std::vector<std::shared_ptr<Particle>> _particles;
 		Eigen::Vector2d _vel;
-		int _num;
 		const Xoshiro _angleGen;
 		const Xoshiro _signGen;
 	};

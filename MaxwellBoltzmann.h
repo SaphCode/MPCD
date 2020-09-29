@@ -10,15 +10,15 @@ public:
 	MaxwellBoltzmann(double mean, double temperature, double mass);
 	Eigen::Vector2d next();
 private:
-	std::mt19937_64 _gen_x;
-	std::normal_distribution<double> _dist_x;
+	std::mt19937_64 m_gen_x;
+	std::normal_distribution<double> m_dist_x;
 
-	std::mt19937_64 _gen_y;
-	std::normal_distribution<double> _dist_y;
+	std::mt19937_64 m_gen_y;
+	std::normal_distribution<double> m_dist_y;
 
-	double _temperature;
-	double _mass;
-	double _mean;
-	const double _k_boltzmann = 1.38064852e-23;
+	const double m_temperature;
+	const double m_mass;
+	const double m_mean;
+	const double m_k_boltzmann;
 };
 #endif // !MAXWELL_BOLTZMANN_H

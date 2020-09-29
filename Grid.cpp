@@ -5,9 +5,16 @@
 
 using namespace Eigen;
 
-MPCD::Grid::Grid() {
-	for (int i = 0; i < _num_rows; i++) {
-		for (int j = 0; j < _num_cols; j++) {
+MPCD::Grid::Grid() :
+	_shiftGen(0, MPCD::Constants::cell_dim / 2),
+	_numRows(std::floor((MPCD::Constants::y_max - MPCD::Constants::y_0) / MPCD::Constants::cell_dim)),
+	_numCols(std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim)),
+	_a(MPCD::Constants::cell_dim),
+	_maxShift(MPCD::Constants::cell_dim / 2),
+	_average_particles_per_cell(MPCD::Constants::average_particles_per_cell)
+{
+	for (int i = 0; i < _numRows; i++) {
+		for (int j = 0; j < _numCols; j++) {
 			Cell cell;
 			std::pair<int, int> coords(i, j);
 			_cells.insert(std::make_pair(coords, cell));
@@ -23,8 +30,8 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
 	for (auto& p : particles) {
 		Eigen::Vector2d particlePos = p.getPosition();
 		std::pair<int, int> coordinates = getCoordinates(particlePos);
-		assert(coordinates.first >= 0 && coordinates.first <= _num_rows);
-		assert(coordinates.second >= 0 && coordinates.second <= _num_cols);
+		assert(coordinates.first >= 0 && coordinates.first <= _numRows);
+		assert(coordinates.second >= 0 && coordinates.second <= _numCols);
 		_cells[coordinates].add(p);
 	}
 }
@@ -66,19 +73,19 @@ void MPCD::Grid::updateCell(Particle p, Eigen::Vector2d positionBeforeMove) {
 std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
 	Eigen::Vector2d shiftedPos = position - _shift;
 	int i = std::floor(shiftedPos[1] / _a);
-	assert(i >= -1 && i <= _num_rows);
+	assert(i >= -1 && i <= _numRows);
 	if (i == -1) {
-		i = _num_rows - 1;
+		i = _numRows - 1;
 	}
-	else if (i == _num_rows) {
+	else if (i == _numRows) {
 		i = 0;
 	}
 	int j = std::floor(shiftedPos[0] / _a);
-	assert(j >= -1 && j <= _num_cols);
+	assert(j >= -1 && j <= _numCols);
 	if (j == -1) {
-		j = _num_cols - 1;
+		j = _numCols - 1;
 	}
-	else if (j == _num_cols) {
+	else if (j == _numCols) {
 		j = 0;
 	}
 	return std::make_pair(i, j);
@@ -103,11 +110,11 @@ void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
 }
 
 void MPCD::Grid::createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const int firstRow, const int lastRow, const double cell_dim) {
-	int numParticles = cell.number();
-	int particlesToCreate = MPCD::Constants::average_particles_per_cell - numParticles;
-	double mass = MPCD::Constants::particle_mass; // h2o kg mass
-	double mean = 0;
-	double temperature = MPCD::Constants::temperature;
+	const int numParticles = cell.number();
+	const int particlesToCreate = MPCD::Constants::average_particles_per_cell - numParticles;
+	const double mass = MPCD::Constants::particle_mass; // h2o kg mass
+	const double mean = 0;
+	const double temperature = MPCD::Constants::temperature;
 	MaxwellBoltzmann mb_vel(mean, temperature, mass);
 	for (int i = 0; i < particlesToCreate; i++) {
 		Vector2d mockPos(key.second * cell_dim, key.first * cell_dim);
@@ -150,17 +157,17 @@ double MPCD::Grid::getA() const
 
 int MPCD::Grid::getNumRows() const
 {
-	return _num_rows;
+	return _numRows;
 }
 
 int MPCD::Grid::getNumCols() const
 {
-	return _num_cols;
+	return _numCols;
 }
 
 double MPCD::Grid::getMaxShift() const
 {
-	return _max_shift;
+	return _maxShift;
 }
 
 

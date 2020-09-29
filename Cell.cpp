@@ -6,7 +6,7 @@
 #include <fstream>
 #include "Constants.h"
 
-MPCD::Cell::Cell() : _angleGen(0, 2 * M_PI), _signGen(-1, 1), _vel(0, 0), _num(0) {
+MPCD::Cell::Cell() : _angleGen(0, 2 * M_PI), _signGen(-1, 1), _vel(0, 0) {
 }
 
 MPCD::Cell::~Cell() { }
@@ -15,34 +15,36 @@ void MPCD::Cell::clear() {
 	_particles.clear();
 	Eigen::Vector2d zero(0, 0);
 	_vel = zero;
-	_num = 0;
 }
 
 void MPCD::Cell::add(MPCD::Particle& p) {
-	_particles.push_back(&p);
+	_particles.push_back(std::make_shared<Particle>(p));
 	_vel += p.getVelocity();
-	_num += 1;
 }
 
 void MPCD::Cell::collide() {
 	double rotationAngle = _angleGen.next();
 	double s = _signGen.next();
 	int sign = (s < 0) ? -1 : 1;
-	Eigen::Vector2d mean = _vel / _num;
+	Eigen::Vector2d mean = _vel / _particles.size();
 	for (auto& p : _particles) {
 		p->collide(mean, sign * rotationAngle);
 	}
 }
 
+Eigen::Vector2d MPCD::Cell::getTotalCellVelocity() const {
+	return _vel;
+}
+
 void MPCD::Cell::draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs) const {
 	m.lock();
-	ofs << index.first << "," << index.second << "," << _vel[0] << "," << _vel[1] << "," << _num << "\n";
+	ofs << index.first << "," << index.second << "," << _vel[0] << "," << _vel[1] << "," << _particles.size() << "\n";
 	m.unlock();
 }
 
 int MPCD::Cell::number() const
 {
-	return _num;
+	return _particles.size();
 }
 
 /*

@@ -18,17 +18,23 @@ void MPCD::Pipe::setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles
 	_obstacles = obstacles;
 }
 
-void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file) {
+void MPCD::Pipe::stream(std::vector<Particle>& particles, std::vector<std::shared_ptr<InteractingBody>>& interactors, double lapse, bool draw, std::ofstream& file) {
 	for (auto& p : particles) {
+		for (auto& i : interactors) {
+			i->interact(p);
+		}
+
 		p.move(lapse);
 		collide(p);
 		fixOutOfBounds(p);
-		
+		p.updateVelocity(lapse);
+		p.resetEffect();
 		if (draw) {
 			Eigen::Vector2d pos = p.getPosition();
 			Eigen::Vector2d vel = p.getVelocity();
 			file << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
 		}
+		
 	}
 }
 

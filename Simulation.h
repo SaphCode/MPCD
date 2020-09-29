@@ -34,7 +34,7 @@ namespace MPCD {
 
 		void writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps);
 		
-		std::vector<Particle>& setUpParticles(int number, double x_0, double x_max, double y_0, double y_max);
+		void setUpParticles(int number, double x_0, double x_max, double y_0, double y_max);
 
 	public:
 		Simulation(bool draw);

@@ -5,9 +5,9 @@ class ConstForce :
     public InteractingBody
 {
 public:
-    ConstForce(double accelerationConstant);
+    ConstForce(Eigen::Vector2d acceleration);
     Eigen::Vector2d interact(InteractingBody& b);
 private:
-    double m_accelerationConstant;
+    Eigen::Vector2d m_acceleration;
 };
 

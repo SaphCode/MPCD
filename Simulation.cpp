@@ -71,18 +71,19 @@ void Simulation::setup() {
 
 	//std::vector<std::shared_ptr<Obstacle>> obstacles = setUpObstacles(y_0, y_max);
 
-	Wall lower(y_0);
-	Wall upper(y_max);
-	ConstForce constForce(MPCD::Constants::force_const);
+	Wall lower(y_0, false);
+	Wall upper(y_max, true);
+	Eigen::Vector2d force(MPCD::Constants::force_const, 0);
+	ConstForce constForce(force);
 
-	_obstacles.push_back(std::make_shared<IObstacle>(lower));
-	_obstacles.push_back(std::make_shared<IObstacle>(upper));
+	_obstacles.push_back(std::make_shared<Wall>(lower));
+	_obstacles.push_back(std::make_shared<Wall>(upper));
 
-	_interactors.push_back(std::make_shared<InteractingBody>(lower));
-	_interactors.push_back(std::make_shared<InteractingBody>(upper));
-	_interactors.push_back(std::make_shared<InteractingBody>(constForce));
+	_interactors.push_back(std::make_shared<Wall>(lower));
+	_interactors.push_back(std::make_shared<Wall>(upper));
+	_interactors.push_back(std::make_shared<ConstForce>(constForce));
 
-	_particles = setUpParticles(number, x_0, x_max, y_0, y_max);
+	setUpParticles(number, x_0, x_max, y_0, y_max);
 	_pipe.setObstacles(_obstacles);
 
 	if (_draw) {
@@ -92,9 +93,8 @@ void Simulation::setup() {
 
 }
 
-std::vector<Particle>& Simulation::setUpParticles(int number, double x_0, double x_max, double y_0, double y_max) {
-	std::vector<Particle> particles;
-	particles.reserve(number);
+void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0, double y_max) {
+	_particles.reserve(number);
 
 	//dont worry the numbers are just seeds 
 	Xoshiro xs_xpos(x_0, x_max);
@@ -115,16 +115,15 @@ std::vector<Particle>& Simulation::setUpParticles(int number, double x_0, double
 
 		Particle p(mass, pos, vel);
 
-		particles.push_back(p);
+		_particles.push_back(p);
 	}
-	return particles;
 }
 
 void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps) {
 	int num_hypothetical_x_cells = std::round(width / cell_dim);
 	int num_hypothetical_y_cells = std::round(height / cell_dim);
 
-	if (width > height) {
+	if (width >= height) {
 		assert(num_hypothetical_x_cells >= num_hypothetical_y_cells);
 	}
 	else {
@@ -182,9 +181,8 @@ void MPCD::Simulation::streamingStep() {
 		outFile << header.str() << '\n';
 	}
 
-	_pipe.stream(_particles, _timelapse, _draw, outFile);
-	_grid.shift();
-	_grid.updateCoordinates(_particles);
+	_pipe.stream(_particles, _interactors, _timelapse, _draw, outFile);
+	
 
 
 	//reduction(+ : grid)
@@ -251,6 +249,10 @@ void MPCD::Simulation::collisionStep() {
 		std::stringstream header("i,j,meanX,meanY,num");//,vx,vy"
 		outFile << header.str() << '\n';
 	}
+
+
+	_grid.shift();
+	_grid.updateCoordinates(_particles);
 	_grid.collision(_draw, outFile);
 	_grid.undoShift();
 }

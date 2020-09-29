@@ -14,12 +14,14 @@ void Particle::shift(Eigen::Vector2d amount) {
 
 void Particle::collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
 	Eigen::Matrix2d rotationMatrix;
-	rotationMatrix << cos(rotationAngle), -sin(rotationAngle),
-					sin(rotationAngle), cos(rotationAngle);
+	rotationMatrix(0, 0) = std::cos(rotationAngle);
+	rotationMatrix(1, 0) = std::sin(rotationAngle);
+	rotationMatrix(0, 1) = -std::sin(rotationAngle);
+	rotationMatrix(1, 1) = std::cos(rotationAngle);
 	m_vel = mean_cell_velocity + rotationMatrix * (m_vel - mean_cell_velocity);
 }
 
-void MPCD::Particle::move(double timelapse)
+void Particle::move(double timelapse)
 {
 	InteractingBody::move(timelapse);
 }

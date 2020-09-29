@@ -24,7 +24,7 @@ namespace MPCD {
 	public:
 		Pipe();
 		~Pipe() {}
-		void stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file);
+		void stream(std::vector<Particle>& particles, std::vector<std::shared_ptr<InteractingBody>>& interactors, double lapse, bool draw, std::ofstream& file);
 		//const std::vector<MPCD::Particle>& getParticles();
 		//void setParticles(std::vector<Particle>& particles);
 		void setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles);

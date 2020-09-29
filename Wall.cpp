@@ -7,10 +7,17 @@ using namespace Eigen;
 bool MPCD::Wall::isInBounds(const Body& o) const
 {
 	const Eigen::Vector2d pos = o.getPosition();
-	if ((pos[1] > MPCD::Constants::y_0) && (pos[1] <= MPCD::Constants::y_max)) {
-		return false;
+	if (m_isUpOOB) {
+		if (pos[1] >= m_yPos) {
+			return true;
+		}
 	}
-	return true;
+	else {
+		if (pos[1] <= m_yPos) {
+			return true;
+		}
+	}
+	return false;
 }
 
 Eigen::Vector2d MPCD::Wall::getOvershoot(const Body& o) const
