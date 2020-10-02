@@ -104,14 +104,21 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 	double mass = MPCD::Constants::particle_mass; // h2o kg mass
 	double mean = 0;
 	double temperature = MPCD::Constants::temperature;
-	MaxwellBoltzmann mb_vel(mean, temperature, mass);
+
+	double max_x_vel = std::sqrt(2 * MPCD::Constants::k_boltzmann * MPCD::Constants::temperature / MPCD::Constants::particle_mass);
+	double max_y_vel = std::sqrt(2 * MPCD::Constants::k_boltzmann * MPCD::Constants::temperature / MPCD::Constants::particle_mass);
+	Xoshiro xvel(-max_x_vel, max_x_vel);
+	Xoshiro yvel(-max_y_vel, max_y_vel);
+	//MaxwellBoltzmann mb_vel(mean, temperature, mass);
 
 	for (int i = 0; i < number; i++) {
 		double xs_x = xs_xpos.next();
 		double xs_y = xs_ypos.next();
 		Eigen::Vector2d pos(xs_x, xs_y);
 
-		Eigen::Vector2d vel = mb_vel.next();
+		double vx = xvel.next();
+		double vy = yvel.next();
+		Eigen::Vector2d vel(vx, vy);
 
 		Particle p(mass, pos, vel);
 

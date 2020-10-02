@@ -6,7 +6,14 @@
 #include <fstream>
 #include "Constants.h"
 
-MPCD::Cell::Cell() : _angleGen(0, 2 * M_PI), _signGen(-1, 1), _vel(0, 0) {
+MPCD::Cell::Cell() :
+	m_thermostat(Thermostat(MPCD::Constants::temperature)),
+	_angleGen(0, 2 * M_PI),
+	_signGen(-1, 1),
+	_vel(0, 0),
+	_virtualVel(0, 0),
+	_numVirtual(0)
+{
 }
 
 MPCD::Cell::~Cell() { }
@@ -15,6 +22,8 @@ void MPCD::Cell::clear() {
 	_particles.clear();
 	Eigen::Vector2d zero(0, 0);
 	_vel = zero;
+	_virtualVel = zero;
+	_numVirtual = 0;
 }
 
 void MPCD::Cell::add(MPCD::Particle& p) {
@@ -22,14 +31,24 @@ void MPCD::Cell::add(MPCD::Particle& p) {
 	_vel += p.getVelocity();
 }
 
-void MPCD::Cell::collide() {
-	double rotationAngle = _angleGen.next();
+void MPCD::Cell::addVirtual(MPCD::Particle& p) {
+	_numVirtual += 1;
+	_virtualVel += p.getVelocity();
+}
+
+void MPCD::Cell::collide(double temperatureScalingFactor) {
+	double rotationAngle = 2.269;//_angleGen.next();
 	double s = _signGen.next();
 	int sign = (s < 0) ? -1 : 1;
-	Eigen::Vector2d mean = _vel / _particles.size();
+	Eigen::Vector2d mean = getMeanVelocity();
 	for (auto& p : _particles) {
-		p->collide(mean, sign * rotationAngle);
+		p->collide(mean, sign * rotationAngle, temperatureScalingFactor);
 	}
+}
+
+Eigen::Vector2d MPCD::Cell::getMeanVelocity() const {
+	Eigen::Vector2d mean = (_vel + _virtualVel) / (_particles.size() + _numVirtual);
+	return mean;
 }
 
 Eigen::Vector2d MPCD::Cell::getTotalCellVelocity() const {
@@ -46,6 +65,12 @@ int MPCD::Cell::number() const
 {
 	return _particles.size();
 }
+
+double MPCD::Cell::thermostatScaling() const {
+	Eigen::Vector2d meanCellVelocity = getMeanVelocity();
+	return m_thermostat.getScalingFactor(_particles, meanCellVelocity, 2);
+}
+
 
 /*
 MPCD::Cell MPCD::operator+(const Cell& lhs, const Cell& rhs)

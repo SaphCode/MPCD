@@ -139,15 +139,15 @@ The solution to this problem is to shift all particles by the same random vector
 
 The fluid flows through a pipe that will be setup somewhere between 100 to 400 width, and 20 - 50 height, as can be seen in figure (TODO: figure number). In SI units, we might imagine .. (TODO: expand this section). The pipe has two parallel walls, the fluid-wall interaction is modeled using stick (or no-slip) boundary conditions. (TODO: figure). When a particle hits the wall, it goes back the same way it came there, which means that the sign of the velocity vector is flipped. Stick boundary conditions are shown in figure. (TODO: figure numbering) The fluid interacts with obstacles, which are modeled exactly like the wall, with a small complication from the geometry. To simplify this problem, the approximate collision process found in [@nikoubashman2013] is used.
 
-![Container of MPCD fluid, with obstacles](Assets/MPCD_Pipe.png)
+![Container of MPCD fluid, with obstacles](Release/Assets/MPCD_Pipe.png)
 
-![Reflection of particle from wall, stick boundary conditions](Assets/Wall_stick_boundary_conditions_reflection.png)
+![Reflection of particle from wall, no slip boundary conditions](Release/Assets/Wall_noslip_boundary_conditions_reflection.png)
 
 Because of the shifting of the grid before the collision step, the cells next to the walls might be partially blocked by the wall. This partial blocking by the wall causes the cell to have, on average, less particles than it would have, had the grid not been shifted. The change in average particles distorts the collision step of particles near the wall. For more complex geometries than the one used in this thesis, the wall wont even be parallel to the grid lines, which makes this a problem even without a grid shift. To compensate this, it has been shown in (TODO: find a source) that the following process undoes the distortion.
 
 As is shown in figure (TODO: figure numbering), imagine a cell being blocked a little bit by the wall. Let's assume that the average number of particles per cell is 4. In the first cell, we count 3 particles. What is now done, is to introduce a "virtual" particle, which we might imagine as being behind the wall, though the position of it does not matter. Jumping to the second cell, we introduce 2 "virtual particles". In general, $\bar N_c - N_c$ particles are introduced, where $\bar N_c$ is the average number of particles per cell, chosen to be an integer, and $N_c$ is the actual number of particles found in cell $c$. Their velocities are sampled from two independent normal distributions with mean $\mu = 0$ and variation $\sigma^2 = \frac{k_{B}T}{m}$, where $k_{B}$ is the boltzmann constant, $T$ is the temperature of the fluid, and $m$ is the mass of one particle.
 
-![Undoing the distortion caused by the grid shift](Assets/Wall_stick_boundary_conditions_virtual_particles.png)
+![Undoing the distortion caused by the grid shift](Release/Assets/Wall_stick_boundary_conditions_virtual_particles.png)
 
 ## The ballistics step
 
@@ -169,7 +169,7 @@ Because now a force acts on the particles, as seen in figure (TODO figure#), add
 
 ## Thermostat
 
-To counteract the heating up of the fluid by the constant force on every particle, a thermostat is needed. As described in Winkler[@winkl2009], the computationally efficient cell-level thermostat was used. For this, the macroscopic flow profile is needed. Fluid flow through the cross section of a pipe with parallel walls and interaction modeled by no-slip boundary condition is called poseuille flow, the macroscopic flow profile is known. It is calculated as,
+To counteract the heating up of the fluid by the constant force on every particle, a thermostat is needed. As described in Winkler[@winkl2009], the computationally efficient cell-level thermostat was used. For this, the macroscopic flow profile is needed. For our purposes, which is fluid flow through the cross section of a pipe with parallel walls and interaction modeled by no-slip boundary condition, we expect poseuille flow. It is calculated as, (TODO: is arashs version correct? see paper section III)
 
 \begin{equation}
 u(r) = \frac{\Delta p}{4\eta L_x} (R^2 - r^2),
@@ -281,86 +281,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 180
     --loaded 190
     --loaded 200
-    --loaded 210
-    --loaded 220
-    --loaded 230
-    --loaded 240
-    --loaded 250
-    --loaded 260
-    --loaded 270
-    --loaded 280
-    --loaded 290
-    --loaded 300
-    --loaded 310
-    --loaded 320
-    --loaded 330
-    --loaded 340
-    --loaded 350
-    --loaded 360
-    --loaded 370
-    --loaded 380
-    --loaded 390
-    --loaded 400
-    --loaded 410
-    --loaded 420
-    --loaded 430
-    --loaded 440
-    --loaded 450
-    --loaded 460
-    --loaded 470
-    --loaded 480
-    --loaded 490
-    --loaded 500
-    --loaded 510
-    --loaded 520
-    --loaded 530
-    --loaded 540
-    --loaded 550
-    --loaded 560
-    --loaded 570
-    --loaded 580
-    --loaded 590
-    --loaded 600
-    --loaded 610
-    --loaded 620
-    --loaded 630
-    --loaded 640
-    --loaded 650
-    --loaded 660
-    --loaded 670
-    --loaded 680
-    --loaded 690
-    --loaded 700
-    --loaded 710
-    --loaded 720
-    --loaded 730
-    --loaded 740
-    --loaded 750
-    --loaded 760
-    --loaded 770
-    --loaded 780
-    --loaded 790
-    --loaded 800
-    --loaded 810
-    --loaded 820
-    --loaded 830
-    --loaded 840
-    --loaded 850
-    --loaded 860
-    --loaded 870
-    --loaded 880
-    --loaded 890
-    --loaded 900
-    --loaded 910
-    --loaded 920
-    --loaded 930
-    --loaded 940
-    --loaded 950
-    --loaded 960
-    --loaded 970
-    --loaded 980
-    --loaded 990
-    --loaded 1000
     Particles loaded and saved!
     
     
@@ -388,86 +308,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 180
     --loaded 190
     --loaded 200
-    --loaded 210
-    --loaded 220
-    --loaded 230
-    --loaded 240
-    --loaded 250
-    --loaded 260
-    --loaded 270
-    --loaded 280
-    --loaded 290
-    --loaded 300
-    --loaded 310
-    --loaded 320
-    --loaded 330
-    --loaded 340
-    --loaded 350
-    --loaded 360
-    --loaded 370
-    --loaded 380
-    --loaded 390
-    --loaded 400
-    --loaded 410
-    --loaded 420
-    --loaded 430
-    --loaded 440
-    --loaded 450
-    --loaded 460
-    --loaded 470
-    --loaded 480
-    --loaded 490
-    --loaded 500
-    --loaded 510
-    --loaded 520
-    --loaded 530
-    --loaded 540
-    --loaded 550
-    --loaded 560
-    --loaded 570
-    --loaded 580
-    --loaded 590
-    --loaded 600
-    --loaded 610
-    --loaded 620
-    --loaded 630
-    --loaded 640
-    --loaded 650
-    --loaded 660
-    --loaded 670
-    --loaded 680
-    --loaded 690
-    --loaded 700
-    --loaded 710
-    --loaded 720
-    --loaded 730
-    --loaded 740
-    --loaded 750
-    --loaded 760
-    --loaded 770
-    --loaded 780
-    --loaded 790
-    --loaded 800
-    --loaded 810
-    --loaded 820
-    --loaded 830
-    --loaded 840
-    --loaded 850
-    --loaded 860
-    --loaded 870
-    --loaded 880
-    --loaded 890
-    --loaded 900
-    --loaded 910
-    --loaded 920
-    --loaded 930
-    --loaded 940
-    --loaded 950
-    --loaded 960
-    --loaded 970
-    --loaded 980
-    --loaded 990
-    --loaded 1000
     Cells loaded and saved!
     
     Preparing cell values ..
@@ -489,6 +329,52 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
 
 ![Ending (maybe stationary) state of region with barebones MPCD implementation](Assets/stationary_region.png)
+
+
+
+    [20.378090832783744, 22.44377043766251, 21.817930261637006, 22.944467213199985, 22.96861832864126]
+    [-0.22604705986624973, 0.21040324304875002, -0.0910749592368749, 0.04920888275612503, -0.006164184212625017]
+    range(0, 5)
+    
+
+
+
+
+    [<matplotlib.lines.Line2D at 0x209e1d87460>]
+
+
+
+
+![png](thesis_files/thesis_68_2.png)
+
+
+
+
+
+
+
+    [<matplotlib.lines.Line2D at 0x209df4a8e80>]
+
+
+
+
+![png](thesis_files/thesis_69_1.png)
+
+
+# Histogram of absolute value of velocity
+
+
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x209df49dfd0>
+
+
+
+
+![png](thesis_files/thesis_71_1.png)
+
 
 
 
@@ -536,166 +422,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 190 frame.
     
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
-    
-    --Created 490 frame.
-    
-    --Created 500 frame.
-    
-    --Created 510 frame.
-    
-    --Created 520 frame.
-    
-    --Created 530 frame.
-    
-    --Created 540 frame.
-    
-    --Created 550 frame.
-    
-    --Created 560 frame.
-    
-    --Created 570 frame.
-    
-    --Created 580 frame.
-    
-    --Created 590 frame.
-    
-    --Created 600 frame.
-    
-    --Created 610 frame.
-    
-    --Created 620 frame.
-    
-    --Created 630 frame.
-    
-    --Created 640 frame.
-    
-    --Created 650 frame.
-    
-    --Created 660 frame.
-    
-    --Created 670 frame.
-    
-    --Created 680 frame.
-    
-    --Created 690 frame.
-    
-    --Created 700 frame.
-    
-    --Created 710 frame.
-    
-    --Created 720 frame.
-    
-    --Created 730 frame.
-    
-    --Created 740 frame.
-    
-    --Created 750 frame.
-    
-    --Created 760 frame.
-    
-    --Created 770 frame.
-    
-    --Created 780 frame.
-    
-    --Created 790 frame.
-    
-    --Created 800 frame.
-    
-    --Created 810 frame.
-    
-    --Created 820 frame.
-    
-    --Created 830 frame.
-    
-    --Created 840 frame.
-    
-    --Created 850 frame.
-    
-    --Created 860 frame.
-    
-    --Created 870 frame.
-    
-    --Created 880 frame.
-    
-    --Created 890 frame.
-    
-    --Created 900 frame.
-    
-    --Created 910 frame.
-    
-    --Created 920 frame.
-    
-    --Created 930 frame.
-    
-    --Created 940 frame.
-    
-    --Created 950 frame.
-    
-    --Created 960 frame.
-    
-    --Created 970 frame.
-    
-    --Created 980 frame.
-    
-    --Created 990 frame.
-    
     Animated and saved!
     
 
@@ -742,166 +468,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --Created 180 frame.
     
     --Created 190 frame.
-    
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
-    
-    --Created 490 frame.
-    
-    --Created 500 frame.
-    
-    --Created 510 frame.
-    
-    --Created 520 frame.
-    
-    --Created 530 frame.
-    
-    --Created 540 frame.
-    
-    --Created 550 frame.
-    
-    --Created 560 frame.
-    
-    --Created 570 frame.
-    
-    --Created 580 frame.
-    
-    --Created 590 frame.
-    
-    --Created 600 frame.
-    
-    --Created 610 frame.
-    
-    --Created 620 frame.
-    
-    --Created 630 frame.
-    
-    --Created 640 frame.
-    
-    --Created 650 frame.
-    
-    --Created 660 frame.
-    
-    --Created 670 frame.
-    
-    --Created 680 frame.
-    
-    --Created 690 frame.
-    
-    --Created 700 frame.
-    
-    --Created 710 frame.
-    
-    --Created 720 frame.
-    
-    --Created 730 frame.
-    
-    --Created 740 frame.
-    
-    --Created 750 frame.
-    
-    --Created 760 frame.
-    
-    --Created 770 frame.
-    
-    --Created 780 frame.
-    
-    --Created 790 frame.
-    
-    --Created 800 frame.
-    
-    --Created 810 frame.
-    
-    --Created 820 frame.
-    
-    --Created 830 frame.
-    
-    --Created 840 frame.
-    
-    --Created 850 frame.
-    
-    --Created 860 frame.
-    
-    --Created 870 frame.
-    
-    --Created 880 frame.
-    
-    --Created 890 frame.
-    
-    --Created 900 frame.
-    
-    --Created 910 frame.
-    
-    --Created 920 frame.
-    
-    --Created 930 frame.
-    
-    --Created 940 frame.
-    
-    --Created 950 frame.
-    
-    --Created 960 frame.
-    
-    --Created 970 frame.
-    
-    --Created 980 frame.
-    
-    --Created 990 frame.
     
     Animated and saved!
     
@@ -953,166 +519,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 190 frame.
     
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
-    
-    --Created 490 frame.
-    
-    --Created 500 frame.
-    
-    --Created 510 frame.
-    
-    --Created 520 frame.
-    
-    --Created 530 frame.
-    
-    --Created 540 frame.
-    
-    --Created 550 frame.
-    
-    --Created 560 frame.
-    
-    --Created 570 frame.
-    
-    --Created 580 frame.
-    
-    --Created 590 frame.
-    
-    --Created 600 frame.
-    
-    --Created 610 frame.
-    
-    --Created 620 frame.
-    
-    --Created 630 frame.
-    
-    --Created 640 frame.
-    
-    --Created 650 frame.
-    
-    --Created 660 frame.
-    
-    --Created 670 frame.
-    
-    --Created 680 frame.
-    
-    --Created 690 frame.
-    
-    --Created 700 frame.
-    
-    --Created 710 frame.
-    
-    --Created 720 frame.
-    
-    --Created 730 frame.
-    
-    --Created 740 frame.
-    
-    --Created 750 frame.
-    
-    --Created 760 frame.
-    
-    --Created 770 frame.
-    
-    --Created 780 frame.
-    
-    --Created 790 frame.
-    
-    --Created 800 frame.
-    
-    --Created 810 frame.
-    
-    --Created 820 frame.
-    
-    --Created 830 frame.
-    
-    --Created 840 frame.
-    
-    --Created 850 frame.
-    
-    --Created 860 frame.
-    
-    --Created 870 frame.
-    
-    --Created 880 frame.
-    
-    --Created 890 frame.
-    
-    --Created 900 frame.
-    
-    --Created 910 frame.
-    
-    --Created 920 frame.
-    
-    --Created 930 frame.
-    
-    --Created 940 frame.
-    
-    --Created 950 frame.
-    
-    --Created 960 frame.
-    
-    --Created 970 frame.
-    
-    --Created 980 frame.
-    
-    --Created 990 frame.
-    
     Animated and saved!
     
 
@@ -1162,140 +568,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 190 frame.
     
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
-    
-    --Created 490 frame.
-    
-    --Created 500 frame.
-    
-    --Created 510 frame.
-    
-    --Created 520 frame.
-    
-    --Created 530 frame.
-    
-    --Created 540 frame.
-    
-    --Created 550 frame.
-    
-    --Created 560 frame.
-    
-    --Created 570 frame.
-    
-    --Created 580 frame.
-    
-    --Created 590 frame.
-    
-    --Created 600 frame.
-    
-    --Created 610 frame.
-    
-    --Created 620 frame.
-    
-    --Created 630 frame.
-    
-    --Created 640 frame.
-    
-    --Created 650 frame.
-    
-    --Created 660 frame.
-    
-    --Created 670 frame.
-    
-    --Created 680 frame.
-    
-    --Created 690 frame.
-    
-    --Created 700 frame.
-    
-    --Created 710 frame.
-    
-    --Created 720 frame.
-    
-    --Created 730 frame.
-    
-    --Created 740 frame.
-    
-    --Created 750 frame.
-    
-    --Created 760 frame.
-    
-    --Created 770 frame.
-    
-    --Created 780 frame.
-    
-    --Created 790 frame.
-    
-    --Created 800 frame.
-    
-    --Created 810 frame.
-    
-    --Created 820 frame.
-    
-    --Created 830 frame.
-    
-    --Created 840 frame.
-    
-    --Created 850 frame.
-    
-    --Created 860 frame.
-    
+    Animated and saved!
     
 
 #### Conservation of number of particles
@@ -1331,97 +604,17 @@ To inspect this, the energy of every particle is added up. The base energy is th
 
 
 
+    "\ndef square(lis):\n    for e in lis:\n        yield e**2\n\nxvels_squared = []\nfor cell_xvels in U:\n    xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))\n#print(xvels)\nyvels_squared = []\nfor cell_yvels in V:\n    yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))\nassert(len(xvels) == len(yvels))\nit = 0\nenergy_cell_level = []\nmass = 2.988e-26\nfor xvel_squared in xvels_squared:\n    yvel_squared = yvels_squared[it]\n    energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here\n    \nplt.plot(energy_cell_level)\nplt.title('Variation in energy, cell method')\nplt.xlabel('Timestep')\nplt.ylabel('Energy')\nplt.savefig('./Assets/constant_energy_cellcalc.png')\nplt.close()\n"
+
+
+
+
+
+
 
 ![Constant energy throughout simulation](Assets/constant_energy.png)
 
 Error $\sim 10^{-8}$
-
-# Old sections, or not fitting
-
-## (Pseudo) Random Number Generation
-
-### Sampling from uniform distribution
-
-One of the pillars of this thesis is the generation of random rotation angles for the rotation matrix needed in the collision step. This proved to be somewhat difficult. First, the standard algorithm of the C++ standard library was tried, but it didn't qualify because it performed poorly in comparison to the second and third algorithms tried, which are called "Mersenne Twister" and "xoshiro256++", respectively.[@wiki:mersennetwister][@cppreference:prng][@unimi:xoshiro]
-
-The Mersenne Twister was implemented using the C++ standard library. The xoshiro256++ was implemented using Sebastian Vigna's code with some additions.[@unimi:xoshiro]
-
-To compare algorithms, and also to make sure that the implementation of the xoshiro256++ is right, a $\chi^2$ test for discrete observations was used. The generated angles in the interval $[0, 2\pi)$ were split into $k+1$ buckets, where $k$ is the number of degrees of freedom of the $\chi^2$ distribution. The test error
-
-\begin{equation}
-T = \sum_{b=1}^{k+1}{\frac{(N_o - E[N_b])^2}{E[N_b]}},
-\end{equation}
-
-where $E[N_b] = \frac{N}{b}, b \in \{1, 2, \dots , k+1\}$ is the expected bucket size, is compared to $\chi^2_{1-\alpha, k}$, where $\alpha$ is the signifigance level. The null hypothesis
-
-$$
-H_0: \textrm{The angles are distributed uniformly in the interval } [0, 2 \pi)
-$$
-
-is tested against the alternative hypothesis
-
-$$
-H_1: \textrm{The angles are not distributed uniformly in the interval } [0, 2 \pi) \textrm{.}
-$$
-
-If the test should have significance level $\alpha$, $H_0$ is rejected if $T \ge \chi^2_{1-\alpha, k}$.[@fruehwirthstat][@wiki:chisquaredtest][@wiki:goodnessoffit]
-
-The results of the $\chi^2$ test are summarised in [TODO: Table, and table formatting].
-
-
-
-
-
-As we can see, both generators pass the $\chi^2$ test and we do not have to reject our null hypothesis $H_0$.
-
-Visually, we can examine the generated buckets of both random generators in [TODO] the following plot. 
-
-
-
-![A histogram of different bucket sizes generated by MT and xoshiro256++](Assets/angle_buckets.png)
-
-The Mersenne Twister has been known to fail certain statistical tests since its inception, by virtue of its mathematical characteristics. There exist other algorithms that are designed to be faster and that do not fail any known statistical tests, examples of which are almost all of the algorithms in the xoshiro family.[@vigna2019] Ultimately, the xoshiro256++, developed by Sebastian Vigna and David Blackman, was used. It is a variant of the xorshift algorithm, which extends the bit-shift and xor methods by bitrotation, making it still very fast, and more "random" than the xorshift.[@wiki:xorshift][@unimi:xoshiro]
-
-Note that testing a (pseudo) random number generator is usually much more involved than this, but since this has already been done extensively by other authors, we are satisfied with the $\chi^2$ test, simply to test the implementation of the xoshiro256++, since it plays an important part.[@wiki:prng][@vigna2019]
-
-## Grid
-
-For the implementation of the collision step, a regular lattice is needed.[@winkl2009] This grid has lattice constant $a$, which in this thesis will simply be $1$. Each cell of the grid has an average number of particles per cell, which is typically initialised to between three and 20, although it can be as high as 70[@ihlekroll2001]. This number mainly affects the viscosity of the fluid.(TODO: find source) The average number of particles for the studied situation is $\bar N_c = 10$.
-
-TODO: update situation
-
-
-
-![Average number of particles per Grid cell](Assets/average_grid_particles.png)
-
-## The streaming step
-
-The particle positions were drawn from a uniform real distribution in the same interval as the dimensions of the pipe. The velocities were sampled from a normal distribution as described in section (TODO: section number) The results can be seen in figure [TODO: figure numbering] below. From the positions in the first row, the velocities in the second row, particle streaming is applied for 1 and 10 timesteps, according to equation (TODO: equ numbering).
-
-TODO: update situation
-
-
-
-![Particle streaming without collision with MT and with xoshiro](Assets/particle_streaming.png)
-
-We see the x and y coordinates are randomly initialized according to the shape of the container. Looking closely, one can see that our particles look very much like noise. The absolute value of the velocity components are initialized to at most 1% of their respective dimensions. After one timestep, some of the particles on the outer ranges have moved out of bounds, and after ten timesteps, the particles have thinned out considerably along the edges.
-
-## Optimizing the algorithm
-
-To optimize the runtime of the simulation, the code was analyzed for CPU & memory usage. Several areas were identified that needed improvement. In the end, the streaming and collision step are now performed in parallel, with the performance of the latter being very satisfying. The performance of the streaming step however could not be optimized much further. The problem is storage shared between threads, which means, to prevent errors and undefinable behavior, the program can't make full use of parallelization. It was tried to split this shared storage and later recombine, but this was to no avail. Ultimately, a lot of time was spent on this but unfortunately, the intricacies of C++ made this seem impossible.
-
-The reason a lot of time was spent on this particular step is to make possible a larger simulation, i.e. larger number of particles.
-
-<!--
-
-CONSIDER THIS. SHOULD BECOME MAXWELL WHEN IMPLEMENTING COLLISION STEP TOO
-After having implemented the streaming step and that other one: after time driftting, looks like this: (+velocity distribution = maxwell?)
-
-### some equations to copy
-
-$$
-r(t + \Delta t) = r(t) + \Delta t \cdot v(t)
-$$
 
 ## Converting to Word doc (others possible too, f.ex. .tex)
 

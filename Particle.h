@@ -23,7 +23,7 @@ namespace MPCD {
 				applied first
 		@param rotationMatrix: the rotation Matrix for the cell the particle belongs to. NOTE: same as above
 		*/
-		void collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle);
+		void collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle, double temperatureScalingFactor);
 
 		void move(double timelapse) override;
 

@@ -10,20 +10,20 @@ namespace MPCD {
 		//constexpr int number = Grid::average_particles_per_cell * (Pipe::x_max / Grid::cell_dim) * (Pipe::y_max / Grid::cell_dim); // will be a func of Grid
 		constexpr int seed = 5646542;
 		
-		constexpr int timesteps = 1000;
+		constexpr int timesteps = 200;
 		constexpr int average_particles_per_cell = 10;
 		constexpr double cell_dim = 1;
-		constexpr double k_boltzmann = 1.38064852e-23;
-		constexpr double temperature = 309.15; // = 36Celsius
-		constexpr double viscosity = 0.6947;
-		constexpr double particle_mass = 2.988e-26;
+		constexpr double k_boltzmann = 1;
+		constexpr double temperature = 2; // = 36Celsius
+		constexpr double viscosity = 1.6735;
+		constexpr double particle_mass = 1;
 		const double unit_of_time = std::sqrt((particle_mass * std::pow(cell_dim, 2) / (k_boltzmann * temperature)));
-		const double force_const = 1000; // kg (particle mass) * m (1) / s^2 (unit of time) about 10^-20, so a = 10^3 seems reasonable, but its really small force
-		const double time_lapse = 0.1 * unit_of_time; // will be a func of diff parameters
+		const double force_const = cell_dim / (unit_of_time * unit_of_time); // kg (particle mass) * m (1) / s^2 (unit of time) about 10^-20, so a = 10^3 seems reasonable, but its really small force
+		const double time_lapse = 0.1;// * unit_of_time; // will be a func of diff parameters
 		constexpr double x_0 = 0;
 		constexpr double y_0 = 0;
-		constexpr double x_max = 2;
-		constexpr double y_max = 20;
+		constexpr double x_max = 40;
+		constexpr double y_max = 5;
 		/*namespace Pipe {
 			
 			constexpr double width = x_max - x_0;

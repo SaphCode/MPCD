@@ -185,7 +185,6 @@
     <ClInclude Include="Cell.h" />
     <ClInclude Include="CircularObstacle.h" />
     <ClInclude Include="ConstForce.h" />
-    <ClInclude Include="Force.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Body.h" />
     <ClInclude Include="InteractingBody.h" />

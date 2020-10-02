@@ -13,6 +13,7 @@
 namespace MPCD {
 	class Grid {
 		public:
+			//Grid(std::map<std::pair<int,int>, Cell> cells);
 			Grid();
 			//void updateCell(Particle p, Eigen::Vector2d positionBefore);
 			//void shift();
@@ -28,6 +29,8 @@ namespace MPCD {
 			int getNumCols() const;
 			double getMaxShift() const;
 		private:
+			static std::map<std::pair<int, int>, Cell>& setupCells();
+
 			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const int firstRow, const int lastRow, const double cell_dim);
 			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;
 			const Xoshiro _shiftGen;

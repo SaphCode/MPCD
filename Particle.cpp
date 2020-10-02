@@ -12,13 +12,15 @@ void Particle::shift(Eigen::Vector2d amount) {
 }
 */
 
-void Particle::collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle) {
+void Particle::collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle, double temperatureScalingFactor) {
 	Eigen::Matrix2d rotationMatrix;
 	rotationMatrix(0, 0) = std::cos(rotationAngle);
 	rotationMatrix(1, 0) = std::sin(rotationAngle);
 	rotationMatrix(0, 1) = -std::sin(rotationAngle);
 	rotationMatrix(1, 1) = std::cos(rotationAngle);
-	m_vel = mean_cell_velocity + rotationMatrix * (m_vel - mean_cell_velocity);
+	double abs_m_vel = m_vel.stableNorm();
+	m_vel = mean_cell_velocity + temperatureScalingFactor * rotationMatrix * (m_vel - mean_cell_velocity);
+	double abs_m_vel_after = m_vel.stableNorm();
 }
 
 void Particle::move(double timelapse)

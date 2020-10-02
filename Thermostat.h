@@ -12,11 +12,11 @@ namespace MPCD {
 	{
 
 	public:
-		Thermostat();
-		double getScalingFactor(const std::vector<Particle>& particles, const int dimension) const;
+		Thermostat(double temperature);
+		double getScalingFactor(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity, const int dimension) const;
 	private:
-		double calculateSum(const double scalingFactor, const std::vector<Particle>& particles) const;
-		double calculateA(const double scalingFactor, const std::vector<Particle>& particles, const int dimension) const;
+		double calculateSum(const double scalingFactor, const Eigen::Vector2d mean, const std::vector<std::shared_ptr<Particle>>& particles) const;
+		double calculateA(const double scalingFactor, const Eigen::Vector2d cellMeanVelocity, const std::vector<std::shared_ptr<Particle>>& particles, const int dimension) const;
 		const double _c = 0.28;
 		const double _T0 = MPCD::Constants::temperature;
 		const double _particleMass = MPCD::Constants::particle_mass;
