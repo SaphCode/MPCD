@@ -146,8 +146,11 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 	std::string csv(".csv");
 
 	std::ofstream outFile(cwd.string() + filename + num + csv);
-	outFile << "timesteps,time_lapse,cell_dim,width,height,average_particles_per_cell,total_number_of_particles" << "\n"; // header columns
-	outFile << timesteps << "," << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << std::endl;
+
+	double particle_mass = MPCD::Constants::particle_mass;
+	double k_BT = MPCD::Constants::k_boltzmann * MPCD::Constants::temperature;
+	outFile << "timesteps,time_lapse,cell_dim,width,height,average_particles_per_cell,total_number_of_particles,particle_mass,k_BT" << "\n"; // header columns
+	outFile << timesteps << "," << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << std::endl;
 	outFile.close();
 }
 

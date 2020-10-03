@@ -51,11 +51,12 @@ double MPCD::Thermostat::calculateA(double scalingFactor, const Eigen::Vector2d 
 
 Eigen::Vector2d MPCD::Thermostat::_flowProfile(Eigen::Vector2d pos) const
 {
+    double L = (MPCD::Constants::x_max - MPCD::Constants::x_0);
     double R = (MPCD::Constants::y_max - MPCD::Constants::y_0) / 2; // Ly = (MPCD::Constants::y_max - MPCD::Constants::y_0)
     double r = pos[1] - R;
     //double L = MPCD::Constants::x_max - MPCD::Constants::x_0; // not commented before
     double pressureDifference = MPCD::Constants::particle_mass * MPCD::Constants::force_const; // MPCD::Constants::force_const;
-    double vx = (R * R) - r * r; // arash: pressureDifference * (Ly - r) * r / (2 * MPCD::Constants::viscosity);
+    double vx = pressureDifference / (4 * MPCD::Constants::viscosity * L) * (R * R) - r * r; // arash: pressureDifference * (Ly - r) * r / (2 * MPCD::Constants::viscosity);
     // me before: pressureDifference * (R * R - r * r) / (4 * MPCD::Constants::viscosity * L);
     Vector2d flow(vx, 0);
     return flow;
