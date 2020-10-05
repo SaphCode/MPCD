@@ -37,7 +37,7 @@ namespace MPCD {
 		int _numVirtual;
 		const Xoshiro _angleGen;
 		const Xoshiro _signGen;
-		const Thermostat m_thermostat;
+		Thermostat m_thermostat;
 	};
 }
 #endif // !CELL_H

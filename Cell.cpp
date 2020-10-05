@@ -7,7 +7,7 @@
 #include "Constants.h"
 
 MPCD::Cell::Cell() :
-	m_thermostat(Thermostat(MPCD::Constants::temperature)),
+	m_thermostat(Thermostat(MPCD::Constants::particle_mass, MPCD::Constants::temperature * MPCD::Constants::k_boltzmann)),
 	_angleGen(0, 2 * M_PI),
 	_signGen(-1, 1),
 	_vel(0, 0),
@@ -68,7 +68,7 @@ int MPCD::Cell::number() const
 
 double MPCD::Cell::thermostatScaling() const {
 	Eigen::Vector2d meanCellVelocity = getMeanVelocity();
-	return m_thermostat.getScalingFactor(_particles, meanCellVelocity, 2);
+	return m_thermostat.getScalingFactor(_particles, meanCellVelocity);
 }
 
 
