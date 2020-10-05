@@ -14,13 +14,13 @@ namespace MPCD {
 	{
 
 	public:
-		Thermostat(GammaDistribution& gamma, double particleMass, double k_BT);
-		double getScalingFactor(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity) const;
+		Thermostat(const GammaDistribution& gamma, double particleMass, double k_BT);
+		double getScalingFactor(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity);
 	private:
 		double calculateSum(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity) const;
 		const double m_k_BT_0;
 		const double m_particleMass = MPCD::Constants::particle_mass;
-		const std::mt19937_64 m_gen;
+		GammaDistribution m_gammaDist;
 	};
 
 }

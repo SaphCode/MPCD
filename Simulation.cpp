@@ -3,7 +3,7 @@
 #include "Particle.h"
 #include "Simulation.h"
 #include "Grid.h"
-#include "Constants.h"
+
 #include <filesystem>
 #include <fstream>
 #include <cmath>
@@ -19,7 +19,6 @@
 #include "Obstacle.h"
 #include "ConstForce.h"
 
-
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -27,7 +26,8 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw) {
+MPCD::Simulation::Simulation(bool draw)
+{
 	_timelapse = MPCD::Constants::time_lapse;
 	_draw = draw;
 	int timesteps = MPCD::Constants::timesteps;
@@ -73,8 +73,8 @@ void Simulation::setup() {
 
 	Wall lower(y_0, false);
 	Wall upper(y_max, true);
-	Eigen::Vector2d force(MPCD::Constants::force_const, 0);
-	ConstForce constForce(force);
+	Eigen::Vector2d acceleration(MPCD::Constants::acceleration_const, 0);
+	ConstForce constForce(acceleration);
 
 	_obstacles.push_back(std::make_shared<Wall>(lower));
 	_obstacles.push_back(std::make_shared<Wall>(upper));

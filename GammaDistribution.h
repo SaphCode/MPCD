@@ -7,10 +7,10 @@ class GammaDistribution
 {
 
 public:
-	GammaDistribution(const double particleMass, const double beta);
+	GammaDistribution(double particleMass, double beta);
 	~GammaDistribution();
 
-	double next(const int numParticles, const double alpha);
+	double next(int numParticles, double alpha);
 
 private:
 	const double m_particleMass;

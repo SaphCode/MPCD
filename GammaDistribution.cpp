@@ -1,7 +1,7 @@
 #include "GammaDistribution.h"
 #include <assert.h>
 
-GammaDistribution::GammaDistribution(const double particleMass, const double beta) :
+GammaDistribution::GammaDistribution(double particleMass, double beta) :
 	m_particleMass(particleMass),
 	m_beta(beta)
 {
@@ -12,12 +12,15 @@ GammaDistribution::~GammaDistribution()
 {
 }
 
-double GammaDistribution::next(const int numParticles, const double alpha)
+double GammaDistribution::next(int numParticles, double alpha)
 {
 	auto search = m_distributions.find(numParticles);
 	double next = -1;
 	if ((search != m_distributions.end())) {
-		next = search->second.second(search->first);
+		//std::mt19937_64 gen = search->second.first;
+		//std::gamma_distribution gamma = search->second.second;
+		//next = gamma(gen);
+		next = search->second.second(search->second.first);
 	}
 	else {
 		std::mt19937_64 gen{ std::random_device()() };

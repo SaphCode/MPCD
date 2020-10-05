@@ -18,9 +18,19 @@ void Particle::collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle,
 	rotationMatrix(1, 0) = std::sin(rotationAngle);
 	rotationMatrix(0, 1) = -std::sin(rotationAngle);
 	rotationMatrix(1, 1) = std::cos(rotationAngle);
+	
 	double abs_m_vel = m_vel.stableNorm();
+	double m_vel_x = m_vel[0];
+	double m_vel_y = m_vel[1];
+
 	m_vel = mean_cell_velocity + temperatureScalingFactor * rotationMatrix * (m_vel - mean_cell_velocity);
+	
 	double abs_m_vel_after = m_vel.stableNorm();
+	double m_vel_x_after = m_vel[0];
+	double m_vel_y_after = m_vel[1];
+	//if (abs_m_vel >= 10) {
+
+	//}
 }
 
 void Particle::move(double timelapse)

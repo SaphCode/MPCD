@@ -27,13 +27,13 @@ MPCD::Grid::Grid() :
 	_a(MPCD::Constants::cell_dim),
 	_maxShift(MPCD::Constants::cell_dim / 2),
 	_average_particles_per_cell(MPCD::Constants::average_particles_per_cell),
-	_cells(setupCells())
+	_gamma(GammaDistribution(MPCD::Constants::particle_mass, MPCD::Constants::temperature* MPCD::Constants::k_boltzmann))
 {
 	for (int i = 0; i < std::floor((MPCD::Constants::y_max - MPCD::Constants::y_0) / MPCD::Constants::cell_dim); i++) {
 		for (int j = 0; j < std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim); j++) {
-			Cell cell;
+			Cell cell(_gamma);
 			std::pair<int, int> coords(i, j);
-			_cells.insert(std::make_pair(coords, cell));
+			_cells.emplace(std::make_pair(coords, cell));
 		}
 	}
 }
@@ -48,7 +48,7 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
 		std::pair<int, int> coordinates = getCoordinates(particlePos);
 		assert(coordinates.first >= 0 && coordinates.first <= _numRows);
 		assert(coordinates.second >= 0 && coordinates.second <= _numCols);
-		_cells[coordinates].add(p);
+		_cells.at(coordinates).add(p);
 	}
 }
 
@@ -186,14 +186,6 @@ double MPCD::Grid::getMaxShift() const
 {
 	return _maxShift;
 }
-
-std::map<std::pair<int, int>, MPCD::Cell>& MPCD::Grid::setupCells()
-{
-	std::map<std::pair<int, int>, Cell> cells;
-	
-	return cells;
-}
-
 
 /*
 MPCD::Grid MPCD::operator+(const Grid& lhs, const Grid& rhs)

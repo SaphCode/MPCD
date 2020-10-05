@@ -9,6 +9,7 @@
 #include <map>
 #include <mutex>
 #include "Constants.h"
+#include "GammaDistribution.h"
 
 namespace MPCD {
 	class Grid {
@@ -29,7 +30,6 @@ namespace MPCD {
 			int getNumCols() const;
 			double getMaxShift() const;
 		private:
-			static std::map<std::pair<int, int>, Cell>& setupCells();
 
 			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const int firstRow, const int lastRow, const double cell_dim);
 			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;
@@ -39,6 +39,7 @@ namespace MPCD {
 			const double _a;
 			const int _numRows;
 			const int _numCols;
+			GammaDistribution _gamma;
 			//int _num_cells;
 			std::map<std::pair<int, int>, Cell> _cells;
 			//constexpr int wanted_num_cells = min_num_cells * 2;
