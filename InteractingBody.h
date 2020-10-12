@@ -20,7 +20,7 @@ public:
 
 		return Eigen::Vector2d(0, 0); // default implementation
 	}
-	virtual void resetEffect() {
+	void resetEffect() {
 		Eigen::Vector2d zero(0, 0);
 		m_effect = zero;
 	}

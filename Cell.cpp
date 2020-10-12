@@ -6,8 +6,8 @@
 #include <fstream>
 #include "Constants.h"
 
-MPCD::Cell::Cell() :
-	m_thermostat(Thermostat(MPCD::Constants::temperature)),
+MPCD::Cell::Cell(const GammaDistribution& gamma) :
+	m_thermostat(Thermostat(gamma, MPCD::Constants::particle_mass, MPCD::Constants::temperature * MPCD::Constants::k_boltzmann)),
 	_angleGen(0, 2 * M_PI),
 	_signGen(-1, 1),
 	_vel(0, 0),
@@ -37,7 +37,8 @@ void MPCD::Cell::addVirtual(MPCD::Particle& p) {
 }
 
 void MPCD::Cell::collide(double temperatureScalingFactor) {
-	double rotationAngle = 2.269;//_angleGen.next();
+	double rotationAngle = _angleGen.next();
+	//double rotationAngle = 2.269;//
 	double s = _signGen.next();
 	int sign = (s < 0) ? -1 : 1;
 	Eigen::Vector2d mean = getMeanVelocity();
@@ -66,9 +67,9 @@ int MPCD::Cell::number() const
 	return _particles.size();
 }
 
-double MPCD::Cell::thermostatScaling() const {
+double MPCD::Cell::thermostatScaling() {
 	Eigen::Vector2d meanCellVelocity = getMeanVelocity();
-	return m_thermostat.getScalingFactor(_particles, meanCellVelocity, 2);
+	return m_thermostat.getScalingFactor(_particles, meanCellVelocity);
 }
 
 

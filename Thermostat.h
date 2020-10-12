@@ -6,25 +6,21 @@
 #include <Eigen/Dense>
 #include "Particle.h"
 #include "Constants.h"
+#include <random>
+#include "GammaDistribution.h"
 
 namespace MPCD {
 	class Thermostat
 	{
 
 	public:
-		Thermostat(double temperature);
-		double getScalingFactor(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity, const int dimension) const;
+		Thermostat(const GammaDistribution& gamma, double particleMass, double k_BT);
+		double getScalingFactor(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity);
 	private:
-		double calculateSum(const double scalingFactor, const Eigen::Vector2d mean, const std::vector<std::shared_ptr<Particle>>& particles) const;
-		double calculateA(const double scalingFactor, const Eigen::Vector2d cellMeanVelocity, const std::vector<std::shared_ptr<Particle>>& particles, const int dimension) const;
-		const double _c = 0.28;
-		const double _T0 = MPCD::Constants::temperature;
-		const double _particleMass = MPCD::Constants::particle_mass;
-		const double _boltzmannConst = MPCD::Constants::k_boltzmann;
-		const Xoshiro _scalingFactorGen;
-		const Xoshiro _50percentGen;
-		const Xoshiro _doWeScaleGen;
-		Eigen::Vector2d _flowProfile(Eigen::Vector2d pos) const;
+		double calculateSum(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity) const;
+		const double m_k_BT_0;
+		const double m_particleMass = MPCD::Constants::particle_mass;
+		GammaDistribution m_gammaDist;
 	};
 
 }

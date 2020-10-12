@@ -11,7 +11,7 @@ namespace MPCD {
 	class Cell
 	{
 	public:
-		Cell();
+		Cell(const GammaDistribution& gamma);
 		~Cell();
 		void add(Particle& p);
 		void addVirtual(Particle& p);
@@ -26,7 +26,7 @@ namespace MPCD {
 		void draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs) const;
 		int number() const;
 
-		double thermostatScaling() const;
+		double thermostatScaling();
 
 		Eigen::Vector2d getTotalCellVelocity() const;
 	private:
@@ -37,7 +37,7 @@ namespace MPCD {
 		int _numVirtual;
 		const Xoshiro _angleGen;
 		const Xoshiro _signGen;
-		const Thermostat m_thermostat;
+		Thermostat m_thermostat;
 	};
 }
 #endif // !CELL_H
