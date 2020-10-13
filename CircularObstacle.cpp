@@ -19,5 +19,6 @@ bool MPCD::CircularObstacle::isInBounds(const Body& o) const
 
 Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 {
+	
 	return Eigen::Vector2d();
 }
