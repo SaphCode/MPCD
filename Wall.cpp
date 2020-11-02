@@ -23,7 +23,7 @@ bool MPCD::Wall::isInBounds(const Body& o) const
 Eigen::Vector2d MPCD::Wall::getOvershoot(const Body& o) const
 {
 	const Eigen::Vector2d pos = o.getPosition();
-	const Eigen::Vector2d oldPos = o.getOldPosition(MPCD::Constants::time_lapse);
+	const Eigen::Vector2d oldPos = o.getOldPosition();
 	Vector2d rel = pos - oldPos;
 
 	double k = rel[1] / rel[0];

@@ -18,6 +18,7 @@
 #include "Wall.h"
 #include "Obstacle.h"
 #include "ConstForce.h"
+#include "CircularObstacle.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -76,6 +77,23 @@ void Simulation::setup() {
 	Eigen::Vector2d acceleration(MPCD::Constants::acceleration_const, 0);
 	ConstForce constForce(acceleration);
 
+	const double x_offset = MPCD::Obstacles::x_offset;
+	const int num_circular_obstacles = MPCD::Obstacles::num;
+	const double x_dist = MPCD::Obstacles::x_dist;
+	const double radius = MPCD::Obstacles::radius;
+	const double y_upper = MPCD::Obstacles::y_center_upper;
+	const double y_lower = MPCD::Obstacles::y_center_lower;
+	for (int i = 0; i < num_circular_obstacles / 2; i++) {
+		std::cout << "X offset: " << x_offset + radius + 2 * radius * i + x_dist * i << std::endl;
+		Eigen::Vector2d center_upper(x_offset + radius + x_dist * i, y_upper);
+		CircularObstacle circ_upper(center_upper, radius);
+		_obstacles.push_back(std::make_shared<CircularObstacle>(circ_upper));
+
+		Eigen::Vector2d center_lower(x_offset + radius + x_dist * i, y_lower);
+		CircularObstacle circ_lower(center_lower, radius);
+		_obstacles.push_back(std::make_shared<CircularObstacle>(circ_lower));
+	}
+
 	_obstacles.push_back(std::make_shared<Wall>(lower));
 	_obstacles.push_back(std::make_shared<Wall>(upper));
 
@@ -90,7 +108,7 @@ void Simulation::setup() {
 		int timesteps = MPCD::Constants::timesteps;
 		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles, timesteps);
 	}
-
+	std::cout << "Setup complete." << std::endl;
 }
 
 void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0, double y_max) {
@@ -111,20 +129,35 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 	Xoshiro yvel(-max_y_vel, max_y_vel);
 	//MaxwellBoltzmann mb_vel(mean, temperature, mass);
 
+	//#pragma omp parallel for
 	for (int i = 0; i < number; i++) {
 		double xs_x = xs_xpos.next();
 		double xs_y = xs_ypos.next();
 		Eigen::Vector2d pos(xs_x, xs_y);
+		
 
 		double vx = xvel.next();
 		double vy = yvel.next();
 		Eigen::Vector2d vel(vx, vy);
 
 		Particle p(mass, pos, vel);
+		if (isInBoundsOfAnObstacle(p)) {
+			while (isInBoundsOfAnObstacle(p)) {
+				p.correctPosition(Eigen::Vector2d(xs_xpos.next(), xs_ypos.next()));
+			}
+		}
 
 		_particles.push_back(p);
 	}
 }
+
+bool MPCD::Simulation::isInBoundsOfAnObstacle(Body& b) {
+	for (auto& o : _obstacles) {
+		if (o->isInBounds(b)) return true;
+	}
+	return false;
+}
+
 
 void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps) {
 	int num_hypothetical_x_cells = std::round(width / cell_dim);

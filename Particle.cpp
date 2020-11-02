@@ -35,6 +35,7 @@ void Particle::collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle,
 
 void Particle::move(double timelapse)
 {
+	m_oldPosition = m_pos;
 	InteractingBody::move(timelapse);
 }
 

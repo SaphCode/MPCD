@@ -19,7 +19,11 @@ void MPCD::Pipe::setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles
 }
 
 void MPCD::Pipe::stream(std::vector<Particle>& particles, std::vector<std::shared_ptr<InteractingBody>>& interactors, double lapse, bool draw, std::ofstream& file) {
-	for (auto& p : particles) {
+	//for (auto& p : particles) {
+	int size = particles.size();
+	#pragma omp parallel for
+	for (int i = 0; i < size; i++) {
+		Particle p = particles[i];
 		for (auto& i : interactors) {
 			i->interact(p);
 		}
@@ -88,7 +92,7 @@ void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 }
 
 void MPCD::Pipe::collide(Particle& p) {
-	for (auto& o : _obstacles) {
+	for (auto o : _obstacles) {
 		if (o->isInBounds(p)) {
 			Eigen::Vector2d overshoot = o->getOvershoot(p);
 			// no slip
@@ -96,7 +100,16 @@ void MPCD::Pipe::collide(Particle& p) {
 			assert(!(o->isInBounds(p)));
 		}
 	}
-	for (auto& o : _obstacles) {
+	for (auto o : _obstacles) {
+		/*
+		Eigen::Vector2d debugPos = p.getPosition();
+		if ((o->isInBounds(p))) {
+			Eigen::Vector2d overshoot = o->getOvershoot(p);
+			p.collided(overshoot);
+			std::cout << "Failed Pos: " << debugPos << std::endl;
+			assert(!(o->isInBounds(p)));
+		}
+		*/
 		assert(!(o->isInBounds(p))); // double check for now, TODO maybe remove
 	}
 }

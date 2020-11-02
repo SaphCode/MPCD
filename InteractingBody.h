@@ -26,7 +26,6 @@ public:
 	}
 	virtual void move(const double timelapse) override;
 	void addEffect(Eigen::Vector2d effect);
-	Eigen::Vector2d getOldPosition(const double timelapse) const override;
 	void updateVelocity(const double timelapse);
 
 private:

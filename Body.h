@@ -13,11 +13,12 @@ public:
 	virtual void correctPosition(const Eigen::Vector2d newPos);
 	virtual void collided(const Eigen::Vector2d overshoot);
 	Eigen::Vector2d getPosition() const;
-	virtual Eigen::Vector2d getOldPosition(const double timelapse) const;
+	virtual Eigen::Vector2d getOldPosition() const;
 	Eigen::Vector2d getVelocity() const;
 protected:
 	double m_mass;
 	Eigen::Vector2d m_pos;
+	Eigen::Vector2d m_oldPosition;
 	Eigen::Vector2d m_vel;
 };
 

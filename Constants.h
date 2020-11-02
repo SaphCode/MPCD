@@ -8,7 +8,7 @@
 namespace MPCD {
 	namespace Constants {
 		//constexpr int number = Grid::average_particles_per_cell * (Pipe::x_max / Grid::cell_dim) * (Pipe::y_max / Grid::cell_dim); // will be a func of Grid
-		constexpr int seed = 5646542;
+		constexpr int seed = 3242342;
 		
 		constexpr int timesteps = 100;
 		constexpr int average_particles_per_cell = 10;
@@ -23,6 +23,16 @@ namespace MPCD {
 		constexpr double y_0 = 0;
 		constexpr double x_max = 400;
 		constexpr double y_max = 20;
+	}
+	namespace Obstacles {
+		constexpr int num = 20;
+		constexpr double radius = 2.0;
+		constexpr double y_center_lower = 0.33 * Constants::y_max;
+		constexpr double y_center_upper = 0.66 * Constants::y_max;
+		constexpr double x_offset = 100;
+		constexpr double remaining_x = Constants::x_max - 2 * x_offset;
+		constexpr double of_that_filled = radius * 2 * (num / 2);
+		constexpr double x_dist = (remaining_x - of_that_filled) / ((num / 2) - 1);
 	}
 }
 #endif

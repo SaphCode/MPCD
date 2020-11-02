@@ -32,6 +32,8 @@ namespace MPCD {
 		void streamingStep();
 		void collisionStep();
 
+		bool isInBoundsOfAnObstacle(Body& b);
+
 		void writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps);
 		
 		void setUpParticles(int number, double x_0, double x_max, double y_0, double y_max);

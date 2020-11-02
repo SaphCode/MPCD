@@ -32,9 +32,9 @@ Eigen::Vector2d Body::getPosition() const
 	return m_pos;
 }
 
-Eigen::Vector2d Body::getOldPosition(const double timelapse) const
+Eigen::Vector2d Body::getOldPosition() const
 {
-	return m_pos - m_vel * timelapse;
+	return m_oldPosition;
 }
 
 Eigen::Vector2d Body::getVelocity() const
