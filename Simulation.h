@@ -11,6 +11,7 @@
 #include "IObstacle.h"
 
 #include <map>
+#include <fstream>
 
 namespace MPCD {
 	class Simulation {
@@ -26,6 +27,8 @@ namespace MPCD {
 		std::vector<Particle> _particles;
 		std::vector<std::shared_ptr<IObstacle>> _obstacles;
 		std::vector<std::shared_ptr<InteractingBody>> _interactors;
+
+		void writeCirclePositionToOut(std::ofstream& outFile, Eigen::Vector2d center_pos, double radius);
 
 		void setup();
 

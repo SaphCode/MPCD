@@ -56,10 +56,8 @@ Eigen::Vector2d MPCD::Cell::getTotalCellVelocity() const {
 	return _vel;
 }
 
-void MPCD::Cell::draw(std::mutex& m, std::pair<int, int> index, std::ofstream& ofs) const {
-	m.lock();
+void MPCD::Cell::draw(std::pair<int, int> index, std::ofstream& ofs) const {
 	ofs << index.first << "," << index.second << "," << _vel[0] << "," << _vel[1] << "," << _particles.size() << "\n";
-	m.unlock();
 }
 
 int MPCD::Cell::number() const

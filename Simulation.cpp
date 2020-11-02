@@ -83,16 +83,27 @@ void Simulation::setup() {
 	const double radius = MPCD::Obstacles::radius;
 	const double y_upper = MPCD::Obstacles::y_center_upper;
 	const double y_lower = MPCD::Obstacles::y_center_lower;
+
+	std::string filename("//Data//constants_");
+	std::string obstacles("obstacles");
+	std::string csv(".csv");
+	std::filesystem::path cwd = std::filesystem::current_path();
+	std::ofstream outFile(cwd.string() + filename + obstacles + csv);
+	outFile << "x,y,r" << "\n"; // header columns
 	for (int i = 0; i < num_circular_obstacles / 2; i++) {
+		
 		std::cout << "X offset: " << x_offset + radius + 2 * radius * i + x_dist * i << std::endl;
 		Eigen::Vector2d center_upper(x_offset + radius + x_dist * i, y_upper);
 		CircularObstacle circ_upper(center_upper, radius);
+		writeCirclePositionToOut(outFile, center_upper, radius);
 		_obstacles.push_back(std::make_shared<CircularObstacle>(circ_upper));
 
 		Eigen::Vector2d center_lower(x_offset + radius + x_dist * i, y_lower);
 		CircularObstacle circ_lower(center_lower, radius);
+		writeCirclePositionToOut(outFile, center_lower, radius);
 		_obstacles.push_back(std::make_shared<CircularObstacle>(circ_lower));
 	}
+	outFile.close();
 
 	_obstacles.push_back(std::make_shared<Wall>(lower));
 	_obstacles.push_back(std::make_shared<Wall>(upper));
@@ -111,6 +122,10 @@ void Simulation::setup() {
 	std::cout << "Setup complete." << std::endl;
 }
 
+void MPCD::Simulation::writeCirclePositionToOut(std::ofstream& outFile, Eigen::Vector2d center_pos, double radius) {
+	outFile << center_pos[0] << "," << center_pos[1] << "," << radius << std::endl;
+}
+
 void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0, double y_max) {
 	_particles.reserve(number);
 
@@ -125,22 +140,18 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 
 	double max_x_vel = std::sqrt(2 * MPCD::Constants::k_boltzmann * MPCD::Constants::temperature / MPCD::Constants::particle_mass);
 	double max_y_vel = std::sqrt(2 * MPCD::Constants::k_boltzmann * MPCD::Constants::temperature / MPCD::Constants::particle_mass);
-	Xoshiro xvel(-max_x_vel, max_x_vel);
-	Xoshiro yvel(-max_y_vel, max_y_vel);
-	//MaxwellBoltzmann mb_vel(mean, temperature, mass);
+	MaxwellBoltzmann mb_vel(mean, temperature, mass);
 
-	//#pragma omp parallel for
 	for (int i = 0; i < number; i++) {
 		double xs_x = xs_xpos.next();
 		double xs_y = xs_ypos.next();
 		Eigen::Vector2d pos(xs_x, xs_y);
 		
 
-		double vx = xvel.next();
-		double vy = yvel.next();
-		Eigen::Vector2d vel(vx, vy);
+		Eigen::Vector2d v = mb_vel.next();
 
-		Particle p(mass, pos, vel);
+		Particle p(mass, pos, v);
+		
 		if (isInBoundsOfAnObstacle(p)) {
 			while (isInBoundsOfAnObstacle(p)) {
 				p.correctPosition(Eigen::Vector2d(xs_xpos.next(), xs_ypos.next()));

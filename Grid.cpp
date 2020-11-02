@@ -109,20 +109,50 @@ std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
 
 void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
 {
-	std::mutex m;
+	const double cell_dim = MPCD::Constants::cell_dim;
+	const int lastRow = int(std::round(MPCD::Constants::y_max / cell_dim)) - 1;
+	const int firstRow = 0;
+	#pragma omp parallel for
+	for (int i = 0; i <= lastRow; i++) {
+		for (int j = 0; j < MPCD::Constants::x_max / cell_dim; j++) {
+			std::pair<int, int> key(i, j);
+			Cell& cell = _cells.at(key);
+			if ((key.first == firstRow) || (key.first == lastRow)) {
+				createVirtualParticles(key, cell, firstRow, lastRow, cell_dim);
+			}
+			double scaling = cell.thermostatScaling();
+			#pragma omp critical
+			{
+				cell.collide(scaling);
+				if (draw) {
+					{
+						cell.draw(key, outFile);
+					}
+				}
+			}
+		}
+	}
+	/*
 	for (auto& [key, cell] : _cells) {
-		const double cell_dim = MPCD::Constants::cell_dim;
+		
 		const int lastRow = int(std::round(MPCD::Constants::y_max / cell_dim)) - 1;
 		const int firstRow = 0;
 		if ((key.first == firstRow) || (key.first == lastRow)) {
 			createVirtualParticles(key, cell, firstRow, lastRow, cell_dim);
 		}
 		double scaling = cell.thermostatScaling();
-		cell.collide(scaling);
+		#pragma omp critical
+		{
+			cell.collide(scaling);
+		}
 		if (draw) {
-			cell.draw(m, key, outFile);
+			#pragma omp critical
+			{
+				cell.draw(key, outFile);
+			}
 		}
 	}
+	*/
 		
 }
 

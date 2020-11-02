@@ -36,7 +36,10 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, std::vector<std::share
 		if (draw) {
 			Eigen::Vector2d pos = p.getPosition();
 			Eigen::Vector2d vel = p.getVelocity();
-			file << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
+			#pragma omp critical
+			{
+				file << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
+			}
 		}
 		
 	}
