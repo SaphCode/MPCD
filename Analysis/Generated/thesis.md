@@ -1,9 +1,8 @@
-
-
+```latex
+%%latex
 \newcommand{\matr}[1]\textbf{#1}
 \newcommand{\vect}[1]{\vec{#1}}
-
-
+```
 
 # To my dear supervisors
 
@@ -255,37 +254,175 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
+```python
+timesteps = []
+I = []
+J = []
+U = []
+V = []
+pivot = []
+```
 
 
+```python
+from math import floor
+import pandas as pd
+import glob
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import seaborn as sns
+import os.path
+
+path = "../Application/MPCDApplication/Data/"
+csv = ".csv"
+av = 10
+constants = 'constants_av' + str(av) + csv
+
+constants = pd.read_csv(path + constants)
+num_timesteps = int(constants['timesteps'])
+```
 
 
+```python
+shown_x = float(constants['width'])
+shown_y = float(constants['height'])
 
-    Loading particles ..
-    --loaded 10
-    --loaded 20
-    --loaded 30
-    --loaded 40
-    --loaded 50
-    --loaded 60
-    --loaded 70
-    --loaded 80
-    --loaded 90
-    --loaded 100
-    --loaded 110
-    --loaded 120
-    --loaded 130
-    --loaded 140
-    --loaded 150
-    --loaded 160
-    --loaded 170
-    --loaded 180
-    --loaded 190
-    --loaded 200
-    Particles loaded and saved!
+saved = './Saved'
+saved_particles = '/particles.pkl'
+file_particles = saved + saved_particles
+
+def load_particles(path):
+    columns = []
+    x_columns = ['x{}'.format(it) for it in range(0, num_timesteps)]
+    vx_columns = ['vx{}'.format(it) for it in range(0, num_timesteps)]
+    y_columns = ['y{}'.format(it) for it in range(0, num_timesteps)]
+    vy_columns = ['vy{}'.format(it) for it in range(0, num_timesteps)]
+    columns.extend(x_columns)
+    columns.extend(y_columns)
+    columns.extend(vx_columns)
+    columns.extend(vy_columns)
+    particles = pd.DataFrame(columns = columns)
+
+    if (os.path.isfile(file_particles)):
+        print('Found saved particles_x and particles_y files!')
+        particles = pd.read_pickle(file_particles)
+        print('Loaded particles files.')
+    else:
+        # Loading particles
+        print('Loading particles ..')
+        filenames_particles = glob.glob('{}*.csv'.format(path))
+        it = 0
+        for file in filenames_particles:
+            df = pd.read_csv(file)
+            particles[['x{}'.format(it), 'y{}'.format(it), 'vx{}'.format(it), 'vy{}'.format(it)]] = df[['x', 'y', 'vx', 'vy']]
+            it += 1
+            if (it % 10 == 0):
+                print('--loaded {}'.format(it))
+        particles.to_pickle(file_particles)
+        it = 0
+        print('Particles loaded and saved!\n')
+        # Particles loaded
+    return particles
+
+
+particles_path = '{parent}particles_av{av}'.format(parent = path, av=av)    
+particles = load_particles(path = particles_path)
+```
+
+    Found saved particles_x and particles_y files!
+    Loaded particles files.
     
+
+
+```python
+cell_dim = float(constants['cell_dim'])
+width = float(constants['width'])
+height = float(constants['height'])
+shown_cols = floor(width / cell_dim)
+shown_rows = floor(height / cell_dim)
+
+saved = './Saved'
+saved_cells = '/cells.pkl'
+file_cells = saved + saved_cells
+
+columns = ['i', 'j', 'meanX', 'meanY', 'num']
+
+def load_cells(path, columns, shown_rows, shown_cols):
     
+    index = ['t']
+    if (os.path.isfile(file_cells)):
+        cells = pd.read_pickle(file_cells)
+        #print(cells)
+        #cells.set_index(index, inplace=True)
+    else:
+        # Loading cells
+        print('Loading cells')
+        
+        cells_timesteps = []
+        
+        it = 0
+        filenames_cells = glob.glob('{}*.csv'.format(path))
+        for file in filenames_cells:
+            df = pd.read_csv(file)
+            cells_timesteps.append(df)
+            #df[[i,j]] = (df[[i,j]] + 1/2) * cell_dim
+            #print(df.head())
+            it += 1
+            if (it % 10 == 0):
+                print('--loaded {}'.format(it))
+        #cells.to_pickle(file_cells)
+        print('Cells loaded and saved!\n')
+        # Cells loaded
+        return cells_timesteps
+    
+def prepare_cells(cells_timesteps, columns, shown_rows, shown_cols):
+    # Preparing cell values
+    print('Preparing cell values ..')
+
+    array_i = np.arange(0, shown_rows)
+    array_j = np.arange(0, shown_cols)
+    I,J = np.meshgrid(array_j, array_i)
+
+    U = []
+    V = []
+
+    i = columns[0]
+    j = columns[1]
+    vx = columns[2]
+    vy = columns[3]
+    num = columns[4]
+
+    pivots = []
+    for df in cells_timesteps:
+        # only the rows and cols above 0
+        # and below shown_rows, shown_cols
+        # this is to 
+        # --1. no vaccuum around simulated region
+        # --2. I,J are fixed size
+        U_inner = []
+        V_inner = []
+        for it in array_i: # TODO: check this code something seems foul (row, cols, but only using rows)
+            temp = df.loc[df[i] == it]
+            u = np.array(temp[vx])
+            U_inner.append(u)
+            v = np.array(temp[vy])
+            V_inner.append(v)
+        U.append(np.array(U_inner))#, dtype = object))
+        V.append(np.array(V_inner))#, dtype = object))
+
+        pivot = df.pivot(index = i, columns = j, values = num)
+        pivots.append(pivot)
+
+    print('Cell preparation complete!')
+    return I,J,U,V, pivots
+    # Cell preparation complete
 
 
+cells_path = path + 'cells_av{}'.format(av)
+cells_timesteps = load_cells(cells_path, columns, shown_rows, shown_cols)
+I,J,U,V,pivots = prepare_cells(cells_timesteps, columns, shown_rows, shown_cols)
+```
 
     Loading cells
     --loaded 10
@@ -298,16 +435,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 80
     --loaded 90
     --loaded 100
-    --loaded 110
-    --loaded 120
-    --loaded 130
-    --loaded 140
-    --loaded 150
-    --loaded 160
-    --loaded 170
-    --loaded 180
-    --loaded 190
-    --loaded 200
     Cells loaded and saved!
     
     Preparing cell values ..
@@ -315,6 +442,61 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
 
 
+```python
+# Plotting
+#with (sns.plotting_context(sns.set())):
+x_0_region = 0
+x_max_region = int(constants['width'])
+y_0_region = 0
+y_max_region = int(constants['height'])
+
+streamplot_density = [0.5, 1]
+
+print('Plotting data ..')
+fig = plt.figure(figsize=(20,20))
+ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
+
+for a in ax:
+    a.set_xticklabels([])
+    a.set_yticklabels([])
+    #a.set_aspect('equal')
+    
+fig.subplots_adjust(wspace=0, hspace=0)
+
+color = np.sqrt(U[0]**2 + V[0]**2)
+point_size = 1
+
+#ax[0].xaxis.set_ticks([])
+#ax[0].yaxis.set_ticks([])
+ax[0].quiver(I, J, U[0], V[0], color)
+ax[0].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+
+#ax[1].xaxis.set_ticks([])
+#ax[1].yaxis.set_ticks([])
+ax[1].streamplot(I, J, U[0], V[0], color=color, density = streamplot_density) # grid
+ax[1].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+
+#ax[2].xaxis.set_ticks([])
+#ax[2].yaxis.set_ticks([])
+ax[2].plot(particles['x0'], particles['y0'], "o", markersize = point_size)
+ax[2].set(xlim=(x_0_region, x_max_region), ylim=(y_0_region,y_max_region))
+
+#ax[3].xaxis.set_ticks([])
+#ax[3].yaxis.set_ticks([])
+#img = ax[3].imshow(pivot, cmap='hot')
+#fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
+sns.heatmap(pivots[0], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.01})
+ax[3].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region,y_max_region))
+#ax[3].xticks('')
+#ax[3].yticks('')
+ax[3].set_ylabel('')
+ax[3].set_xlabel('')
+#ax[1,1].imshow(pivot, cmap='hot')
+
+plt.savefig("Assets/initial_region.png")
+plt.close()
+print('Data plotted and saved!')
+```
 
     Plotting data ..
     Data plotted and saved!
@@ -323,6 +505,54 @@ _The animations will probably be more interesting once force, thermostat & obsta
 ![Initial State of region with barebones MPCD implementation](Assets/initial_region.png)
 
 
+```python
+print('Plotting data ..')
+fig = plt.figure(figsize=(20,20))
+ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
+
+timesteps = int(constants['timesteps']) - 1
+
+for a in ax:
+    a.set_xticklabels([])
+    a.set_yticklabels([])
+    #a.set_aspect('equal')
+    
+fig.subplots_adjust(wspace=0, hspace=0)
+
+color = np.sqrt(U[timesteps]**2 + V[timesteps]**2)
+point_size = 1
+
+ax[0].xaxis.set_ticks([])
+ax[0].yaxis.set_ticks([])
+ax[0].quiver(I, J, U[timesteps], V[timesteps], color)
+ax[0].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+
+ax[1].xaxis.set_ticks([])
+ax[1].yaxis.set_ticks([])
+ax[1].streamplot(I, J, U[timesteps], V[timesteps], color=color, density=streamplot_density) # grid
+ax[1].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+
+ax[2].xaxis.set_ticks([])
+ax[2].yaxis.set_ticks([])
+ax[2].plot(particles['x{}'.format(timesteps)], particles['y{}'.format(timesteps)], "o", markersize = point_size)
+ax[2].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+
+ax[3].xaxis.set_ticks([])
+ax[3].yaxis.set_ticks([])
+#img = ax[3].imshow(pivot, cmap='hot')
+#fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
+sns.heatmap(pivots[timesteps], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.005})
+ax[3].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+#ax[3].xticks('')
+#ax[3].yticks('')
+ax[3].set_ylabel('')
+ax[3].set_xlabel('')
+#ax[1,1].imshow(pivot, cmap='hot')
+
+plt.savefig("Assets/stationary_region.png")
+plt.close()
+print('Data plotted and saved!')
+```
 
     Plotting data ..
     Data plotted and saved!
@@ -331,52 +561,205 @@ _The animations will probably be more interesting once force, thermostat & obsta
 ![Ending (maybe stationary) state of region with barebones MPCD implementation](Assets/stationary_region.png)
 
 
+```python
+rowsums = [row.sum()/len(row) for row in U[timesteps]]
+plt.plot(rowsums, range(len(rowsums)), "o-")
+plt.savefig("Assets/velocity_profile.png")
+#plt.close()
+```
 
-    [20.378090832783744, 22.44377043766251, 21.817930261637006, 22.944467213199985, 22.96861832864126]
-    [-0.22604705986624973, 0.21040324304875002, -0.0910749592368749, 0.04920888275612503, -0.006164184212625017]
-    range(0, 5)
+
+    
+![png](thesis_files/thesis_68_0.png)
+    
+
+
+![Ending velocity profile](Release/Assets/velocity_profile.png)
+
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+# setting the x - coordinates 
+x = np.arange(0, 20.1, 0.1) 
+# setting the corresponding y - coordinates 
+R = 10
+
+
+y = (R * R) - (x - R)**2
+#y = R * R - (x - R)**2
+
+plt.plot(y, x)
+```
+
+
+
+
+    [<matplotlib.lines.Line2D at 0x2318c025820>]
+
+
+
+
+    
+![png](thesis_files/thesis_70_1.png)
+    
+
+
+# Histograms velocity
+
+## t = 0
+
+
+```python
+last_vels = particles['vx{}'.format(0)]
+plt.hist(last_vels)
+```
+
+
+
+
+    (array([7843., 7945., 7984., 7931., 8001., 8049., 8024., 8021., 8093.,
+            8109.]),
+     array([-1.31421 , -1.031375, -0.74854 , -0.465705, -0.18287 ,  0.099965,
+             0.3828  ,  0.665635,  0.94847 ,  1.231305,  1.51414 ]),
+     <a list of 10 Patch objects>)
+
+
+
+
+    
+![png](thesis_files/thesis_73_1.png)
     
 
 
 
-
-    [<matplotlib.lines.Line2D at 0x209e1d87460>]
-
-
-
-
-![png](thesis_files/thesis_68_2.png)
+```python
+last_vels = particles['vy{}'.format(0)]
+sns.distplot(last_vels)
+```
 
 
 
 
-
-
-
-    [<matplotlib.lines.Line2D at 0x209df4a8e80>]
-
-
-
-
-![png](thesis_files/thesis_69_1.png)
-
-
-# Histogram of absolute value of velocity
+    <matplotlib.axes._subplots.AxesSubplot at 0x231ff392c40>
 
 
 
 
+    
+![png](thesis_files/thesis_74_1.png)
+    
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x209df49dfd0>
+## t = timesteps, f.ex. 200 or 500
+
+
+```python
+last_vels = particles['vx{}'.format(timesteps)]
+sns.distplot(last_vels)
+```
 
 
 
 
-![png](thesis_files/thesis_71_1.png)
+    <matplotlib.axes._subplots.AxesSubplot at 0x231ff2aa7f0>
 
 
 
+
+    
+![png](thesis_files/thesis_76_1.png)
+    
+
+
+
+```python
+last_vels = particles['vy{}'.format(timesteps)]
+sns.distplot(last_vels)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x231800d2880>
+
+
+
+
+    
+![png](thesis_files/thesis_77_1.png)
+    
+
+
+# Temperature of solvent
+
+hmmmmm?
+
+
+```python
+v_2_t = [particles[['vx{}'.format(t), 'vy{}'.format(t)]]**2 for t in range(timesteps)]
+avg_v_2_t = [v_2_particles.sum().sum() for v_2_particles in v_2_t]
+
+particle_mass = float(constants['particle_mass'])
+
+temp_t = np.array(avg_v_2_t) * 0.5 * particle_mass
+sns.lineplot(data=temp_t)
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x2318c053460>
+
+
+
+
+    
+![png](thesis_files/thesis_80_1.png)
+    
+
+
+# Animations
+
+
+```python
+from matplotlib import animation
+print('Animating Quiver ...\n')
+
+# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure()
+ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+
+quiv = ax.quiver(I, J, 10**-12*U[0], 10**-12*V[0], scale = 1) #10**-5*U10**-5*V
+
+# initialization function: plot the background of each frame
+def init():
+    #quiv.set_data([], [], [], [])
+    return quiv,
+
+# animation function.  This is called sequentially
+def animate(it, quiv, I, J):
+    #color = np.sqrt(U[it]**2 + V[it]**2)
+    quiv.set_UVC(10**-12*U[it], 10**-12*V[it]) #*10**-5*
+    if (it % 10 == 0):
+        print('--Created {} frame.\n'.format(it))
+    #quiv.set_color(color)
+    return quiv,
+
+# call the animator.  blit=True means only re-draw the parts that have changed.
+anim = animation.FuncAnimation(fig, animate, fargs = (quiv, I, J),#init_func=init,
+                               frames=timesteps, blit=False)
+
+# save the animation as an mp4.  This requires ffmpeg or mencoder to be
+# installed.  The extra_args ensure that the x264 codec is used, so that
+# the video can be embedded in html5.  You may need to adjust this for
+# your system: for more information, see
+# http://matplotlib.sourceforge.net/api/animation_api.html
+anim.save('./Assets/quiver_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+print('Animated and saved!')
+
+plt.close()
+```
 
     Animating Quiver ...
     
@@ -402,30 +785,51 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 90 frame.
     
-    --Created 100 frame.
-    
-    --Created 110 frame.
-    
-    --Created 120 frame.
-    
-    --Created 130 frame.
-    
-    --Created 140 frame.
-    
-    --Created 150 frame.
-    
-    --Created 160 frame.
-    
-    --Created 170 frame.
-    
-    --Created 180 frame.
-    
-    --Created 190 frame.
-    
     Animated and saved!
     
 
 
+```python
+from matplotlib import animation
+import seaborn as sns
+
+print('Animating Heatmap ...\n')
+
+# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure()
+ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+
+# initialization function: plot the background of each frame
+def init():
+    plt.clf()
+    ax = sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    #return heatmap,
+
+# animation function.  This is called sequentially
+def animate(it):
+    plt.clf()
+    ax = sns.heatmap(pivots[it], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    ax.set_xlim((x_0_region, x_max_region))
+    ax.set_ylim((y_0_region, y_max_region))
+    if (it % 10 == 0):
+        print('--Created {} frame.\n'.format(it))
+    #return heatmap
+
+# call the animator.  blit=True means only re-draw the parts that have changed.
+anim = animation.FuncAnimation(fig, animate, init_func=init,
+                               frames=timesteps)
+
+# save the animation as an mp4.  This requires ffmpeg or mencoder to be
+# installed.  The extra_args ensure that the x264 codec is used, so that
+# the video can be embedded in html5.  You may need to adjust this for
+# your system: for more information, see
+# http://matplotlib.sourceforge.net/api/animation_api.html
+anim.save('./Assets/heatmap_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+print('Animated and saved!')
+
+plt.close()
+```
 
     Animating Heatmap ...
     
@@ -449,30 +853,49 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 90 frame.
     
-    --Created 100 frame.
-    
-    --Created 110 frame.
-    
-    --Created 120 frame.
-    
-    --Created 130 frame.
-    
-    --Created 140 frame.
-    
-    --Created 150 frame.
-    
-    --Created 160 frame.
-    
-    --Created 170 frame.
-    
-    --Created 180 frame.
-    
-    --Created 190 frame.
-    
     Animated and saved!
     
 
 
+```python
+from matplotlib import animation
+
+print('Animating particles ...')
+# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure()
+ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(0, y_max_region))
+scatter, = ax.plot(particles['x0'], particles['y0'], "o", markersize = point_size)
+
+x = 'x'
+y = 'y'
+
+# initialization function: plot the background of each frame
+def init():
+    #quiv.set_data([], [], [], [])
+    return scatter,
+
+# animation function.  This is called sequentially
+def animate(it):
+    scatter.set_xdata(particles[x + str(it)])
+    scatter.set_ydata(particles[y + str(it)])
+    if (it % 10 == 0):
+        print('--Created {} frame.\n'.format(it))
+    return scatter,
+
+# call the animator.  blit=True means only re-draw the parts that have changed.
+anim = animation.FuncAnimation(fig, animate, #init_func=init,
+                               frames=timesteps, blit=True)
+
+# save the animation as an mp4.  This requires ffmpeg or mencoder to be
+# installed.  The extra_args ensure that the x264 codec is used, so that
+# the video can be embedded in html5.  You may need to adjust this for
+# your system: for more information, see
+# http://matplotlib.sourceforge.net/api/animation_api.html
+anim.save('./Assets/scatterplot_animation.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
+print('Animated and saved!')
+
+plt.close()
+```
 
     Animating particles ...
     --Created 0 frame.
@@ -497,85 +920,315 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
     --Created 80 frame.
     
-    --Created 90 frame.
     
-    --Created 100 frame.
+
+
+    ---------------------------------------------------------------------------
+
+    KeyboardInterrupt                         Traceback (most recent call last)
+
+    <ipython-input-19-c2fb87a21d44> in <module>
+         32 # your system: for more information, see
+         33 # http://matplotlib.sourceforge.net/api/animation_api.html
+    ---> 34 anim.save('./Assets/scatterplot_animation.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
+         35 print('Animated and saved!')
+         36 
     
-    --Created 110 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\animation.py in save(self, filename, writer, fps, dpi, codec, bitrate, extra_args, metadata, extra_anim, savefig_kwargs, progress_callback)
+       1146                     for anim, d in zip(all_anim, data):
+       1147                         # TODO: See if turning off blit is really necessary
+    -> 1148                         anim._draw_next_frame(d, blit=False)
+       1149                         if progress_callback is not None:
+       1150                             progress_callback(frame_number, total_frames)
     
-    --Created 120 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\animation.py in _draw_next_frame(self, framedata, blit)
+       1187         self._pre_draw(framedata, blit)
+       1188         self._draw_frame(framedata)
+    -> 1189         self._post_draw(framedata, blit)
+       1190 
+       1191     def _init_draw(self):
     
-    --Created 130 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\animation.py in _post_draw(self, framedata, blit)
+       1212             self._blit_draw(self._drawn_artists, self._blit_cache)
+       1213         else:
+    -> 1214             self._fig.canvas.draw_idle()
+       1215 
+       1216     # The rest of the code in this class is to facilitate easy blitting
     
-    --Created 140 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\backend_bases.py in draw_idle(self, *args, **kwargs)
+       1945         if not self._is_idle_drawing:
+       1946             with self._idle_draw_cntx():
+    -> 1947                 self.draw(*args, **kwargs)
+       1948 
+       1949     @cbook.deprecated("3.2")
     
-    --Created 150 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\backends\backend_agg.py in draw(self)
+        391              (self.toolbar._wait_cursor_for_draw_cm() if self.toolbar
+        392               else nullcontext()):
+    --> 393             self.figure.draw(self.renderer)
+        394             # A GUI class may be need to update a window using this draw, so
+        395             # don't forget to call the superclass.
     
-    --Created 160 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\artist.py in draw_wrapper(artist, renderer, *args, **kwargs)
+         36                 renderer.start_filter()
+         37 
+    ---> 38             return draw(artist, renderer, *args, **kwargs)
+         39         finally:
+         40             if artist.get_agg_filter() is not None:
     
-    --Created 170 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\figure.py in draw(self, renderer)
+       1733 
+       1734             self.patch.draw(renderer)
+    -> 1735             mimage._draw_list_compositing_images(
+       1736                 renderer, self, artists, self.suppressComposite)
+       1737 
     
-    --Created 180 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\image.py in _draw_list_compositing_images(renderer, parent, artists, suppress_composite)
+        135     if not_composite or not has_images:
+        136         for a in artists:
+    --> 137             a.draw(renderer)
+        138     else:
+        139         # Composite any adjacent images together
     
-    --Created 190 frame.
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\artist.py in draw_wrapper(artist, renderer, *args, **kwargs)
+         36                 renderer.start_filter()
+         37 
+    ---> 38             return draw(artist, renderer, *args, **kwargs)
+         39         finally:
+         40             if artist.get_agg_filter() is not None:
     
-    Animated and saved!
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axes\_base.py in draw(self, renderer, inframe)
+       2628             renderer.stop_rasterizing()
+       2629 
+    -> 2630         mimage._draw_list_compositing_images(renderer, self, artists)
+       2631 
+       2632         renderer.close_group('axes')
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\image.py in _draw_list_compositing_images(renderer, parent, artists, suppress_composite)
+        135     if not_composite or not has_images:
+        136         for a in artists:
+    --> 137             a.draw(renderer)
+        138     else:
+        139         # Composite any adjacent images together
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\artist.py in draw_wrapper(artist, renderer, *args, **kwargs)
+         36                 renderer.start_filter()
+         37 
+    ---> 38             return draw(artist, renderer, *args, **kwargs)
+         39         finally:
+         40             if artist.get_agg_filter() is not None:
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axis.py in draw(self, renderer, *args, **kwargs)
+       1225         renderer.open_group(__name__, gid=self.get_gid())
+       1226 
+    -> 1227         ticks_to_draw = self._update_ticks()
+       1228         ticklabelBoxes, ticklabelBoxes2 = self._get_tick_bboxes(ticks_to_draw,
+       1229                                                                 renderer)
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axis.py in _update_ticks(self)
+       1109             tick.set_label1(label)
+       1110             tick.set_label2(label)
+    -> 1111         minor_locs = self.get_minorticklocs()
+       1112         minor_labels = self.minor.formatter.format_ticks(minor_locs)
+       1113         minor_ticks = self.get_minor_ticks(len(minor_locs))
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axis.py in get_minorticklocs(self)
+       1351         """Get the array of minor tick locations in data coordinates."""
+       1352         # Remove minor ticks duplicating major ticks.
+    -> 1353         major_locs = self.major.locator()
+       1354         minor_locs = self.minor.locator()
+       1355         transform = self._scale.get_transform()
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\ticker.py in __call__(self)
+       2201     def __call__(self):
+       2202         vmin, vmax = self.axis.get_view_interval()
+    -> 2203         return self.tick_values(vmin, vmax)
+       2204 
+       2205     def tick_values(self, vmin, vmax):
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\ticker.py in tick_values(self, vmin, vmax)
+       2209         vmin, vmax = mtransforms.nonsingular(
+       2210             vmin, vmax, expander=1e-13, tiny=1e-14)
+    -> 2211         locs = self._raw_ticks(vmin, vmax)
+       2212 
+       2213         prune = self._prune
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\ticker.py in _raw_ticks(self, vmin, vmax)
+       2148         if self._nbins == 'auto':
+       2149             if self.axis is not None:
+    -> 2150                 nbins = np.clip(self.axis.get_tick_space(),
+       2151                                 max(1, self._min_n_ticks - 1), 9)
+       2152             else:
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axis.py in get_tick_space(self)
+       2488         ends = self.axes.transAxes.transform([[0, 0], [0, 1]])
+       2489         length = ((ends[1][1] - ends[0][1]) / self.axes.figure.dpi) * 72
+    -> 2490         tick = self._get_tick(True)
+       2491         # Having a spacing of at least 2 just looks good.
+       2492         size = tick.label1.get_size() * 2.0
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axis.py in _get_tick(self, major)
+       2228         else:
+       2229             tick_kw = self._minor_tick_kw
+    -> 2230         return YTick(self.axes, 0, '', major=major, **tick_kw)
+       2231 
+       2232     def _get_label(self):
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axis.py in __init__(self, axes, loc, label, size, width, color, tickdir, pad, labelsize, labelcolor, zorder, gridOn, tick1On, tick2On, label1On, label2On, major, labelrotation, grid_color, grid_linestyle, grid_linewidth, grid_alpha, **kw)
+        155         self.apply_tickdir(tickdir)
+        156 
+    --> 157         self.tick1line = self._get_tick1line()
+        158         self.tick2line = self._get_tick2line()
+        159         self.gridline = self._get_gridline()
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\axis.py in _get_tick1line(self)
+        576         # x in axes coords, y in data coords
+        577 
+    --> 578         l = mlines.Line2D((0,), (0,),
+        579                           color=self._color,
+        580                           marker=self._tickmarkers[0],
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\lines.py in __init__(self, xdata, ydata, linewidth, linestyle, color, marker, markersize, markeredgewidth, markeredgecolor, markerfacecolor, markerfacecoloralt, fillstyle, antialiased, dash_capstyle, solid_capstyle, dash_joinstyle, solid_joinstyle, pickradius, drawstyle, markevery, **kwargs)
+        376         self._color = None
+        377         self.set_color(color)
+    --> 378         self._marker = MarkerStyle(marker, fillstyle)
+        379 
+        380         self._markevery = None
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\markers.py in __init__(self, marker, fillstyle)
+        223         self._marker_function = None
+        224         self.set_fillstyle(fillstyle)
+    --> 225         self.set_marker(marker)
+        226 
+        227     def _recache(self):
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\markers.py in set_marker(self, marker)
+        294 
+        295         self._marker = marker
+    --> 296         self._recache()
+        297 
+        298     def get_path(self):
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\markers.py in _recache(self)
+        236         self._capstyle = 'butt'
+        237         self._filled = True
+    --> 238         self._marker_function()
+        239 
+        240     def __bool__(self):
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\markers.py in _set_tickleft(self)
+        712 
+        713     def _set_tickleft(self):
+    --> 714         self._transform = Affine2D().scale(-1.0, 1.0)
+        715         self._snap_threshold = 1.0
+        716         self._filled = False
+    
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\matplotlib\transforms.py in __init__(self, matrix, **kwargs)
+       1842         if matrix is None:
+       1843             # A bit faster than np.identity(3).
+    -> 1844             matrix = IdentityTransform._mtx.copy()
+       1845         self._mtx = matrix
+       1846         self._invalid = 0
+    
+
+    KeyboardInterrupt: 
+
+
+
+    
+![png](thesis_files/thesis_84_2.png)
     
 
 
 
-    Animating Streamplot ...
-    
-    --Created 0 frame.
-    
-    --Created 0 frame.
-    
-    --Created 10 frame.
-    
-    --Created 20 frame.
-    
-    --Created 30 frame.
-    
-    --Created 40 frame.
-    
-    --Created 50 frame.
-    
-    --Created 60 frame.
-    
-    --Created 70 frame.
-    
-    --Created 80 frame.
-    
-    --Created 90 frame.
-    
-    --Created 100 frame.
-    
-    --Created 110 frame.
-    
-    --Created 120 frame.
-    
-    --Created 130 frame.
-    
-    --Created 140 frame.
-    
-    --Created 150 frame.
-    
-    --Created 160 frame.
-    
-    --Created 170 frame.
-    
-    --Created 180 frame.
-    
-    --Created 190 frame.
-    
-    Animated and saved!
-    
+```python
+from matplotlib import animation
+
+print('Animating Streamplot ...\n')
+
+# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure()
+ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+color = np.sqrt(U[0]**2 + V[0]**2)
+stream = ax.streamplot(I, J, U[0], V[0], color=color, density = streamplot_density)
+
+# initialization function: plot the background of each frame
+def init():
+    #quiv.set_data([], [], [], [])
+    return stream
+
+# animation function.  This is called sequentially
+def animate(it):
+    ax.collections = [] # clear lines streamplot
+    ax.patches = [] # clear arrowheads streamplot
+    color = np.sqrt(U[it]**2 + V[it]**2)
+    stream = ax.streamplot(I, J, U[it], V[it], color=color, density = streamplot_density)
+    if (it % 10 == 0):
+        print('--Created {} frame.\n'.format(it))
+    return stream
+
+# call the animator.  blit=True means only re-draw the parts that have changed.
+anim = animation.FuncAnimation(fig, animate, #init_func=init,
+                               frames=timesteps, blit=False)
+
+# save the animation as an mp4.  This requires ffmpeg or mencoder to be
+# installed.  The extra_args ensure that the x264 codec is used, so that
+# the video can be embedded in html5.  You may need to adjust this for
+# your system: for more information, see
+# http://matplotlib.sourceforge.net/api/animation_api.html
+anim.save('./Assets/streamplot_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+print('Animated and saved!')
+
+plt.close()
+```
 
 #### Conservation of number of particles
 
 The number of particles is (just for convenience) plotted and it stays constant.
 
 
+```python
+import matplotlib.pyplot as plt
+nums = []
+for pivot in pivots:
+    nums.append(sum(sum(lis) for lis in pivot.values))
+
+plt.plot(nums)
+plt.title('Variation in number of particles with timesteps')
+plt.ylabel('Number of Particles')
+#plt.ylim((79990, 80010))
+plt.xlabel('Timestep')
+plt.savefig('./Assets/number_particles.png')
+plt.close()
+```
 
 ![Constant number of particles](Assets/number_particles.png)
 
@@ -584,6 +1237,42 @@ The number of particles is (just for convenience) plotted and it stays constant.
 Because the angle of rotation in the collision step is chosen randomly, and the streaming step does not change momentum, in a large system momentum should be conserved. The velocities of particles were taken and added up. The base momentum is the initial momentum, the error (or variation) from this base is plotted below.
 
 
+```python
+momentum_x = []
+momentum_y = []
+for it in range(0, timesteps-1):
+    vx = sum(particles['vx{}'.format(it)])
+    vy = sum(particles['vy{}'.format(it)])
+    momentum_x.append(vx)
+    momentum_y.append(vy)
+
+base_momentum_x = momentum_x[0]
+base_momentum_y = momentum_y[0]
+error_x = [base_momentum_x - m for m in momentum_x]
+error_y = [base_momentum_y - m for m in momentum_y]
+plt.plot(error_x)
+plt.title('Variation in x-Velocity, initially: {}'.format(round(base_momentum_x, 2)))
+plt.xlabel('Timestep')
+plt.ylabel('x-Velocity')
+plt.savefig('./Assets/x_velocity_variation.png')
+plt.close()
+plt.plot(error_y)
+plt.title('Variation in y-Velocity, initally: {}'.format(round(base_momentum_y, 2)))
+plt.xlabel('Timestep')
+plt.ylabel('y-Velocity')
+plt.savefig('./Assets/y_velocity_variation.png')
+plt.close()
+plt.plot(error_x, error_y, "o", markersize = 3)
+plt.title('Variation in velocity')
+plt.xlabel('Variation in x-velocity')
+plt.ylabel('Variation in y-velocity')
+plt.savefig('./Assets/velocity_variation.png')
+plt.close()
+# -----------------------------------
+
+
+#plt.close()
+```
 
 ![Variation in x-velocity throughout simulation](Assets/x_velocity_variation.png)
 
@@ -600,23 +1289,1432 @@ The collision step of the MPCD algorithm conserves energy _locally_, which is to
 To inspect this, the energy of every particle is added up. The base energy is the initial energy, the error (or variation from this base) is calculated and plotted below.
 
 
+```python
+'''
+def square(lis):
+    for e in lis:
+        yield e**2
+
+xvels_squared = []
+for cell_xvels in U:
+    xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))
+#print(xvels)
+yvels_squared = []
+for cell_yvels in V:
+    yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))
+assert(len(xvels) == len(yvels))
+it = 0
+energy_cell_level = []
+mass = 2.988e-26
+for xvel_squared in xvels_squared:
+    yvel_squared = yvels_squared[it]
+    energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here
+    
+plt.plot(energy_cell_level)
+plt.title('Variation in energy, cell method')
+plt.xlabel('Timestep')
+plt.ylabel('Energy')
+plt.savefig('./Assets/constant_energy_cellcalc.png')
+plt.close()
+'''
+```
 
 
+```python
+energy = []
+vx_squared = particles[['vx{}'.format(it), 'vy{}'.format(it)]]
+for it in range(0, timesteps-1):
+    vx_squared = sum(particles['vx{}'.format(it)]**2)
+    vy_squared = sum(particles['vy{}'.format(it)]**2)
+    energy.append(np.sqrt(vx_squared + vy_squared))
+
+base_energy = energy[0]
+error = [base_energy - e for e in energy]
+plt.plot(error)
+plt.title('Variation in energy, initially: {}'.format(base_energy))
+plt.xlabel('Timestep')
+plt.ylabel('Energy')
+plt.savefig('./Assets/constant_energy.png')
+plt.close()
+
+```
 
 
-    "\ndef square(lis):\n    for e in lis:\n        yield e**2\n\nxvels_squared = []\nfor cell_xvels in U:\n    xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))\n#print(xvels)\nyvels_squared = []\nfor cell_yvels in V:\n    yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))\nassert(len(xvels) == len(yvels))\nit = 0\nenergy_cell_level = []\nmass = 2.988e-26\nfor xvel_squared in xvels_squared:\n    yvel_squared = yvels_squared[it]\n    energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here\n    \nplt.plot(energy_cell_level)\nplt.title('Variation in energy, cell method')\nplt.xlabel('Timestep')\nplt.ylabel('Energy')\nplt.savefig('./Assets/constant_energy_cellcalc.png')\nplt.close()\n"
+```python
+energy = []
+for it in range(0, timesteps-1):
+    vx_squared = sum(particles['vx{}'.format(it)]**2)
+    vy_squared = sum(particles['vy{}'.format(it)]**2)
+    energy.append(np.sqrt(vx_squared + vy_squared))
 
+base_energy = energy[0]
+error = [e - base_energy for e in energy]
+plt.plot(error)
+plt.title('Difference to inital energy')
+plt.xlabel('Timestep')
+plt.ylabel('Energy')
+plt.savefig('./Assets/increasing_energy.png')
+plt.close()
 
-
-
-
-
+```
 
 ![Constant energy throughout simulation](Assets/constant_energy.png)
 
 Error $\sim 10^{-8}$
 
 ## Converting to Word doc (others possible too, f.ex. .tex)
+
+
+```python
+# just do it manually, it works on anaconda env datascience
+
+import subprocess
+#automatic document conversion to markdown and then to word
+#first convert the ipython notebook paper.ipynb to markdown
+subprocess.run("jupyter nbconvert --to markdown thesis.ipynb --output-dir='./Generated'") #--output-dir='./Generated'
+#next remove code
+path = "./Generated/{filename}.md".format(filename = filename)
+with open(path, "r") as f:
+    lines = f.readlines()
+    idx = []
+    idx_files = []
+    for i, line in enumerate(lines):
+        if (line.startswith("```")):
+            idx.append(i)
+        if ("thesis_files" in line):
+            c = line.find("thesis_files")
+            lines[i] = line[0:c] + "" + line[c:]
+
+idx = sorted(idx, reverse=True) # reverse order so not deleting lines and then missing others
+for current, previous in zip(idx[::2], idx[1::2]):
+    print("Deleting {p}:{c}".format(p=previous, c=current+1))
+    print('\n'.join(lines[previous:current+1]))
+    del lines[previous:current+1]
+    
+with open(path, "w") as f:
+    #f.write("\\newcommand{\matr}[1]\\textbf{#1}")
+    #f.write("\\newcommand{\\vect}[1]{\\vec{#1}}")
+    for line in lines:
+        f.write("%s" % line)
+#next convert markdown to ms word
+conversion_tex = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.tex --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
+subprocess.run(conversion_tex)
+conversion_pdf = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
+subprocess.run(conversion_pdf)
+# LATEX TO DOCX pandoc -s math.tex -o example30.docx
+```
+
+    Deleting 1438:1441
+    ```python
+    
+    
+    
+    ```
+    
+    Deleting 1426:1434
+    ```javascript
+    
+    %%javascript
+    
+    MathJax.Hub.Queue(
+    
+      ["resetEquationNumbers", MathJax.InputJax.TeX],
+    
+      ["PreProcess", MathJax.Hub],
+    
+      ["Reprocess", MathJax.Hub]
+    
+    );
+    
+    ```
+    
+    Deleting 1416:1422
+    ```javascript
+    
+    %%javascript
+    
+    MathJax.Hub.Config({
+    
+        TeX: { equationNumbers: { autoNumber: "AMS" } }
+    
+    });
+    
+    ```
+    
+    Deleting 1367:1405
+    ```python
+    
+    # just do it manually, it works on anaconda env datascience
+    
+    
+    
+    import subprocess
+    
+    #automatic document conversion to markdown and then to word
+    
+    #first convert the ipython notebook paper.ipynb to markdown
+    
+    subprocess.run("jupyter nbconvert --to markdown thesis.ipynb --output-dir='./Generated'") #--output-dir='./Generated'
+    
+    #next remove code
+    
+    path = "./Generated/thesis.md"
+    
+    with open(path, "r") as f:
+    
+        lines = f.readlines()
+    
+        idx = []
+    
+        idx_files = []
+    
+        for i, line in enumerate(lines):
+    
+            if (line.startswith("```")):
+    
+                idx.append(i)
+    
+            if ("thesis_files" in line):
+    
+                c = line.find("thesis_files")
+    
+                lines[i] = line[0:c] + "" + line[c:]
+    
+    
+    
+    idx = sorted(idx, reverse=True) # reverse order so not deleting lines and then missing others
+    
+    for current, previous in zip(idx[::2], idx[1::2]):
+    
+        print("Deleting {p}:{c}".format(p=previous, c=current+1))
+    
+        print('\n'.join(lines[previous:current+1]))
+    
+        del lines[previous:current+1]
+    
+        
+    
+    with open(path, "w") as f:
+    
+        #f.write("\\newcommand{\matr}[1]\\textbf{#1}")
+    
+        #f.write("\\newcommand{\\vect}[1]{\\vec{#1}}")
+    
+        for line in lines:
+    
+            f.write("%s" % line)
+    
+    #next convert markdown to ms word
+    
+    conversion_tex = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.tex --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
+    
+    subprocess.run(conversion_tex)
+    
+    conversion_pdf = "pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography=\"list.bib\" --csl=\"apa.csl\""
+    
+    subprocess.run(conversion_pdf)
+    
+    # LATEX TO DOCX pandoc -s math.tex -o example30.docx
+    
+    ```
+    
+    Deleting 1342:1359
+    ```python
+    
+    energy = []
+    
+    for it in range(0, timesteps-1):
+    
+        vx_squared = sum(particles['vx{}'.format(it)]**2)
+    
+        vy_squared = sum(particles['vy{}'.format(it)]**2)
+    
+        energy.append(np.sqrt(vx_squared + vy_squared))
+    
+    
+    
+    base_energy = energy[0]
+    
+    error = [e - base_energy for e in energy]
+    
+    plt.plot(error)
+    
+    plt.title('Difference to inital energy')
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('Energy')
+    
+    plt.savefig('./Assets/increasing_energy.png')
+    
+    plt.close()
+    
+    
+    
+    ```
+    
+    Deleting 1322:1340
+    ```python
+    
+    energy = []
+    
+    vx_squared = particles[['vx{}'.format(it), 'vy{}'.format(it)]]
+    
+    for it in range(0, timesteps-1):
+    
+        vx_squared = sum(particles['vx{}'.format(it)]**2)
+    
+        vy_squared = sum(particles['vy{}'.format(it)]**2)
+    
+        energy.append(np.sqrt(vx_squared + vy_squared))
+    
+    
+    
+    base_energy = energy[0]
+    
+    error = [base_energy - e for e in energy]
+    
+    plt.plot(error)
+    
+    plt.title('Variation in energy, initially: {}'.format(base_energy))
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('Energy')
+    
+    plt.savefig('./Assets/constant_energy.png')
+    
+    plt.close()
+    
+    
+    
+    ```
+    
+    Deleting 1291:1320
+    ```python
+    
+    '''
+    
+    def square(lis):
+    
+        for e in lis:
+    
+            yield e**2
+    
+    
+    
+    xvels_squared = []
+    
+    for cell_xvels in U:
+    
+        xvels_squared.append(sum(sum(square(lis)) for lis in cell_xvels))
+    
+    #print(xvels)
+    
+    yvels_squared = []
+    
+    for cell_yvels in V:
+    
+        yvels_squared.append(sum(sum(square(lis)) for lis in cell_yvels))
+    
+    assert(len(xvels) == len(yvels))
+    
+    it = 0
+    
+    energy_cell_level = []
+    
+    mass = 2.988e-26
+    
+    for xvel_squared in xvels_squared:
+    
+        yvel_squared = yvels_squared[it]
+    
+        energy_cell_level.append((xvel_squared + yvel_squared)) # might add mass here
+    
+        
+    
+    plt.plot(energy_cell_level)
+    
+    plt.title('Variation in energy, cell method')
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('Energy')
+    
+    plt.savefig('./Assets/constant_energy_cellcalc.png')
+    
+    plt.close()
+    
+    '''
+    
+    ```
+    
+    Deleting 1239:1275
+    ```python
+    
+    momentum_x = []
+    
+    momentum_y = []
+    
+    for it in range(0, timesteps-1):
+    
+        vx = sum(particles['vx{}'.format(it)])
+    
+        vy = sum(particles['vy{}'.format(it)])
+    
+        momentum_x.append(vx)
+    
+        momentum_y.append(vy)
+    
+    
+    
+    base_momentum_x = momentum_x[0]
+    
+    base_momentum_y = momentum_y[0]
+    
+    error_x = [base_momentum_x - m for m in momentum_x]
+    
+    error_y = [base_momentum_y - m for m in momentum_y]
+    
+    plt.plot(error_x)
+    
+    plt.title('Variation in x-Velocity, initially: {}'.format(round(base_momentum_x, 2)))
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('x-Velocity')
+    
+    plt.savefig('./Assets/x_velocity_variation.png')
+    
+    plt.close()
+    
+    plt.plot(error_y)
+    
+    plt.title('Variation in y-Velocity, initally: {}'.format(round(base_momentum_y, 2)))
+    
+    plt.xlabel('Timestep')
+    
+    plt.ylabel('y-Velocity')
+    
+    plt.savefig('./Assets/y_velocity_variation.png')
+    
+    plt.close()
+    
+    plt.plot(error_x, error_y, "o", markersize = 3)
+    
+    plt.title('Variation in velocity')
+    
+    plt.xlabel('Variation in x-velocity')
+    
+    plt.ylabel('Variation in y-velocity')
+    
+    plt.savefig('./Assets/velocity_variation.png')
+    
+    plt.close()
+    
+    # -----------------------------------
+    
+    
+    
+    
+    
+    #plt.close()
+    
+    ```
+    
+    Deleting 1217:1231
+    ```python
+    
+    import matplotlib.pyplot as plt
+    
+    nums = []
+    
+    for pivot in pivots:
+    
+        nums.append(sum(sum(lis) for lis in pivot.values))
+    
+    
+    
+    plt.plot(nums)
+    
+    plt.title('Variation in number of particles with timesteps')
+    
+    plt.ylabel('Number of Particles')
+    
+    #plt.ylim((79990, 80010))
+    
+    plt.xlabel('Timestep')
+    
+    plt.savefig('./Assets/number_particles.png')
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 1171:1211
+    ```python
+    
+    from matplotlib import animation
+    
+    
+    
+    print('Animating Streamplot ...\n')
+    
+    
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+    
+    color = np.sqrt(U[0]**2 + V[0]**2)
+    
+    stream = ax.streamplot(I, J, U[0], V[0], color=color, density = streamplot_density)
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        #quiv.set_data([], [], [], [])
+    
+        return stream
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it):
+    
+        ax.collections = [] # clear lines streamplot
+    
+        ax.patches = [] # clear arrowheads streamplot
+    
+        color = np.sqrt(U[it]**2 + V[it]**2)
+    
+        stream = ax.streamplot(I, J, U[it], V[it], color=color, density = streamplot_density)
+    
+        if (it % 10 == 0):
+    
+            print('--Created {} frame.\n'.format(it))
+    
+        return stream
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, #init_func=init,
+    
+                                   frames=timesteps, blit=False)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/streamplot_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 859:898
+    ```python
+    
+    from matplotlib import animation
+    
+    
+    
+    print('Animating particles ...')
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(0, y_max_region))
+    
+    scatter, = ax.plot(particles['x0'], particles['y0'], "o", markersize = point_size)
+    
+    
+    
+    x = 'x'
+    
+    y = 'y'
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        #quiv.set_data([], [], [], [])
+    
+        return scatter,
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it):
+    
+        scatter.set_xdata(particles[x + str(it)])
+    
+        scatter.set_ydata(particles[y + str(it)])
+    
+        if (it % 10 == 0):
+    
+            print('--Created {} frame.\n'.format(it))
+    
+        return scatter,
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, #init_func=init,
+    
+                                   frames=timesteps, blit=True)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/scatterplot_animation.mp4', fps=5, extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 791:832
+    ```python
+    
+    from matplotlib import animation
+    
+    import seaborn as sns
+    
+    
+    
+    print('Animating Heatmap ...\n')
+    
+    
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+    
+    sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        plt.clf()
+    
+        ax = sns.heatmap(pivots[0], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+        #return heatmap,
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it):
+    
+        plt.clf()
+    
+        ax = sns.heatmap(pivots[it], square = True, xticklabels = False, yticklabels = False, cbar = False)#,cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+        ax.set_xlim((x_0_region, x_max_region))
+    
+        ax.set_ylim((y_0_region, y_max_region))
+    
+        if (it % 10 == 0):
+    
+            print('--Created {} frame.\n'.format(it))
+    
+        #return heatmap
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, init_func=init,
+    
+                                   frames=timesteps)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/heatmap_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 724:762
+    ```python
+    
+    from matplotlib import animation
+    
+    print('Animating Quiver ...\n')
+    
+    
+    
+    # First set up the figure, the axis, and the plot element we want to animate
+    
+    fig = plt.figure()
+    
+    ax = plt.axes(xlim=(x_0_region, x_max_region), ylim=(y_0_region, y_max_region))
+    
+    
+    
+    quiv = ax.quiver(I, J, 10**-12*U[0], 10**-12*V[0], scale = 1) #10**-5*U10**-5*V
+    
+    
+    
+    # initialization function: plot the background of each frame
+    
+    def init():
+    
+        #quiv.set_data([], [], [], [])
+    
+        return quiv,
+    
+    
+    
+    # animation function.  This is called sequentially
+    
+    def animate(it, quiv, I, J):
+    
+        #color = np.sqrt(U[it]**2 + V[it]**2)
+    
+        quiv.set_UVC(10**-12*U[it], 10**-12*V[it]) #*10**-5*
+    
+        if (it % 10 == 0):
+    
+            print('--Created {} frame.\n'.format(it))
+    
+        #quiv.set_color(color)
+    
+        return quiv,
+    
+    
+    
+    # call the animator.  blit=True means only re-draw the parts that have changed.
+    
+    anim = animation.FuncAnimation(fig, animate, fargs = (quiv, I, J),#init_func=init,
+    
+                                   frames=timesteps, blit=False)
+    
+    
+    
+    # save the animation as an mp4.  This requires ffmpeg or mencoder to be
+    
+    # installed.  The extra_args ensure that the x264 codec is used, so that
+    
+    # the video can be embedded in html5.  You may need to adjust this for
+    
+    # your system: for more information, see
+    
+    # http://matplotlib.sourceforge.net/api/animation_api.html
+    
+    anim.save('./Assets/quiver_animation.mp4', fps=5) #extra_args=['-vcodec', 'libx264'])
+    
+    print('Animated and saved!')
+    
+    
+    
+    plt.close()
+    
+    ```
+    
+    Deleting 698:707
+    ```python
+    
+    v_2_t = [particles[['vx{}'.format(t), 'vy{}'.format(t)]]**2 for t in range(timesteps)]
+    
+    avg_v_2_t = [v_2_particles.sum().sum() for v_2_particles in v_2_t]
+    
+    
+    
+    particle_mass = float(constants['particle_mass'])
+    
+    
+    
+    temp_t = np.array(avg_v_2_t) * 0.5 * particle_mass
+    
+    sns.lineplot(data=temp_t)
+    
+    ```
+    
+    Deleting 675:679
+    ```python
+    
+    last_vels = particles['vy{}'.format(timesteps)]
+    
+    sns.distplot(last_vels)
+    
+    ```
+    
+    Deleting 656:660
+    ```python
+    
+    last_vels = particles['vx{}'.format(timesteps)]
+    
+    sns.distplot(last_vels)
+    
+    ```
+    
+    Deleting 635:639
+    ```python
+    
+    last_vels = particles['vy{}'.format(0)]
+    
+    sns.distplot(last_vels)
+    
+    ```
+    
+    Deleting 612:616
+    ```python
+    
+    last_vels = particles['vx{}'.format(0)]
+    
+    plt.hist(last_vels)
+    
+    ```
+    
+    Deleting 579:593
+    ```python
+    
+    import numpy as np
+    
+    import matplotlib.pyplot as plt
+    
+    # setting the x - coordinates 
+    
+    x = np.arange(0, 20.1, 0.1) 
+    
+    # setting the corresponding y - coordinates 
+    
+    R = 10
+    
+    
+    
+    
+    
+    y = (R * R) - (x - R)**2
+    
+    #y = R * R - (x - R)**2
+    
+    
+    
+    plt.plot(y, x)
+    
+    ```
+    
+    Deleting 563:569
+    ```python
+    
+    rowsums = [row.sum()/len(row) for row in U[timesteps]]
+    
+    plt.plot(rowsums, range(len(rowsums)), "o-")
+    
+    plt.savefig("Assets/velocity_profile.png")
+    
+    #plt.close()
+    
+    ```
+    
+    Deleting 507:555
+    ```python
+    
+    print('Plotting data ..')
+    
+    fig = plt.figure(figsize=(20,20))
+    
+    ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
+    
+    
+    
+    timesteps = int(constants['timesteps']) - 1
+    
+    
+    
+    for a in ax:
+    
+        a.set_xticklabels([])
+    
+        a.set_yticklabels([])
+    
+        #a.set_aspect('equal')
+    
+        
+    
+    fig.subplots_adjust(wspace=0, hspace=0)
+    
+    
+    
+    color = np.sqrt(U[timesteps]**2 + V[timesteps]**2)
+    
+    point_size = 1
+    
+    
+    
+    ax[0].xaxis.set_ticks([])
+    
+    ax[0].yaxis.set_ticks([])
+    
+    ax[0].quiver(I, J, U[timesteps], V[timesteps], color)
+    
+    ax[0].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+    
+    
+    
+    ax[1].xaxis.set_ticks([])
+    
+    ax[1].yaxis.set_ticks([])
+    
+    ax[1].streamplot(I, J, U[timesteps], V[timesteps], color=color, density=streamplot_density) # grid
+    
+    ax[1].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+    
+    
+    
+    ax[2].xaxis.set_ticks([])
+    
+    ax[2].yaxis.set_ticks([])
+    
+    ax[2].plot(particles['x{}'.format(timesteps)], particles['y{}'.format(timesteps)], "o", markersize = point_size)
+    
+    ax[2].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+    
+    
+    
+    ax[3].xaxis.set_ticks([])
+    
+    ax[3].yaxis.set_ticks([])
+    
+    #img = ax[3].imshow(pivot, cmap='hot')
+    
+    #fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
+    
+    sns.heatmap(pivots[timesteps], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.005})
+    
+    ax[3].set(xlim=(x_0_region,x_max_region), ylim=(y_0_region,y_max_region))
+    
+    #ax[3].xticks('')
+    
+    #ax[3].yticks('')
+    
+    ax[3].set_ylabel('')
+    
+    ax[3].set_xlabel('')
+    
+    #ax[1,1].imshow(pivot, cmap='hot')
+    
+    
+    
+    plt.savefig("Assets/stationary_region.png")
+    
+    plt.close()
+    
+    print('Data plotted and saved!')
+    
+    ```
+    
+    Deleting 444:499
+    ```python
+    
+    # Plotting
+    
+    #with (sns.plotting_context(sns.set())):
+    
+    x_0_region = 0
+    
+    x_max_region = int(constants['width'])
+    
+    y_0_region = 0
+    
+    y_max_region = int(constants['height'])
+    
+    
+    
+    streamplot_density = [0.5, 1]
+    
+    
+    
+    print('Plotting data ..')
+    
+    fig = plt.figure(figsize=(20,20))
+    
+    ax = [fig.add_subplot(2,2,i+1) for i in range(4)]
+    
+    
+    
+    for a in ax:
+    
+        a.set_xticklabels([])
+    
+        a.set_yticklabels([])
+    
+        #a.set_aspect('equal')
+    
+        
+    
+    fig.subplots_adjust(wspace=0, hspace=0)
+    
+    
+    
+    color = np.sqrt(U[0]**2 + V[0]**2)
+    
+    point_size = 1
+    
+    
+    
+    #ax[0].xaxis.set_ticks([])
+    
+    #ax[0].yaxis.set_ticks([])
+    
+    ax[0].quiver(I, J, U[0], V[0], color)
+    
+    ax[0].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+    
+    
+    
+    #ax[1].xaxis.set_ticks([])
+    
+    #ax[1].yaxis.set_ticks([])
+    
+    ax[1].streamplot(I, J, U[0], V[0], color=color, density = streamplot_density) # grid
+    
+    ax[1].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region-1,y_max_region))
+    
+    
+    
+    #ax[2].xaxis.set_ticks([])
+    
+    #ax[2].yaxis.set_ticks([])
+    
+    ax[2].plot(particles['x0'], particles['y0'], "o", markersize = point_size)
+    
+    ax[2].set(xlim=(x_0_region, x_max_region), ylim=(y_0_region,y_max_region))
+    
+    
+    
+    #ax[3].xaxis.set_ticks([])
+    
+    #ax[3].yaxis.set_ticks([])
+    
+    #img = ax[3].imshow(pivot, cmap='hot')
+    
+    #fig.colorbar(img, ax=ax[3], fraction=0.046, pad=0.005)
+    
+    sns.heatmap(pivots[0], ax=ax[3], xticklabels = False, yticklabels = False, cbar_kws={"fraction": 0.046, "pad": 0.01})
+    
+    ax[3].set(xlim=(x_0_region-1,x_max_region), ylim=(y_0_region,y_max_region))
+    
+    #ax[3].xticks('')
+    
+    #ax[3].yticks('')
+    
+    ax[3].set_ylabel('')
+    
+    ax[3].set_xlabel('')
+    
+    #ax[1,1].imshow(pivot, cmap='hot')
+    
+    
+    
+    plt.savefig("Assets/initial_region.png")
+    
+    plt.close()
+    
+    print('Data plotted and saved!')
+    
+    ```
+    
+    Deleting 337:425
+    ```python
+    
+    cell_dim = float(constants['cell_dim'])
+    
+    width = float(constants['width'])
+    
+    height = float(constants['height'])
+    
+    shown_cols = floor(width / cell_dim)
+    
+    shown_rows = floor(height / cell_dim)
+    
+    
+    
+    saved = './Saved'
+    
+    saved_cells = '/cells.pkl'
+    
+    file_cells = saved + saved_cells
+    
+    
+    
+    columns = ['i', 'j', 'meanX', 'meanY', 'num']
+    
+    
+    
+    def load_cells(path, columns, shown_rows, shown_cols):
+    
+        
+    
+        index = ['t']
+    
+        if (os.path.isfile(file_cells)):
+    
+            cells = pd.read_pickle(file_cells)
+    
+            #print(cells)
+    
+            #cells.set_index(index, inplace=True)
+    
+        else:
+    
+            # Loading cells
+    
+            print('Loading cells')
+    
+            
+    
+            cells_timesteps = []
+    
+            
+    
+            it = 0
+    
+            filenames_cells = glob.glob('{}*.csv'.format(path))
+    
+            for file in filenames_cells:
+    
+                df = pd.read_csv(file)
+    
+                cells_timesteps.append(df)
+    
+                #df[[i,j]] = (df[[i,j]] + 1/2) * cell_dim
+    
+                #print(df.head())
+    
+                it += 1
+    
+                if (it % 10 == 0):
+    
+                    print('--loaded {}'.format(it))
+    
+            #cells.to_pickle(file_cells)
+    
+            print('Cells loaded and saved!\n')
+    
+            # Cells loaded
+    
+            return cells_timesteps
+    
+        
+    
+    def prepare_cells(cells_timesteps, columns, shown_rows, shown_cols):
+    
+        # Preparing cell values
+    
+        print('Preparing cell values ..')
+    
+    
+    
+        array_i = np.arange(0, shown_rows)
+    
+        array_j = np.arange(0, shown_cols)
+    
+        I,J = np.meshgrid(array_j, array_i)
+    
+    
+    
+        U = []
+    
+        V = []
+    
+    
+    
+        i = columns[0]
+    
+        j = columns[1]
+    
+        vx = columns[2]
+    
+        vy = columns[3]
+    
+        num = columns[4]
+    
+    
+    
+        pivots = []
+    
+        for df in cells_timesteps:
+    
+            # only the rows and cols above 0
+    
+            # and below shown_rows, shown_cols
+    
+            # this is to 
+    
+            # --1. no vaccuum around simulated region
+    
+            # --2. I,J are fixed size
+    
+            U_inner = []
+    
+            V_inner = []
+    
+            for it in array_i: # TODO: check this code something seems foul (row, cols, but only using rows)
+    
+                temp = df.loc[df[i] == it]
+    
+                u = np.array(temp[vx])
+    
+                U_inner.append(u)
+    
+                v = np.array(temp[vy])
+    
+                V_inner.append(v)
+    
+            U.append(np.array(U_inner))#, dtype = object))
+    
+            V.append(np.array(V_inner))#, dtype = object))
+    
+    
+    
+            pivot = df.pivot(index = i, columns = j, values = num)
+    
+            pivots.append(pivot)
+    
+    
+    
+        print('Cell preparation complete!')
+    
+        return I,J,U,V, pivots
+    
+        # Cell preparation complete
+    
+    
+    
+    
+    
+    cells_path = path + 'cells_av{}'.format(av)
+    
+    cells_timesteps = load_cells(cells_path, columns, shown_rows, shown_cols)
+    
+    I,J,U,V,pivots = prepare_cells(cells_timesteps, columns, shown_rows, shown_cols)
+    
+    ```
+    
+    Deleting 286:331
+    ```python
+    
+    shown_x = float(constants['width'])
+    
+    shown_y = float(constants['height'])
+    
+    
+    
+    saved = './Saved'
+    
+    saved_particles = '/particles.pkl'
+    
+    file_particles = saved + saved_particles
+    
+    
+    
+    def load_particles(path):
+    
+        columns = []
+    
+        x_columns = ['x{}'.format(it) for it in range(0, num_timesteps)]
+    
+        vx_columns = ['vx{}'.format(it) for it in range(0, num_timesteps)]
+    
+        y_columns = ['y{}'.format(it) for it in range(0, num_timesteps)]
+    
+        vy_columns = ['vy{}'.format(it) for it in range(0, num_timesteps)]
+    
+        columns.extend(x_columns)
+    
+        columns.extend(y_columns)
+    
+        columns.extend(vx_columns)
+    
+        columns.extend(vy_columns)
+    
+        particles = pd.DataFrame(columns = columns)
+    
+    
+    
+        if (os.path.isfile(file_particles)):
+    
+            print('Found saved particles_x and particles_y files!')
+    
+            particles = pd.read_pickle(file_particles)
+    
+            print('Loaded particles files.')
+    
+        else:
+    
+            # Loading particles
+    
+            print('Loading particles ..')
+    
+            filenames_particles = glob.glob('{}*.csv'.format(path))
+    
+            it = 0
+    
+            for file in filenames_particles:
+    
+                df = pd.read_csv(file)
+    
+                particles[['x{}'.format(it), 'y{}'.format(it), 'vx{}'.format(it), 'vy{}'.format(it)]] = df[['x', 'y', 'vx', 'vy']]
+    
+                it += 1
+    
+                if (it % 10 == 0):
+    
+                    print('--loaded {}'.format(it))
+    
+            particles.to_pickle(file_particles)
+    
+            it = 0
+    
+            print('Particles loaded and saved!\n')
+    
+            # Particles loaded
+    
+        return particles
+    
+    
+    
+    
+    
+    particles_path = '{parent}particles_av{av}'.format(parent = path, av=av)    
+    
+    particles = load_particles(path = particles_path)
+    
+    ```
+    
+    Deleting 266:284
+    ```python
+    
+    from math import floor
+    
+    import pandas as pd
+    
+    import glob
+    
+    import numpy as np
+    
+    import matplotlib.pyplot as plt
+    
+    import matplotlib.gridspec as gridspec
+    
+    import seaborn as sns
+    
+    import os.path
+    
+    
+    
+    path = "../Application/MPCDApplication/Data/"
+    
+    csv = ".csv"
+    
+    av = 10
+    
+    constants = 'constants_av' + str(av) + csv
+    
+    
+    
+    constants = pd.read_csv(path + constants)
+    
+    num_timesteps = int(constants['timesteps'])
+    
+    ```
+    
+    Deleting 256:264
+    ```python
+    
+    timesteps = []
+    
+    I = []
+    
+    J = []
+    
+    U = []
+    
+    V = []
+    
+    pivot = []
+    
+    ```
+    
+    Deleting 0:5
+    ```latex
+    
+    %%latex
+    
+    \newcommand{\matr}[1]\textbf{#1}
+    
+    \newcommand{\vect}[1]{\vec{#1}}
+    
+    ```
+    
+    
+
+
+
+
+    CompletedProcess(args='pandoc -s ./Generated/thesis.md -o ./Generated/thesis.pdf --filter pandoc-citeproc --bibliography="list.bib" --csl="apa.csl"', returncode=83)
 
 
 
@@ -630,11 +2728,28 @@ jupyter nbextension enable equation-numbering/main
 ### Turn equation numbering on/off
 
 
+```javascript
+%%javascript
+MathJax.Hub.Config({
+    TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+```
 
 ### Renumber equations
 
 
+```javascript
+%%javascript
+MathJax.Hub.Queue(
+  ["resetEquationNumbers", MathJax.InputJax.TeX],
+  ["PreProcess", MathJax.Hub],
+  ["Reprocess", MathJax.Hub]
+);
+```
 
 -->
 
 
+```python
+
+```
