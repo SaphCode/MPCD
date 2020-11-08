@@ -10,7 +10,6 @@ void InteractingBody::move(const double timelapse)
 
 void InteractingBody::updateVelocity(const double timelapse) {
 	m_vel += timelapse * m_effect;
-
 }
 
 void InteractingBody::addEffect(Eigen::Vector2d effect)

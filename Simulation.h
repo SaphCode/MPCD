@@ -23,10 +23,12 @@ namespace MPCD {
 		Pipe _pipe;
 		int _w;
 
+		bool _addObstacles = false;
+
 		int _t;
 		std::vector<Particle> _particles;
-		std::vector<std::shared_ptr<IObstacle>> _obstacles;
-		std::vector<std::shared_ptr<InteractingBody>> _interactors;
+		std::vector<std::shared_ptr<IObstacle>> _obstacles; // TODO: remove from simulation?
+		std::vector<std::shared_ptr<InteractingBody>> _interactors; // TODO: remove from simulation?
 
 		void writeCirclePositionToOut(std::ofstream& outFile, Eigen::Vector2d center_pos, double radius);
 

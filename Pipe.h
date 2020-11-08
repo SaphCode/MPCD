@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef PIPE_H
-#define PIPE_H
-
 #include <Eigen/Dense>
 #include "Particle.h"
 #include "IObstacle.h"
@@ -25,10 +22,6 @@ namespace MPCD {
 		Pipe();
 		~Pipe() {}
 		void stream(std::vector<Particle>& particles, std::vector<std::shared_ptr<InteractingBody>>& interactors, double lapse, bool draw, std::ofstream& file);
-		//const std::vector<MPCD::Particle>& getParticles();
-		//void setParticles(std::vector<Particle>& particles);
 		void setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles);
 	};
 }
-
-#endif // !PIPE_H

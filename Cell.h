@@ -4,14 +4,14 @@
 #define CELL_H
 #include <Eigen/Dense>
 #include "Particle.h"
-#include "Xoshiro.h"
 #include "Thermostat.h"
 #include <execution>
+#include <random>
 namespace MPCD {
 	class Cell
 	{
 	public:
-		Cell(const GammaDistribution& gamma);
+		Cell();
 		~Cell();
 		void add(Particle& p);
 		void addVirtual(Particle& p);
@@ -35,8 +35,10 @@ namespace MPCD {
 		Eigen::Vector2d _vel;
 		Eigen::Vector2d _virtualVel;
 		int _numVirtual;
-		const Xoshiro _angleGen;
-		const Xoshiro _signGen;
+		std::mt19937_64 _angleGen;
+		const std::uniform_real_distribution<double> _unifAngle;
+		std::mt19937_64 _signGen;
+		const std::uniform_real_distribution<double> _unifSign;
 		Thermostat m_thermostat;
 	};
 }

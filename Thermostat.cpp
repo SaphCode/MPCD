@@ -5,23 +5,19 @@
 
 using namespace Eigen;
 
-MPCD::Thermostat::Thermostat(const GammaDistribution& gamma, double particleMass, double k_BT) :
-    m_k_BT_0(k_BT),
-    m_particleMass(particleMass),
-	m_gammaDist(gamma)
-{
-}
+MPCD::Thermostat::Thermostat(){}
 
 double MPCD::Thermostat::getScalingFactor(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity)
 {
 	const int particleNum = particles.size();
 	double alpha = 1;
 	if (particleNum > 1) {
-		const int gammadist_alpha = (particleNum - 1);
-		double kineticEnergy = m_gammaDist.next(particleNum, gammadist_alpha);
+		const int df = 2*(particleNum - 1);
+		std::gamma_distribution<double> dist(df / 2, MPCD::Constants::k_boltzmann * MPCD::Constants::temperature);
+		double kineticEnergy = dist(_gen);
 		double sum = calculateSum(particles, cellMeanVelocity);
-		alpha = std::sqrt((2 * kineticEnergy) / (m_particleMass * sum));
-	}	
+		alpha = std::sqrt((2 * kineticEnergy) / (MPCD::Constants::particle_mass * sum));
+	}
 	return alpha;
 } 
 

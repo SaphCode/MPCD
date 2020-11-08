@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <fstream>
 #include <cmath>
-#include "Out.h"
 #include "Locations.h"
 #include <execution>
 #include <chrono>
@@ -16,7 +15,6 @@
 #include <future>
 #include "MaxwellBoltzmann.h"
 #include "Wall.h"
-#include "Obstacle.h"
 #include "ConstForce.h"
 #include "CircularObstacle.h"
 
@@ -90,19 +88,20 @@ void Simulation::setup() {
 	std::filesystem::path cwd = std::filesystem::current_path();
 	std::ofstream outFile(cwd.string() + filename + obstacles + csv);
 	outFile << "x,y,r" << "\n"; // header columns
-	for (int i = 0; i < num_circular_obstacles / 2; i++) {
+	if (_addObstacles) {}
+		for (int i = 0; i < num_circular_obstacles / 2; i++) {
 		
-		std::cout << "X offset: " << x_offset + radius + 2 * radius * i + x_dist * i << std::endl;
-		Eigen::Vector2d center_upper(x_offset + radius + x_dist * i, y_upper);
-		CircularObstacle circ_upper(center_upper, radius);
-		writeCirclePositionToOut(outFile, center_upper, radius);
-		_obstacles.push_back(std::make_shared<CircularObstacle>(circ_upper));
+			std::cout << "X offset: " << x_offset + radius + 2 * radius * i + x_dist * i << std::endl;
+			Eigen::Vector2d center_upper(x_offset + radius + x_dist * i, y_upper);
+			CircularObstacle circ_upper(center_upper, radius);
+			writeCirclePositionToOut(outFile, center_upper, radius);
+			_obstacles.push_back(std::make_shared<CircularObstacle>(circ_upper));
 
-		Eigen::Vector2d center_lower(x_offset + radius + x_dist * i, y_lower);
-		CircularObstacle circ_lower(center_lower, radius);
-		writeCirclePositionToOut(outFile, center_lower, radius);
-		_obstacles.push_back(std::make_shared<CircularObstacle>(circ_lower));
-	}
+			Eigen::Vector2d center_lower(x_offset + radius + x_dist * i, y_lower);
+			CircularObstacle circ_lower(center_lower, radius);
+			writeCirclePositionToOut(outFile, center_lower, radius);
+			_obstacles.push_back(std::make_shared<CircularObstacle>(circ_lower));
+		}
 	outFile.close();
 
 	_obstacles.push_back(std::make_shared<Wall>(lower));
@@ -130,8 +129,11 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 	_particles.reserve(number);
 
 	//dont worry the numbers are just seeds 
-	Xoshiro xs_xpos(x_0, x_max);
-	Xoshiro xs_ypos(y_0, y_max);
+	std::mt19937_64 xGen{std::random_device()()};
+	std::uniform_real_distribution<double> unifX(x_0, x_max);
+	std::mt19937_64 yGen{ std::random_device()() };
+	std::uniform_real_distribution<double> unifY(y_0, y_max);
+
 
 	// MAXWELL BOLTZMANN
 	double mass = MPCD::Constants::particle_mass; // h2o kg mass
@@ -143,8 +145,8 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 	MaxwellBoltzmann mb_vel(mean, temperature, mass);
 
 	for (int i = 0; i < number; i++) {
-		double xs_x = xs_xpos.next();
-		double xs_y = xs_ypos.next();
+		double xs_x = unifX(xGen);
+		double xs_y = unifY(yGen);
 		Eigen::Vector2d pos(xs_x, xs_y);
 		
 
@@ -154,7 +156,7 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 		
 		if (isInBoundsOfAnObstacle(p)) {
 			while (isInBoundsOfAnObstacle(p)) {
-				p.correctPosition(Eigen::Vector2d(xs_xpos.next(), xs_ypos.next()));
+				p.correctPosition(Eigen::Vector2d(unifX(xGen), unifY(yGen)));
 			}
 		}
 
@@ -215,7 +217,6 @@ void MPCD::Simulation::timestep()
 	std::cout << "Collision Step: " << duration << std::endl;
 }
 
-/* O(N) */
 void MPCD::Simulation::streamingStep() {
 	
 	std::filesystem::path cwd;
@@ -229,64 +230,15 @@ void MPCD::Simulation::streamingStep() {
 	filename = cwd.string() + l_data + "particles_" + av.str() + "timestep" + s.str() + ".csv";
 	std::ofstream outFile(filename);
 	
-
+	// draw before streaming and after collision? for "same" timestep
 	if (_draw) {
 		std::stringstream header("x,y,vx,vy");//,vx,vy"
 		outFile << header.str() << '\n';
 	}
 
 	_pipe.stream(_particles, _interactors, _timelapse, _draw, outFile);
-	
-
-
-	//reduction(+ : grid)
-	//#pragma omp parallel
-	//#pragma omp for
-	/*const auto processor_count = std::thread::hardware_concurrency();
-	int size = _particles.size();
-	std::vector<Grid> grids;
-	int endBefore = -1;
-	std::cout << "Size of particles: " << size << std::endl;
-	/*std::vector<std::thread> threads;
-	for (int p = 0; p < processor_count; p++) {
-		// make new thread
-		//, _particles, shift
-		Grid g;
-		grids.push_back(g);
-		double sizeToProcess = size / processor_count;
-		int start = std::round(p * sizeToProcess);
-		int end = std::round((p + 1) * sizeToProcess);
-		if (start == endBefore) {
-			start++;
-		}
-		//std::cout << "Start: " << start << ", End: " << end << std::endl;
-		Vector2d shiftT = shift;
-		std::vector<Particle> particlesT(_particles.begin() + start, _particles.begin() + end);
-		std::thread t(&MPCD::calculateGrid, std::ref(g), std::ref(particlesT), shift, _timelapse);
-		threads.push_back(std::move(t));
-		//t.detach();
-		//calculateGrid(g, particlesT, shift, _timelapse);
-		endBefore = end;
-	}
-	for (int i = 0; i < threads.size(); i++) {
-		threads[i].join();
-	}
-	threads.clear();
-	Grid realGrid;
-	for (const auto& g : grids) {
-		realGrid = realGrid + g;
-	}
-	std::pair<int, int> coords({ 0,0 });
-	std::cout << realGrid._cells[coords];
-	/*std::for_each(std::execution::par, _particles.begin(), _particles.end(), [_timelapse, shift, grid](Particle p) {
-		p.stream(_timelapse);
-		p.shift(shift);
-		grid.insert(p);
-		});
-	_grid = grid;*/
 }
 
-/* O(N) */
 void MPCD::Simulation::collisionStep() {
 	std::filesystem::path cwd;
 	std::stringstream s;
@@ -303,7 +255,6 @@ void MPCD::Simulation::collisionStep() {
 		std::stringstream header("i,j,meanX,meanY,num");//,vx,vy"
 		outFile << header.str() << '\n';
 	}
-
 
 	_grid.shift();
 	_grid.updateCoordinates(_particles);

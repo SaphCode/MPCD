@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef MAXWELL_BOLTZMANN_H
-#define MAXWELL_BOLTZMANN_H
 #include <Eigen/Dense>
 #include <random>
 class MaxwellBoltzmann
@@ -21,4 +19,3 @@ private:
 	const double m_mean;
 	const double m_k_boltzmann;
 };
-#endif // !MAXWELL_BOLTZMANN_H

@@ -1,7 +1,5 @@
 #pragma once
 
-#ifndef PARTICLE_H
-#define PARTICLE_H
 #include <Eigen/Dense>
 #include "InteractingBody.h"
 
@@ -32,8 +30,6 @@ namespace MPCD {
 			return Eigen::Vector2d(0, 0);
 		}
 
-		//friend bool operator==(const Particle& lhs, const Particle& rhs);
 	};
 
 }
-#endif
