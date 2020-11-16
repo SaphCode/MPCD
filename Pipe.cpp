@@ -17,10 +17,11 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, std::vector<std::share
 	int size = particles.size();
 	#pragma omp parallel for
 	for (int i = 0; i < size; i++) {
-		Particle p = particles[i];
+		Particle& p = particles[i];
 		for (auto& actor : interactors) {
 			actor->interact(p);
 		}
+		
 
 		p.move(lapse);
 		collide(p);

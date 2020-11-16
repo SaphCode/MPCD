@@ -8,6 +8,8 @@ namespace MPCD {
 	public:
 		virtual bool isInBounds(const Body& o) const = 0;
 		virtual Eigen::Vector2d getOvershoot(const Body& o) const = 0;
+		virtual bool contains(Eigen::Vector2d point) const = 0;
+		virtual bool occupies(std::pair<int, int> index, double cell_dim) const = 0;
 		virtual ~IObstacle() {}
 	};
 }

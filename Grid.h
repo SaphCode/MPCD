@@ -9,11 +9,13 @@
 #include <map>
 #include <mutex>
 #include "Constants.h"
+#include "CircularObstacle.h"
 
 namespace MPCD {
 	class Grid {
 		public:
 			Grid();
+			void setupCells(std::vector<std::shared_ptr<IObstacle>> obstacles);
 			void updateCoordinates(std::vector<Particle>& particles);
 			void collision(bool draw, std::ofstream& file);
 			void shift();
@@ -24,7 +26,7 @@ namespace MPCD {
 			int getNumCols() const;
 			double getMaxShift() const;
 		private:
-			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const int firstRow, const int lastRow, const double cell_dim);
+			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const double cell_dim);
 			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;
 			std::mt19937_64 _shiftGen;
 			const std::uniform_real_distribution<double> _unif;

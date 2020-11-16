@@ -103,3 +103,43 @@ Eigen::Vector2d MPCD::CircularObstacle::interact(InteractingBody& b)
 {
 	return Eigen::Vector2d(0, 0); // do nothing
 }
+
+bool MPCD::CircularObstacle::contains(Eigen::Vector2d point) const
+{
+	Eigen::Vector2d rel = point - m_center;
+	if (rel.stableNorm() <= m_radius) return true;
+	return false;
+}
+
+bool MPCD::CircularObstacle::occupies(std::pair<int, int> index, double cell_dim) const
+{
+	int fine_grain = 10; // 10 points per outer line, which means 40 per cell
+
+	Eigen::Vector2d p0(index.second * cell_dim, index.first * cell_dim);
+	Eigen::Vector2d p1((index.second + 1) * cell_dim, index.first * cell_dim);
+	Eigen::Vector2d p2((index.second + 1) * cell_dim, (index.first + 1) * cell_dim);
+	Eigen::Vector2d p3(index.second * cell_dim, (index.first + 1) * cell_dim);
+
+	std::vector<Eigen::Vector2d> keyPoints;
+
+	for (int i = 0; i <= fine_grain; i++) {
+		double offset = i * cell_dim / 10 ;
+		Eigen::Vector2d p01_offset = p0 + Eigen::Vector2d(offset, 0);
+		Eigen::Vector2d p12_offset = p1 + Eigen::Vector2d(0, offset);
+		Eigen::Vector2d p23_offset = p2 + Eigen::Vector2d(-offset, 0);
+		Eigen::Vector2d p30_offset = p3 + Eigen::Vector2d(0, -offset);
+
+		keyPoints.push_back(p01_offset);
+		keyPoints.push_back(p12_offset);
+		keyPoints.push_back(p23_offset);
+		keyPoints.push_back(p30_offset);
+	}
+
+	for (auto& keyPoint : keyPoints) {
+		if (contains(keyPoint)) {
+			return true;
+		}
+	}
+
+	return false;
+}

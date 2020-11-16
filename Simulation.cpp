@@ -49,7 +49,7 @@ MPCD::Simulation::Simulation(bool draw)
 	
 	_t = 0;
 
-	
+
 
 	setup();
 	
@@ -88,9 +88,9 @@ void Simulation::setup() {
 	std::filesystem::path cwd = std::filesystem::current_path();
 	std::ofstream outFile(cwd.string() + filename + obstacles + csv);
 	outFile << "x,y,r" << "\n"; // header columns
-	if (_addObstacles) {}
+	if (_addObstacles) {
 		for (int i = 0; i < num_circular_obstacles / 2; i++) {
-		
+
 			std::cout << "X offset: " << x_offset + radius + 2 * radius * i + x_dist * i << std::endl;
 			Eigen::Vector2d center_upper(x_offset + radius + x_dist * i, y_upper);
 			CircularObstacle circ_upper(center_upper, radius);
@@ -102,10 +102,13 @@ void Simulation::setup() {
 			writeCirclePositionToOut(outFile, center_lower, radius);
 			_obstacles.push_back(std::make_shared<CircularObstacle>(circ_lower));
 		}
+	}
 	outFile.close();
 
 	_obstacles.push_back(std::make_shared<Wall>(lower));
 	_obstacles.push_back(std::make_shared<Wall>(upper));
+
+	_grid.setupCells(_obstacles);
 
 	_interactors.push_back(std::make_shared<Wall>(lower));
 	_interactors.push_back(std::make_shared<Wall>(upper));
