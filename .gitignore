@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Manual ignore
+Analysis/Assets/
+Analysis/Generated/
+Analysis/Saved/
+
 # User-specific files
 *.rsuser
 *.suo
