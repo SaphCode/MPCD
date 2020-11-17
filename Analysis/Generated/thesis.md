@@ -18,7 +18,7 @@
 7. _Remove the Xoshiros? instead use MT? DEFINITELY REMOVE THEM BECAUSE OF CONCURRENCY ISSUES_ **Done**
 8. Search for TODO
 9. check velocity for before and after thermostat/ maybe adjust temperature?
-
+10. at() of map now throws. this should be in grid or smth. fix it.
 
 # To my dear supervisors
 
@@ -129,7 +129,7 @@ sin(\alpha) & cos(\alpha) \\
 \end{array}\right],
 \end{equation}
 
-where $\alpha$ is sampled randomly on a per-cell basis. Furthermore, for each particle in the cell $\alpha$ flips its sign with probability $\frac{1}{2}$.[@winkl2009, (p.6)]
+where $\alpha$ is sampled on a per-cell basis from the interval $[0, 2\pi)$ with a uniform distribution. Furthermore, for each particle in the cell $\alpha$ flips its sign with probability $\frac{1}{2}$.[@winkl2009, (p.6)]
 The mean velocity of a cell is defined as
 
 \begin{equation}
@@ -170,7 +170,7 @@ The ballistics step might be called a substep of particle streaming. After the p
 
 ## Constant Force
 
-Several methods exist to model poseuille flow. Here, a gravitational approach is chosen. This means an external force acts on the unit volume of the fluid, which is given by,
+Several methods exist to model poseuille flow.[@nikoubashman2013] Here, a gravitational approach is chosen. This means an external force acts on the unit volume of the fluid, which is given by,
 
 \begin{equation}
 \vect{F} = \rho_S g \hat x,
@@ -184,38 +184,49 @@ Because now a force acts on the particles, as seen in figure (TODO figure#), add
 
 ## Thermostat
 
-To counteract the heating up of the fluid by the constant force on every particle, a thermostat is needed. As described in Winkler[@winkl2009], the computationally efficient cell-level thermostat was used. For this, the macroscopic flow profile is needed. For our purposes, which is fluid flow through the cross section of a pipe with parallel walls and interaction modeled by no-slip boundary condition, we expect poseuille flow. It is calculated as, (TODO: is arashs version correct? see paper section III)
+To counteract the heating up of the fluid by the constant force on every particle, a thermostat is needed. As described in Winkler[@winkl2009], the cell-level thermostat was used. For this, we need to sample a kinetic energy from the gamma distribution
 
 \begin{equation}
-u(r) = \frac{\Delta p}{4\eta L_x} (R^2 - r^2),
+P(E_k) = \frac{q}{E_k\Gamma(f/2)}\left(\frac{E_k}{k_BT}\right)^{f/2} e^{-\frac{E_k}{k_B T}},
 \end{equation}
 
-where $u$ is the macroscopic velocity in the x-direction, $\Delta p$ is the difference in pressure from beginning to end of the pipe, $\eta$ is the dynamic viscosity of the fluid, $L_x$ is the length of the pipe, $R$ is the radius of the pipe and $r$ is the $y$-coordinate of the particle relative to the center of the pipe.[@wiki:poseuille_equation] The situation is displayed in figure (TODO: make a figure)
+where $f = 2 (N_c - 1)$ are the degrees of freedom of the system. The velocities (TODO: which velocities? I scaled the $\Delta v_i$ and the $v_i$, and both gave the same effect) are then scaled by the factor 
 
-TODO:
-The pressure difference is on the order of $\Delta p \sim g$, where g is the acceleration constant of the force.[@nikoubashman2013]
-END TODO
+\begin{equation}
+\kappa = \left(\frac{2E_k}{\sum_{i=1}^{N_c}m\Delta v_i^2}\right)^{1/2},
+\end{equation}
 
-TODO:
-The dynamic viscosity of water at body temperature is about $\eta \sim 0.6947$. END TODO
+where $\Delta v_i = v_i - V_c$. The effect of the thermostat can be seen in figure (TODO: figure#).
 
-## Anything else maybe ??
+
+
+## Collision with circular obstacles
+
+The collision rules are detailed in figure (TODO: figure#). 
+
+![Collision with circular obstacle](Assets/MPCD_obstacle_collision_rule.png)
+
+From the particle\'s position before the streaming step \vect{p_0}, to the particle\'s position after moving, \vect{p_1}, a line with equation
+
+\begin{equation}
+(y - y_0) = k (x - x_0),
+\end{equation}
+
+where $k = \frac{y_1 - y_0}{x_1 - x_0}$ is drawn. This line intersects with a circle with equation
+
+\begin{equation}
+(x - x_c)^2 + (y - y_c)^2 = r^2,
+\end{equation}
+
+where $(x_c, y_c)$ is the center position of the circle. By solving the equation, we get 2 collision points, the rule for choosing the right one is then to take the one that's on the direct path from the new position to the old. We calculate the quantity by which the particle has "overshot" the collision point, and correct its position to $\vect{p_{correct}} = \vect{p_1} - 2 \vect{o},$ where $\vect{o}$ is the amount which the particle has gone too far.
 
 # Implementing the MPCD Algorithm
 
 ## Random Number Generation
 
-### Uniform random number generation
-
-_This section was shortened considerably. The old version can still be found at the end of this report._
-
-Sampling numbers from a uniform distribution is very important for MPCD. Even if we did not initialize positions randomly, but for example all at one point, arguing that after a sufficient amount of timesteps, the particles will spread out, the rotation angle still truly needs to be random, in a statistical sense.
-
-To this end, the xoshiro256++, developed by Sebastian Vigna and David Blackman, was used. It is a fast algorithm that does well on a variety of statistical tests. The xoshiro256++ belongs to the Xoshiro algorithms, which are an extended variant of xorshift algorithms.[@vigna2019] Xoshiro stands for "Xor, Shift, Rotation" and xorshift stands for "Xor, Shift". The Xoshiro algorithms, additional to xor and bit-shift operations, incorporate bitrotation.[@unimi:xoshiro][@wiki:xorshift]
-
 ### Sampling from a normal distribution
 
-To initialize the velocities of generated particles, a Maxwell-Boltzmann distribution must be used. In two, as well as in three dimensions, this is equivalent to the product of two, or three, independent normal distributions with mean $\mu = 0$ and variance $\sigma^2 = \frac{k_{B}T}{m}$, where $k_{B}$ is the boltzmann constant, $T$ is the temperature of the fluid, and $m$ is the mass of one particle. Thus, the velocities are sampled from normal distributions.[@wiki:maxwell_boltzmann]
+To initialize the velocities of generated particles, a Maxwell-Boltzmann distribution must be used. In two this is equivalent to the product of two independent normal distributions with mean $\mu = 0$ and variance $\sigma^2 = \frac{k_{B}T}{m}$, where $k_{B}$ is the boltzmann constant, $T$ is the temperature of the fluid, and $m$ is the mass of one particle. Thus, the velocities are sampled from normal distributions.[@wiki:maxwell_boltzmann]
 
 For this purpose, the normal distribution of the C++ standard library was used, along with a Mersenne Twister number generator, which, although it has some shortcomings, will for all practical purposes suffice for the scope of this thesis. Although the Xoshiro is far superior to the Mersenne Twister algorithm[@vigna2019], to adapt it for this purpose did not seem worth the effort, because the difference in quality will not be visible.
 
@@ -288,6 +299,46 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 80
     --loaded 90
     --loaded 100
+    --loaded 110
+    --loaded 120
+    --loaded 130
+    --loaded 140
+    --loaded 150
+    --loaded 160
+    --loaded 170
+    --loaded 180
+    --loaded 190
+    --loaded 200
+    --loaded 210
+    --loaded 220
+    --loaded 230
+    --loaded 240
+    --loaded 250
+    --loaded 260
+    --loaded 270
+    --loaded 280
+    --loaded 290
+    --loaded 300
+    --loaded 310
+    --loaded 320
+    --loaded 330
+    --loaded 340
+    --loaded 350
+    --loaded 360
+    --loaded 370
+    --loaded 380
+    --loaded 390
+    --loaded 400
+    --loaded 410
+    --loaded 420
+    --loaded 430
+    --loaded 440
+    --loaded 450
+    --loaded 460
+    --loaded 470
+    --loaded 480
+    --loaded 490
+    --loaded 500
     Particles loaded and saved!
     
     
@@ -305,6 +356,46 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 80
     --loaded 90
     --loaded 100
+    --loaded 110
+    --loaded 120
+    --loaded 130
+    --loaded 140
+    --loaded 150
+    --loaded 160
+    --loaded 170
+    --loaded 180
+    --loaded 190
+    --loaded 200
+    --loaded 210
+    --loaded 220
+    --loaded 230
+    --loaded 240
+    --loaded 250
+    --loaded 260
+    --loaded 270
+    --loaded 280
+    --loaded 290
+    --loaded 300
+    --loaded 310
+    --loaded 320
+    --loaded 330
+    --loaded 340
+    --loaded 350
+    --loaded 360
+    --loaded 370
+    --loaded 380
+    --loaded 390
+    --loaded 400
+    --loaded 410
+    --loaded 420
+    --loaded 430
+    --loaded 440
+    --loaded 450
+    --loaded 460
+    --loaded 470
+    --loaded 480
+    --loaded 490
+    --loaded 500
     Cells loaded and saved!
     
     Preparing cell values ..
@@ -341,12 +432,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-
-    
-![png](thesis_files/thesis_72_0.png)
-    
-
-
 ![Ending velocity profile](Release/Assets/velocity_profile.png)
 
 
@@ -354,7 +439,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    [<matplotlib.lines.Line2D at 0x239803bd940>]
+    [<matplotlib.lines.Line2D at 0x1acd07296a0>]
 
 
 
@@ -373,10 +458,11 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    (array([  22.,  173.,  790., 1870., 2782., 2491., 1323.,  455.,   85.,
-               9.]),
-     array([-3.43489 , -2.698135, -1.96138 , -1.224625, -0.48787 ,  0.248885,
-             0.98564 ,  1.722395,  2.45915 ,  3.195905,  3.93266 ]),
+    (array([  12.,   63.,  456., 1419., 2672., 2847., 1758.,  636.,  120.,
+              17.]),
+     array([-3.815780e+00, -3.052465e+00, -2.289150e+00, -1.525835e+00,
+            -7.625200e-01,  7.950000e-04,  7.641100e-01,  1.527425e+00,
+             2.290740e+00,  3.054055e+00,  3.817370e+00]),
      <BarContainer object of 10 artists>)
 
 
@@ -417,7 +503,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    <AxesSubplot:xlabel='vx99', ylabel='Density'>
+    <AxesSubplot:xlabel='vx499', ylabel='Density'>
 
 
 
@@ -436,7 +522,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    <AxesSubplot:xlabel='vy99', ylabel='Density'>
+    <AxesSubplot:xlabel='vy499', ylabel='Density'>
 
 
 
@@ -493,6 +579,86 @@ hmmmmm?
     
     --Created 90 frame.
     
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
+    
+    --Created 490 frame.
+    
     Animated and saved!
     
 
@@ -519,6 +685,86 @@ hmmmmm?
     --Created 80 frame.
     
     --Created 90 frame.
+    
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
+    
+    --Created 490 frame.
     
     Animated and saved!
     
@@ -550,6 +796,86 @@ hmmmmm?
     
     --Created 90 frame.
     
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
+    
+    --Created 490 frame.
+    
     Animated and saved!
     
 
@@ -574,6 +900,88 @@ hmmmmm?
     --Created 60 frame.
     
     --Created 70 frame.
+    
+    --Created 80 frame.
+    
+    --Created 90 frame.
+    
+    --Created 100 frame.
+    
+    --Created 110 frame.
+    
+    --Created 120 frame.
+    
+    --Created 130 frame.
+    
+    --Created 140 frame.
+    
+    --Created 150 frame.
+    
+    --Created 160 frame.
+    
+    --Created 170 frame.
+    
+    --Created 180 frame.
+    
+    --Created 190 frame.
+    
+    --Created 200 frame.
+    
+    --Created 210 frame.
+    
+    --Created 220 frame.
+    
+    --Created 230 frame.
+    
+    --Created 240 frame.
+    
+    --Created 250 frame.
+    
+    --Created 260 frame.
+    
+    --Created 270 frame.
+    
+    --Created 280 frame.
+    
+    --Created 290 frame.
+    
+    --Created 300 frame.
+    
+    --Created 310 frame.
+    
+    --Created 320 frame.
+    
+    --Created 330 frame.
+    
+    --Created 340 frame.
+    
+    --Created 350 frame.
+    
+    --Created 360 frame.
+    
+    --Created 370 frame.
+    
+    --Created 380 frame.
+    
+    --Created 390 frame.
+    
+    --Created 400 frame.
+    
+    --Created 410 frame.
+    
+    --Created 420 frame.
+    
+    --Created 430 frame.
+    
+    --Created 440 frame.
+    
+    --Created 450 frame.
+    
+    --Created 460 frame.
+    
+    --Created 470 frame.
+    
+    --Created 480 frame.
     
     
 

@@ -16,9 +16,10 @@ namespace MPCD {
 	class Grid {
 		public:
 			Grid();
+			void calculate(bool draw, std::ofstream& file);
 			void setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
 			void updateCoordinates(std::vector<Particle>& particles);
-			void collision(bool draw, std::ofstream& file);
+			void collision(std::vector<Particle>& particles);
 			void shift();
 			void undoShift();
 			int getAverageParticlesPerCell() const;
@@ -27,6 +28,10 @@ namespace MPCD {
 			int getNumCols() const;
 			double getMaxShift() const;
 		private:
+			std::mt19937_64 _signGen;
+			const std::uniform_real_distribution<double> _unifSign;
+
+
 			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const double cell_dim);
 			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;
 			std::mt19937_64 _shiftGen;

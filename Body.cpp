@@ -41,3 +41,7 @@ Eigen::Vector2d Body::getVelocity() const
 {
 	return m_vel;
 }
+
+double Body::getMass() const {
+	return m_mass;
+}
