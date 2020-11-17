@@ -10,12 +10,13 @@
 #include <mutex>
 #include "Constants.h"
 #include "CircularObstacle.h"
+#include "Wall.h"
 
 namespace MPCD {
 	class Grid {
 		public:
 			Grid();
-			void setupCells(std::vector<std::shared_ptr<IObstacle>> obstacles);
+			void setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
 			void updateCoordinates(std::vector<Particle>& particles);
 			void collision(bool draw, std::ofstream& file);
 			void shift();

@@ -116,9 +116,9 @@ bool MPCD::CircularObstacle::occupies(std::pair<int, int> index, double cell_dim
 	int fine_grain = 10; // 10 points per outer line, which means 40 per cell
 
 	Eigen::Vector2d p0(index.second * cell_dim, index.first * cell_dim);
-	Eigen::Vector2d p1((index.second + 1) * cell_dim, index.first * cell_dim);
-	Eigen::Vector2d p2((index.second + 1) * cell_dim, (index.first + 1) * cell_dim);
-	Eigen::Vector2d p3(index.second * cell_dim, (index.first + 1) * cell_dim);
+	Eigen::Vector2d p1(((double)index.second + 1) * cell_dim, index.first * cell_dim);
+	Eigen::Vector2d p2(((double)index.second + 1) * cell_dim, ((double)index.first + 1) * cell_dim);
+	Eigen::Vector2d p3(index.second * cell_dim, ((double)index.first + 1) * cell_dim);
 
 	std::vector<Eigen::Vector2d> keyPoints;
 
