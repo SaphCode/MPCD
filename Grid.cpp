@@ -3,6 +3,8 @@
 #include <execution>
 #include "MaxwellBoltzmann.h"
 #include "Cell.h"
+#include <iostream>
+
 
 using namespace Eigen;
 
@@ -15,6 +17,28 @@ MPCD::Grid::Grid() :
 	_maxShift(MPCD::Constants::cell_dim / 2),
 	_average_particles_per_cell(MPCD::Constants::average_particles_per_cell)
 {
+
+}
+
+void MPCD::Grid::setupCells(std::vector<std::shared_ptr<IObstacle>> obstacles) {
+	const int lastRow = int(std::round(MPCD::Constants::y_max / _a)) - 1;
+	const int firstRow = 0;
+	const int lastCol = int(std::round(MPCD::Constants::x_max / _a)) - 1;
+	const int firstCol = 0;
+
+	for (int i = firstRow; i <= lastRow; i++) {
+		for (int j = firstCol; j <= lastCol; j++) {
+			Cell cell;
+			std::pair index = std::make_pair(i, j);
+			for (auto& obstacle : obstacles) {
+				if (obstacle->occupies(index, MPCD::Constants::cell_dim)) {
+					std::cout << "Cell " << i << ", " << j << " is occupied." << std::endl;
+					cell.setOccupied(true);
+				}
+			}
+			_cells.emplace(std::pair(index, cell));
+		}
+	}
 }
 
 void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
@@ -62,8 +86,8 @@ void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
 		for (int j = 0; j < MPCD::Constants::x_max / cell_dim; j++) {
 			std::pair<int, int> key(i, j);
 			Cell& cell = _cells.at(key);
-			if ((key.first == firstRow) || (key.first == lastRow)) {
-				createVirtualParticles(key, cell, firstRow, lastRow, cell_dim);
+			if (cell.isOccupied()) {
+				createVirtualParticles(key, cell, cell_dim);
 			}
 			// CHECK HERE FOR OBSTACLE CELLS
 			double scaling = cell.thermostatScaling();
@@ -79,7 +103,7 @@ void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
 		
 }
 
-void MPCD::Grid::createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const int firstRow, const int lastRow, const double cell_dim) {
+void MPCD::Grid::createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const double cell_dim) {
 	const int numParticles = cell.number();
 	const int particlesToCreate = MPCD::Constants::average_particles_per_cell - numParticles;
 	const double mass = MPCD::Constants::particle_mass; // h2o kg mass

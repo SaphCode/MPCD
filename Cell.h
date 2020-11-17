@@ -15,6 +15,12 @@ namespace MPCD {
 		~Cell();
 		void add(Particle& p);
 		void addVirtual(Particle& p);
+		void setOccupied(bool occupied) { 
+			m_occupied = occupied;
+		}
+		bool isOccupied() const {
+			return m_occupied;
+		}
 		//void remove(Particle& p);
 		void collide(double temperatureScalingFactor);
 		void clear();
@@ -30,6 +36,7 @@ namespace MPCD {
 
 		Eigen::Vector2d getTotalCellVelocity() const;
 	private:
+		bool m_occupied = false;
 		Eigen::Vector2d getMeanVelocity() const;
 		std::vector<std::shared_ptr<Particle>> _particles;
 		Eigen::Vector2d _vel;

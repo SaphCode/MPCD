@@ -2,6 +2,7 @@
 #include <cmath>
 #include <algorithm>
 #include "Force.h"
+#include <iostream>
 
 using namespace Eigen;
 

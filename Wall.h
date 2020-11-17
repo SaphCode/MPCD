@@ -29,6 +29,9 @@ namespace MPCD {
 
         Eigen::Vector2d interact(InteractingBody& b) override;
 
+        bool contains(Eigen::Vector2d point) const override;
+        bool occupies(std::pair<int, int> index, double cell_dim) const;
+
     private:
         const double m_yPos;
         const bool m_isUpOOB;

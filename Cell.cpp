@@ -39,10 +39,10 @@ void MPCD::Cell::addVirtual(MPCD::Particle& p) {
 
 void MPCD::Cell::collide(double temperatureScalingFactor) {
 	double rotationAngle = _unifAngle(_angleGen);
-	double s = _unifAngle(_angleGen);
-	int sign = (s < 0) ? -1 : 1;
 	Eigen::Vector2d mean = getMeanVelocity();
 	for (auto& p : _particles) {
+		double s = _unifSign(_signGen);
+		int sign = (s < 0) ? -1 : 1;
 		p->collide(mean, sign * rotationAngle, temperatureScalingFactor);
 	}
 }
