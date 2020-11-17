@@ -18,15 +18,15 @@ namespace MPCD {
 		const double time_lapse = 0.1;// * unit_of_time; // will be a func of diff parameters
 		constexpr double x_0 = 0;
 		constexpr double y_0 = 0;
-		constexpr double x_max = 50;
+		constexpr double x_max = 400;
 		constexpr double y_max = 20;
 	}
 	namespace Obstacles {
-		constexpr int num = 4;
-		constexpr double radius = 1;
-		constexpr double y_center_lower = 0.40 * Constants::y_max;
-		constexpr double y_center_upper = 0.60 * Constants::y_max;
-		constexpr double x_offset = 10;
+		constexpr int num = 20;
+		constexpr double radius = 2;
+		constexpr double y_center_lower = 0.30 * Constants::y_max;
+		constexpr double y_center_upper = 0.70 * Constants::y_max;
+		constexpr double x_offset = 20;
 		constexpr double remaining_x = Constants::x_max - 2 * x_offset;
 		constexpr double of_that_filled = radius * 2 * (num / 2);
 		constexpr double x_dist = (remaining_x - of_that_filled) / ((num / 2) - 1);
