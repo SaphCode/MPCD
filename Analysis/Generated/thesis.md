@@ -18,7 +18,7 @@
 7. _Remove the Xoshiros? instead use MT? DEFINITELY REMOVE THEM BECAUSE OF CONCURRENCY ISSUES_ **Done**
 8. Search for TODO
 9. check velocity for before and after thermostat/ maybe adjust temperature?
-
+10. at() of map now throws. this should be in grid or smth. fix it.
 
 # To my dear supervisors
 
@@ -354,7 +354,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    [<matplotlib.lines.Line2D at 0x1fe3df05e20>]
+    [<matplotlib.lines.Line2D at 0x1c0563509a0>]
 
 
 
@@ -373,10 +373,10 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    (array([   4.,   47.,  338., 1152., 2557., 3032., 1984.,  722.,  150.,
-              14.]),
-     array([-4.07891 , -3.289504, -2.500098, -1.710692, -0.921286, -0.13188 ,
-             0.657526,  1.446932,  2.236338,  3.025744,  3.81515 ]),
+    (array([3.9000e+01, 6.2700e+02, 4.8800e+03, 1.7313e+04, 2.7514e+04,
+            2.1043e+04, 7.3050e+03, 1.1860e+03, 8.8000e+01, 5.0000e+00]),
+     array([-4.09003 , -3.185215, -2.2804  , -1.375585, -0.47077 ,  0.434045,
+             1.33886 ,  2.243675,  3.14849 ,  4.053305,  4.95812 ]),
      <BarContainer object of 10 artists>)
 
 
@@ -389,7 +389,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    E:\Software\Anaconda\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
+    C:\Users\chris\anaconda3\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
       warnings.warn(msg, FutureWarning)
     
 
@@ -410,7 +410,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    E:\Software\Anaconda\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
+    C:\Users\chris\anaconda3\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
       warnings.warn(msg, FutureWarning)
     
 
@@ -429,7 +429,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    E:\Software\Anaconda\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
+    C:\Users\chris\anaconda3\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
       warnings.warn(msg, FutureWarning)
     
 
@@ -570,6 +570,12 @@ hmmmmm?
     --Created 40 frame.
     
     --Created 50 frame.
+    
+    --Created 60 frame.
+    
+    --Created 70 frame.
+    
+    --Created 80 frame.
     
     
 
