@@ -8,7 +8,8 @@ using namespace Eigen;
 bool MPCD::Wall::isInBounds(const Body& o) const
 {
 	const Eigen::Vector2d pos = o.getPosition();
-	if (m_isUpOOB) {
+	bool upOOB = m_yPos >= MPCD::Constants::y_max;
+	if (upOOB) {
 		if (pos[1] >= m_yPos) {
 			return true;
 		}
@@ -44,12 +45,13 @@ Eigen::Vector2d MPCD::Wall::interact(InteractingBody& b)
 
 bool MPCD::Wall::contains(Eigen::Vector2d point) const
 {
-	if (m_isUpOOB) {
+	bool upOOB = m_yPos >= MPCD::Constants::y_max;
+	if (upOOB) {
 		if (point[1] >= m_yPos) {
 			return true;
 		}
 	}
-	else if (!m_isUpOOB) {
+	else if (!upOOB) {
 		if (point[1] <= m_yPos) {
 			return true;
 		}

@@ -354,7 +354,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    [<matplotlib.lines.Line2D at 0x1fe3df05e20>]
+    [<matplotlib.lines.Line2D at 0x239803bd940>]
 
 
 
@@ -373,10 +373,10 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    (array([   4.,   47.,  338., 1152., 2557., 3032., 1984.,  722.,  150.,
-              14.]),
-     array([-4.07891 , -3.289504, -2.500098, -1.710692, -0.921286, -0.13188 ,
-             0.657526,  1.446932,  2.236338,  3.025744,  3.81515 ]),
+    (array([  22.,  173.,  790., 1870., 2782., 2491., 1323.,  455.,   85.,
+               9.]),
+     array([-3.43489 , -2.698135, -1.96138 , -1.224625, -0.48787 ,  0.248885,
+             0.98564 ,  1.722395,  2.45915 ,  3.195905,  3.93266 ]),
      <BarContainer object of 10 artists>)
 
 
@@ -570,6 +570,10 @@ hmmmmm?
     --Created 40 frame.
     
     --Created 50 frame.
+    
+    --Created 60 frame.
+    
+    --Created 70 frame.
     
     
 

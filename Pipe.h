@@ -2,14 +2,18 @@
 
 #include <Eigen/Dense>
 #include "Particle.h"
-#include "IObstacle.h"
 #include "Constants.h"
+#include "Wall.h"
+#include "CircularObstacle.h"
+#include "ConstForce.h"
 
 namespace MPCD {
 	class Pipe
 	{
 	private:
-		std::vector<std::shared_ptr<IObstacle>> _obstacles;
+		std::vector<CircularObstacle> m_obstacles;
+		std::vector<Wall> m_walls;
+		ConstForce m_constForce;
 		double _x_0 = Constants::x_0;
 		double _x_max = Constants::x_max;
 		double _y_0 = Constants::y_0;
@@ -19,9 +23,9 @@ namespace MPCD {
 		bool inBounds(const Eigen::Vector2d& pos);
 		
 	public:
-		Pipe();
+		Pipe(ConstForce force);
 		~Pipe() {}
-		void stream(std::vector<Particle>& particles, std::vector<std::shared_ptr<InteractingBody>>& interactors, double lapse, bool draw, std::ofstream& file);
-		void setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles);
+		void stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file);
+		void setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
 	};
 }

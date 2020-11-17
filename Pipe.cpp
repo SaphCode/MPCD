@@ -4,23 +4,30 @@
 #include <fstream>
 #include <iostream>
 
-MPCD::Pipe::Pipe() {
-}
-
-void MPCD::Pipe::setObstacles(std::vector<std::shared_ptr<IObstacle>>& obstacles)
+MPCD::Pipe::Pipe(ConstForce force) :
+	m_constForce(force)
 {
-	_obstacles = obstacles;
 }
 
-void MPCD::Pipe::stream(std::vector<Particle>& particles, std::vector<std::shared_ptr<InteractingBody>>& interactors, double lapse, bool draw, std::ofstream& file) {
+void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls)
+{
+	m_obstacles = obstacles;
+	m_walls = walls;
+}
+
+void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file) {
 	//for (auto& p : particles) {
-	int size = particles.size();
+	size_t size = particles.size();
 	#pragma omp parallel for
 	for (int i = 0; i < size; i++) {
 		Particle& p = particles[i];
-		for (auto& actor : interactors) {
-			actor->interact(p);
+		for (auto& wall : m_walls) {
+			wall.interact(p);
 		}
+		for (auto& obstacle : m_obstacles) {
+			obstacle.interact(p);
+		}
+		m_constForce.interact(p);
 		
 
 		p.move(lapse);
@@ -73,21 +80,36 @@ void MPCD::Pipe::fixOutOfBounds(Particle& p) {
 	}
 
 	p.correctPosition(newPos);
+	if (!inBounds(newPos)) {
+		std::cout << "Old pos: (" << particlePos[0] << ", " << particlePos[1] << ")\n";
+		std::cout << "New pos: (" << newPos[0] << ", " << newPos[1] << ")\n";
+	}
 	assert(inBounds(newPos));
 
 }
 
 void MPCD::Pipe::collide(Particle& p) {
-	for (auto o : _obstacles) {
-		if (o->isInBounds(p)) {
-			Eigen::Vector2d overshoot = o->getOvershoot(p);
+	for (auto &o : m_obstacles) {
+		if (o.isInBounds(p)) {
+			Eigen::Vector2d overshoot = o.getOvershoot(p);
 			// no slip
 			p.collided(overshoot);
-			assert(!(o->isInBounds(p)));
+			assert(!(o.isInBounds(p)));
 		}
 	}
-	for (auto o : _obstacles) {
-		assert(!(o->isInBounds(p))); // double check for now, TODO maybe remove
+	for (auto& o : m_walls) {
+		if (o.isInBounds(p)) {
+			Eigen::Vector2d overshoot = o.getOvershoot(p);
+			// no slip
+			p.collided(overshoot);
+			assert(!(o.isInBounds(p)));
+		}
+	}
+	for (const auto& o : m_obstacles) {
+		assert(!(o.isInBounds(p))); // double check for now, TODO maybe remove
+	}
+	for (const auto& o : m_walls) {
+		assert(!(o.isInBounds(p))); // double check for now, TODO maybe remove
 	}
 }
 

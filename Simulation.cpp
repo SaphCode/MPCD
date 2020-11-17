@@ -25,7 +25,8 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw)
+MPCD::Simulation::Simulation(bool draw) :
+	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::acceleration_const, 0)))
 {
 	_timelapse = MPCD::Constants::time_lapse;
 	_draw = draw;
@@ -66,14 +67,17 @@ void Simulation::setup() {
 	double height = y_max - y_0;
 	double timelapse = MPCD::Constants::time_lapse;
 
-	int number = av_particles * (width / cell_dim) * (height / cell_dim); // will be a func of Grid
+	int number = (int)std::round((double)av_particles * (width / cell_dim) * (height / cell_dim)); // will be a func of Grid
 
 	//std::vector<std::shared_ptr<Obstacle>> obstacles = setUpObstacles(y_0, y_max);
+	std::vector<Wall> walls;
+	Wall lower(y_0);
+	Wall upper(y_max);
+	walls.push_back(lower);
+	walls.push_back(upper);
 
-	Wall lower(y_0, false);
-	Wall upper(y_max, true);
 	Eigen::Vector2d acceleration(MPCD::Constants::acceleration_const, 0);
-	ConstForce constForce(acceleration);
+	
 
 	const double x_offset = MPCD::Obstacles::x_offset;
 	const int num_circular_obstacles = MPCD::Obstacles::num;
@@ -83,11 +87,13 @@ void Simulation::setup() {
 	const double y_lower = MPCD::Obstacles::y_center_lower;
 
 	std::string filename("//Data//constants_");
-	std::string obstacles("obstacles");
+	std::string obstacles_fp("obstacles");
 	std::string csv(".csv");
 	std::filesystem::path cwd = std::filesystem::current_path();
-	std::ofstream outFile(cwd.string() + filename + obstacles + csv);
+	std::ofstream outFile(cwd.string() + filename + obstacles_fp + csv);
 	outFile << "x,y,r" << "\n"; // header columns
+
+	std::vector<CircularObstacle> obstacles;
 	if (_addObstacles) {
 		for (int i = 0; i < num_circular_obstacles / 2; i++) {
 
@@ -95,27 +101,20 @@ void Simulation::setup() {
 			Eigen::Vector2d center_upper(x_offset + radius + x_dist * i, y_upper);
 			CircularObstacle circ_upper(center_upper, radius);
 			writeCirclePositionToOut(outFile, center_upper, radius);
-			_obstacles.push_back(std::make_shared<CircularObstacle>(circ_upper));
+			obstacles.push_back(CircularObstacle(circ_upper));
 
 			Eigen::Vector2d center_lower(x_offset + radius + x_dist * i, y_lower);
 			CircularObstacle circ_lower(center_lower, radius);
 			writeCirclePositionToOut(outFile, center_lower, radius);
-			_obstacles.push_back(std::make_shared<CircularObstacle>(circ_lower));
+			obstacles.push_back(CircularObstacle(circ_lower));
 		}
 	}
 	outFile.close();
 
-	_obstacles.push_back(std::make_shared<Wall>(lower));
-	_obstacles.push_back(std::make_shared<Wall>(upper));
+	_grid.setupCells(obstacles, walls);
 
-	_grid.setupCells(_obstacles);
-
-	_interactors.push_back(std::make_shared<Wall>(lower));
-	_interactors.push_back(std::make_shared<Wall>(upper));
-	_interactors.push_back(std::make_shared<ConstForce>(constForce));
-
-	setUpParticles(number, x_0, x_max, y_0, y_max);
-	_pipe.setObstacles(_obstacles);
+	setUpParticles(number, x_0, x_max, y_0, y_max, obstacles);
+	_pipe.setObstacles(obstacles, walls);
 
 	if (_draw) {
 		int timesteps = MPCD::Constants::timesteps;
@@ -128,7 +127,7 @@ void MPCD::Simulation::writeCirclePositionToOut(std::ofstream& outFile, Eigen::V
 	outFile << center_pos[0] << "," << center_pos[1] << "," << radius << std::endl;
 }
 
-void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0, double y_max) {
+void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0, double y_max, std::vector<CircularObstacle> obstacles) {
 	_particles.reserve(number);
 
 	//dont worry the numbers are just seeds 
@@ -157,8 +156,8 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 
 		Particle p(mass, pos, v);
 		
-		if (isInBoundsOfAnObstacle(p)) {
-			while (isInBoundsOfAnObstacle(p)) {
+		if (isInBoundsOfAnObstacle(p, obstacles)) {
+			while (isInBoundsOfAnObstacle(p, obstacles)) {
 				p.correctPosition(Eigen::Vector2d(unifX(xGen), unifY(yGen)));
 			}
 		}
@@ -167,17 +166,17 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 	}
 }
 
-bool MPCD::Simulation::isInBoundsOfAnObstacle(Body& b) {
-	for (auto& o : _obstacles) {
-		if (o->isInBounds(b)) return true;
+bool MPCD::Simulation::isInBoundsOfAnObstacle(Body& b, std::vector<CircularObstacle> obstacles) {
+	for (auto& o : obstacles) {
+		if (o.isInBounds(b)) return true;
 	}
 	return false;
 }
 
 
 void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps) {
-	int num_hypothetical_x_cells = std::round(width / cell_dim);
-	int num_hypothetical_y_cells = std::round(height / cell_dim);
+	int num_hypothetical_x_cells = (int)std::round(width / cell_dim);
+	int num_hypothetical_y_cells = (int)std::round(height / cell_dim);
 
 	if (width >= height) {
 		assert(num_hypothetical_x_cells >= num_hypothetical_y_cells);
@@ -239,7 +238,7 @@ void MPCD::Simulation::streamingStep() {
 		outFile << header.str() << '\n';
 	}
 
-	_pipe.stream(_particles, _interactors, _timelapse, _draw, outFile);
+	_pipe.stream(_particles, _timelapse, _draw, outFile);
 }
 
 void MPCD::Simulation::collisionStep() {

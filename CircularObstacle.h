@@ -24,7 +24,7 @@ namespace MPCD {
 
     private:
         Eigen::Vector2d m_center;
-        const double m_radius;
+        double m_radius;
     };
 }
 #endif // !CIRCULAR_OBSTCLE_H

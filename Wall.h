@@ -13,13 +13,12 @@ namespace MPCD {
         public InteractingBody
     {
     public:
-        Wall(const double yPos, const bool isUpOOB) :
+        Wall(double yPos) :
             InteractingBody(
                 std::numeric_limits<double>::infinity(), // infinite mass 
                 Eigen::Vector2d((Constants::x_max - Constants::x_0) / 2, yPos), // pos is (center, y)
                 Eigen::Vector2d(0, 0)), // vel is (0,0)
-            m_yPos(yPos),
-            m_isUpOOB(isUpOOB)
+            m_yPos(yPos)
         {
 
         }
@@ -33,8 +32,7 @@ namespace MPCD {
         bool occupies(std::pair<int, int> index, double cell_dim) const;
 
     private:
-        const double m_yPos;
-        const bool m_isUpOOB;
+        double m_yPos;
     };
 }
 #endif // !WALL_H

@@ -11,8 +11,8 @@ using namespace Eigen;
 MPCD::Grid::Grid() :
 	_shiftGen{ std::random_device()() },
 	_unif(-MPCD::Constants::cell_dim / 2, MPCD::Constants::cell_dim / 2),
-	_numRows(std::floor((MPCD::Constants::y_max - MPCD::Constants::y_0) / MPCD::Constants::cell_dim)),
-	_numCols(std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim)),
+	_numRows((int)std::floor((MPCD::Constants::y_max - MPCD::Constants::y_0) / MPCD::Constants::cell_dim)),
+	_numCols((int)std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim)),
 	_a(MPCD::Constants::cell_dim),
 	_maxShift(MPCD::Constants::cell_dim / 2),
 	_average_particles_per_cell(MPCD::Constants::average_particles_per_cell)
@@ -20,7 +20,7 @@ MPCD::Grid::Grid() :
 
 }
 
-void MPCD::Grid::setupCells(std::vector<std::shared_ptr<IObstacle>> obstacles) {
+void MPCD::Grid::setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls) {
 	const int lastRow = int(std::round(MPCD::Constants::y_max / _a)) - 1;
 	const int firstRow = 0;
 	const int lastCol = int(std::round(MPCD::Constants::x_max / _a)) - 1;
@@ -31,11 +31,18 @@ void MPCD::Grid::setupCells(std::vector<std::shared_ptr<IObstacle>> obstacles) {
 			Cell cell;
 			std::pair index = std::make_pair(i, j);
 			for (auto& obstacle : obstacles) {
-				if (obstacle->occupies(index, MPCD::Constants::cell_dim)) {
-					std::cout << "Cell " << i << ", " << j << " is occupied." << std::endl;
+				if (obstacle.occupies(index, MPCD::Constants::cell_dim)) {
+					std::cout << "Cell " << i << ", " << j << " is occupied by obstacle." << std::endl;
 					cell.setOccupied(true);
 				}
 			}
+			for (auto& wall : walls) {
+				if (wall.occupies(index, MPCD::Constants::cell_dim)) {
+					std::cout << "Cell " << i << ", " << j << " is occupied by wall." << std::endl;
+					cell.setOccupied(true);
+				}
+			}
+			
 			_cells.emplace(std::pair(index, cell));
 		}
 	}
@@ -57,7 +64,7 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
 
 std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
 	Eigen::Vector2d shiftedPos = position - _shift;
-	int i = std::floor(shiftedPos[1] / _a);
+	int i = (int)std::floor(shiftedPos[1] / _a);
 	assert(i >= -1 && i <= _numRows);
 	if (i == -1) {
 		i = _numRows - 1;
@@ -65,7 +72,7 @@ std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
 	else if (i == _numRows) {
 		i = 0;
 	}
-	int j = std::floor(shiftedPos[0] / _a);
+	int j = (int)std::floor(shiftedPos[0] / _a);
 	assert(j >= -1 && j <= _numCols);
 	if (j == -1) {
 		j = _numCols - 1;
