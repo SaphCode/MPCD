@@ -16,8 +16,7 @@ void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vect
 }
 
 void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file) {
-	//for (auto& p : particles) {
-	size_t size = particles.size();
+	int size = particles.size();
 	#pragma omp parallel for
 	for (int i = 0; i < size; i++) {
 		Particle& p = particles[i];
@@ -28,7 +27,6 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool dra
 			obstacle.interact(p);
 		}
 		m_constForce.interact(p);
-		
 
 		p.move(lapse);
 		collide(p);

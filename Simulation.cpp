@@ -260,7 +260,8 @@ void MPCD::Simulation::collisionStep() {
 
 	_grid.shift();
 	_grid.updateCoordinates(_particles);
-	_grid.collision(_draw, outFile);
+	_grid.calculate(_draw, outFile);
+	_grid.collision(_particles);
 	_grid.undoShift();
 }
 

@@ -15,6 +15,7 @@ public:
 	Eigen::Vector2d getPosition() const;
 	virtual Eigen::Vector2d getOldPosition() const;
 	Eigen::Vector2d getVelocity() const;
+	double getMass() const;
 protected:
 	double m_mass;
 	Eigen::Vector2d m_pos;

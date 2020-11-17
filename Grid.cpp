@@ -15,7 +15,9 @@ MPCD::Grid::Grid() :
 	_numCols((int)std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim)),
 	_a(MPCD::Constants::cell_dim),
 	_maxShift(MPCD::Constants::cell_dim / 2),
-	_average_particles_per_cell(MPCD::Constants::average_particles_per_cell)
+	_average_particles_per_cell(MPCD::Constants::average_particles_per_cell),
+	_signGen{ std::random_device()() },
+	_unifSign(-1, 1)
 {
 
 }
@@ -50,16 +52,60 @@ void MPCD::Grid::setupCells(std::vector<CircularObstacle> obstacles, std::vector
 
 void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
 {
+	//std::cout << "Grid.cpp: Adress of first particle in vector: " << &particles[0] << "\n";
 	for (auto& [key, cell] : _cells) {
 		cell.clear();
 	}
-	for (auto& p : particles) {
+	#pragma omp parallel for
+	for (int i = 0; i < particles.size(); i++) {
+		Particle& p = particles[i];
 		Eigen::Vector2d particlePos = p.getPosition();
 		std::pair<int, int> coordinates = getCoordinates(particlePos);
+		p.setCoordinates(coordinates);
 		assert(coordinates.first >= 0 && coordinates.first <= _numRows);
 		assert(coordinates.second >= 0 && coordinates.second <= _numCols);
-		_cells.at(coordinates).add(p);
+		#pragma omp critical
+		{
+			_cells.at(coordinates).add(p);
+		}
 	}
+	/*
+	Eigen::Vector2d particlePos = particles[0].getPosition();
+	std::pair<int, int> coordinates = getCoordinates(particlePos);
+	assert(coordinates.first >= 0 && coordinates.first <= _numRows);
+	assert(coordinates.second >= 0 && coordinates.second <= _numCols);
+	_cells.at(coordinates).add(particles[0]);
+	*/
+}
+
+
+void MPCD::Grid::calculate(const bool draw, std::ofstream& outFile) {
+	// parallelize
+	const int lastRow = int(std::round(MPCD::Constants::y_max / _a)) - 1;
+	const int firstRow = 0;
+	const int lastCol = int(std::round(MPCD::Constants::x_max / _a)) - 1;
+	const int firstCol = 0;
+	for (int i = firstRow; i <= lastRow; i++) {
+		#pragma omp parallel for
+		for (int j = firstCol; j <= lastCol; j++) {
+			std::pair<int,int> index = std::make_pair(i, j);
+			Cell& cell = _cells[index];
+			if (cell.isOccupied()) {
+				createVirtualParticles(index, cell, MPCD::Constants::cell_dim);
+			}
+			cell.calculate();
+
+			if (draw) {
+				#pragma omp critical
+				cell.draw(index, outFile);
+				
+			}
+			
+		}
+		
+	}
+
+
 }
 
 std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
@@ -83,36 +129,23 @@ std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
 	return std::make_pair(i, j);
 }
 
-void MPCD::Grid::collision(bool draw, std::ofstream& outFile)
+void MPCD::Grid::collision(std::vector<Particle>& particles)
 {
-	const double cell_dim = MPCD::Constants::cell_dim;
-	const int lastRow = int(std::round(MPCD::Constants::y_max / cell_dim)) - 1;
-	const int firstRow = 0;
 	#pragma omp parallel for
-	for (int i = 0; i <= lastRow; i++) {
-		for (int j = 0; j < MPCD::Constants::x_max / cell_dim; j++) {
-			std::pair<int, int> key(i, j);
-			Cell& cell = _cells.at(key);
-			if (cell.isOccupied()) {
-				createVirtualParticles(key, cell, cell_dim);
-			}
-			// CHECK HERE FOR OBSTACLE CELLS
-			double scaling = cell.thermostatScaling();
-			#pragma omp critical
-			{
-				cell.collide(scaling);
-				if (draw) {
-					cell.draw(key, outFile);
-				}
-			}
-		}
+	for (int i = 0; i < particles.size(); i++) {
+		Particle& p = particles[i];
+		std::pair<int, int> coord = p.getCoordinates();
+		const Cell& c = _cells[coord];
+		Eigen::Vector2d meanVel = c.getMeanVelocity();
+		double rotationAngle = c.getRotationAngle();
+		double scaling = c.getScalingFactor();
+		int sign = (_unifSign(_signGen) < 0) ? -1 : 1;
+		p.collide(meanVel, sign * rotationAngle, scaling);
 	}
-		
 }
 
 void MPCD::Grid::createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const double cell_dim) {
-	const int numParticles = cell.number();
-	const int particlesToCreate = MPCD::Constants::average_particles_per_cell - numParticles;
+	const int particlesToCreate = MPCD::Constants::average_particles_per_cell - (int)cell.number();
 	const double mass = MPCD::Constants::particle_mass; // h2o kg mass
 	const double mean = 0;
 	const double temperature = MPCD::Constants::temperature;

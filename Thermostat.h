@@ -13,9 +13,9 @@ namespace MPCD {
 
 	public:
 		Thermostat();
-		double getScalingFactor(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity);
+		double getScalingFactor(const std::vector<Particle>& particles, const Eigen::Vector2d cellMeanVelocity);
 	private:
-		double calculateSum(const std::vector<std::shared_ptr<Particle>>& particles, const Eigen::Vector2d cellMeanVelocity) const;
+		double calculateSum(const std::vector<Particle>& particles, const Eigen::Vector2d cellMeanVelocity) const;
 		std::mt19937_64 _gen{ std::random_device()() };
 	};
 

@@ -13,40 +13,52 @@ namespace MPCD {
 	public:
 		Cell();
 		~Cell();
-		void add(Particle& p);
-		void addVirtual(Particle& p);
+		void add(const Particle& p);
+		void addVirtual(const Particle& p);
 		void setOccupied(bool occupied) { 
 			m_occupied = occupied;
 		}
 		bool isOccupied() const {
 			return m_occupied;
 		}
-		//void remove(Particle& p);
-		void collide(double temperatureScalingFactor);
 		void clear();
-		//friend Cell operator+(const Cell& lhs, const Cell& rhs);
-		friend std::ostream& operator<<(std::ostream& os, Cell const& c) {
-			os << "Vel: " << std::to_string(c._vel[0]) << ", Num: " << std::to_string(c._particles.size());
-			return os;
-		}
 		void draw(std::pair<int, int> index, std::ofstream& ofs) const;
-		int number() const;
 
 		double thermostatScaling();
 
-		Eigen::Vector2d getTotalCellVelocity() const;
+		Eigen::Vector2d getMeanVelocity() const {
+			return m_cmVelocity;
+		}
+
+		double getRotationAngle() const {
+			return m_rotationAngle;
+		}
+
+		double getScalingFactor() const {
+			return m_scalingFactor;
+		}
+
+		size_t number() const {
+			return _particles.size();
+		}
+
+		void calculate();
 	private:
 		bool m_occupied = false;
-		Eigen::Vector2d getMeanVelocity() const;
-		std::vector<std::shared_ptr<Particle>> _particles;
-		Eigen::Vector2d _vel;
-		Eigen::Vector2d _virtualVel;
-		int _numVirtual;
+		
+		
 		std::mt19937_64 _angleGen;
 		const std::uniform_real_distribution<double> _unifAngle;
 		std::mt19937_64 _signGen;
 		const std::uniform_real_distribution<double> _unifSign;
+
+		std::vector<Particle> _particles;
+		std::vector<Particle> _virtualParticles;
+
 		Thermostat m_thermostat;
+		Eigen::Vector2d m_cmVelocity;
+		double m_scalingFactor;
+		double m_rotationAngle;
 	};
 }
 #endif // !CELL_H
