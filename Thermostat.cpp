@@ -17,7 +17,7 @@ double MPCD::Thermostat::getScalingFactor(const std::vector<std::shared_ptr<Part
 		std::gamma_distribution<double> dist(df / 2, MPCD::Constants::k_boltzmann * MPCD::Constants::temperature);
 		double kineticEnergy = dist(_gen);
 		double sum = calculateSum(particles, cellMeanVelocity);
-		alpha = std::sqrt((2 * kineticEnergy) / (MPCD::Constants::particle_mass * sum));
+		alpha = std::sqrt((2 * kineticEnergy) / sum);
 	}
 	return alpha;
 } 
@@ -28,7 +28,7 @@ double MPCD::Thermostat::calculateSum(const std::vector<std::shared_ptr<Particle
 	for (const auto& p : particles) {
 		Vector2d pVel = p->getVelocity();
 		Vector2d diff = (pVel - cellMeanVelocity);
-		sum += diff.dot(diff);
+		sum += MPCD::Constants::particle_mass * diff.dot(diff);
 	}
 	return sum;
 }
