@@ -16,7 +16,7 @@ namespace MPCD {
 	class Grid {
 		public:
 			Grid();
-			void calculate(bool draw, std::ofstream& file);
+			void calculate(bool draw, int t);
 			void setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
 			void updateCoordinates(std::vector<Particle>& particles);
 			void collision(std::vector<Particle>& particles);
@@ -27,6 +27,8 @@ namespace MPCD {
 			int getNumRows() const;
 			int getNumCols() const;
 			double getMaxShift() const;
+
+			int _w;
 		private:
 			std::mt19937_64 _signGen;
 			const std::uniform_real_distribution<double> _unifSign;

@@ -5,6 +5,8 @@
 #include "Cell.h"
 #include <iostream>
 
+#include <filesystem>
+#include <fstream>
 
 using namespace Eigen;
 
@@ -19,7 +21,22 @@ MPCD::Grid::Grid() :
 	_signGen{ std::random_device()() },
 	_unifSign(-1, 1)
 {
-
+	const int timesteps = Constants::timesteps;
+	if (timesteps < 99) {
+		_w = 2;
+	}
+	else if (timesteps < 999) {
+		_w = 3;
+	}
+	else if (timesteps < 9999) {
+		_w = 4;
+	}
+	else if (timesteps < 99999) {
+		_w = 5;
+	}
+	else {
+		throw std::exception("timesteps too large or too short: " + timesteps);
+	}
 }
 
 void MPCD::Grid::setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls) {
@@ -79,8 +96,21 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
 }
 
 
-void MPCD::Grid::calculate(const bool draw, std::ofstream& outFile) {
+void MPCD::Grid::calculate(const bool draw, int t) {
 	// parallelize
+	std::filesystem::path cwd;
+	std::stringstream s;
+	std::stringstream av;
+	std::string filename;
+	std::ofstream outFile;
+
+	if (draw) {
+		s << std::setfill('0') << std::setw(_w) << t;
+		av << "av" << Constants::average_particles_per_cell << "_";
+		filename = "../../Analysis/" + std::string("Data/") + "cells_" + av.str() + "timestep" + s.str() + ".csv";
+		outFile = std::ofstream(filename);
+	}
+
 	const int lastRow = int(std::round(MPCD::Constants::y_max / _a)) - 1;
 	const int firstRow = 0;
 	const int lastCol = int(std::round(MPCD::Constants::x_max / _a)) - 1;
@@ -97,8 +127,9 @@ void MPCD::Grid::calculate(const bool draw, std::ofstream& outFile) {
 
 			if (draw) {
 				#pragma omp critical
-				cell.draw(index, outFile);
-				
+				{
+					cell.draw(index, outFile);
+				}
 			}
 			
 		}

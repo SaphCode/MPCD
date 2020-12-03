@@ -30,23 +30,6 @@ MPCD::Simulation::Simulation(bool draw) :
 	_draw(draw)
 {
 	_timelapse = MPCD::Constants::time_lapse;
-	int timesteps = MPCD::Constants::timesteps;
-
-	if (timesteps < 99) {
-		_w = 2;
-	}
-	else if (timesteps < 999) {
-		_w = 3;
-	}
-	else if (timesteps < 9999) {
-		_w = 4;
-	}
-	else if (timesteps < 99999) {
-		_w = 5;
-	}
-	else {
-		throw std::exception("timesteps too large or too short: " + timesteps);
-	}
 	
 	_t = 0;
 
@@ -83,7 +66,7 @@ void Simulation::setup() {
 	const double y_upper = MPCD::Obstacles::y_center_upper;
 	const double y_lower = MPCD::Obstacles::y_center_lower;
 
-	std::string filename("//Data//constants_");
+	std::string filename("../../Analysis/Data/constants_");
 	std::string obstacles_fp("obstacles");
 	std::string csv(".csv");
 	std::filesystem::path cwd = std::filesystem::current_path();
@@ -207,71 +190,49 @@ void MPCD::Simulation::timestep()
 	streamingStep();
 	auto t2 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	std::cout << "Streaming Step: " << duration << std::endl;
+	if (_t % 100 == 0) {
+		std::cout << "Streaming Step: " << duration << std::endl;
+	}
+	
 
 	t1 = std::chrono::high_resolution_clock::now();
 	collisionStep();
 	t2 = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	std::cout << "Collision Step: " << duration << std::endl;
+	if (_t % 100 == 0) {
+		std::cout << "Collision Step: " << duration << std::endl;
+	}
+	
 }
 
 void MPCD::Simulation::streamingStep() {
-	
-	std::filesystem::path cwd;
-	std::stringstream s;
-	std::stringstream av;
-	std::string filename;
-	
 
-	cwd = std::filesystem::current_path();
-	s << std::setfill('0') << std::setw(_w) << _t;
-	av << "av" << _grid.getAverageParticlesPerCell() << "_";
-	filename = "../../Analysis/" + l_data + "particles_" + av.str() + "timestep" + s.str() + ".csv";//cwd.string()
-	std::ofstream outFile(filename);
-
+	bool draw;
 	if (_t % 100 == 0 || _t + 50 > Constants::timesteps) {
-		// draw before streaming and after collision? for "same" timestep
-		if (_draw) {
-			std::stringstream header("x,y,vx,vy");//,vx,vy"
-			outFile << header.str() << '\n';
-		}
-		_pipe.stream(_particles, _timelapse, _draw, outFile);
+		draw = true;
 	}
 	else {
-		_pipe.stream(_particles, _timelapse, false, outFile);
+		draw = false;
 	}
-	
+
+	_pipe.stream(_particles, _timelapse, draw, _t);
 	
 }
 
 void MPCD::Simulation::collisionStep() {
-	std::filesystem::path cwd;
-	std::stringstream s;
-	std::stringstream av;
-	std::string filename;
 
 	_grid.shift();
 	_grid.updateCoordinates(_particles);
 
-	cwd = std::filesystem::current_path();
-	s << std::setfill('0') << std::setw(_w) << _t;
-	av << "av" << _grid.getAverageParticlesPerCell() << "_";
-	filename = "../../Analysis/" + l_data + "cells_" + av.str() + "timestep" + s.str() + ".csv";
-	std::ofstream outFile(filename);
-
-	if (_t % 100 == 0 || _t + 50 > Constants::timesteps) {
-
-		if (_draw) {
-			std::stringstream header("i,j,meanX,meanY,num");//,vx,vy"
-			outFile << header.str() << '\n';
-		}
-		_grid.calculate(_draw, outFile);
+	bool draw;
+	if (_t % 100 == 0 || _t + 100 > Constants::timesteps) {
+		draw = true;
 	}
 	else {
-		_grid.calculate(false, outFile);
+		draw = false;
 	}
 
+	_grid.calculate(draw, _t);
 	_grid.collision(_particles);
 	_grid.undoShift();
 	

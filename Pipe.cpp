@@ -1,12 +1,29 @@
 #include "Pipe.h"
 #include "Grid.h"
 #include <execution>
-#include <fstream>
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 
 MPCD::Pipe::Pipe(ConstForce force) :
 	m_constForce(force)
 {
+	const int timesteps = Constants::timesteps;
+	if (timesteps < 99) {
+		_w = 2;
+	}
+	else if (timesteps < 999) {
+		_w = 3;
+	}
+	else if (timesteps < 9999) {
+		_w = 4;
+	}
+	else if (timesteps < 99999) {
+		_w = 5;
+	}
+	else {
+		throw std::exception("timesteps too large or too short: " + timesteps);
+	}
 }
 
 void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls)
@@ -15,8 +32,21 @@ void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vect
 	m_walls = walls;
 }
 
-void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file) {
+void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, int t) {
 	int size = particles.size();
+
+
+	std::ofstream outFile;
+
+	if (draw) {
+		std::stringstream s;
+		std::stringstream av;
+		std::string filename;
+		s << std::setfill('0') << std::setw(_w) << t;
+		av << "av" << Constants::average_particles_per_cell << "_";
+		filename = "../../Analysis/" + std::string("Data/") + "particles_" + av.str() + "timestep" + s.str() + ".csv";//cwd.string()
+		outFile = std::ofstream(filename);
+	}
 	#pragma omp parallel for
 	for (int i = 0; i < size; i++) {
 		Particle& p = particles[i];
@@ -38,7 +68,7 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool dra
 			Eigen::Vector2d vel = p.getVelocity();
 			#pragma omp critical
 			{
-				file << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
+				outFile << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "\n";
 			}
 		}
 		

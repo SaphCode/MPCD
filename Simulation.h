@@ -21,7 +21,7 @@ namespace MPCD {
 
 		Grid _grid;
 		Pipe _pipe;
-		int _w;
+		
 
 		bool _addObstacles = false;
 

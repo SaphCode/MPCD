@@ -21,11 +21,11 @@ namespace MPCD {
 		void collide(Particle& p);
 		void fixOutOfBounds(Particle& p);
 		bool inBounds(const Eigen::Vector2d& pos);
-		
+		int _w;
 	public:
 		Pipe(ConstForce force);
 		~Pipe() {}
-		void stream(std::vector<Particle>& particles, double lapse, bool draw, std::ofstream& file);
+		void stream(std::vector<Particle>& particles, double lapse, bool draw, int t);
 		void setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
 	};
 }
