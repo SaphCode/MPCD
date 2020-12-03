@@ -109,7 +109,7 @@ void MPCD::Grid::calculate(const bool draw, int t) {
 		av << "av" << Constants::average_particles_per_cell << "_";
 		filename = "../../Analysis/" + std::string("Data/") + "cells_" + av.str() + "timestep" + s.str() + ".csv";
 		outFile = std::ofstream(filename);
-		outFile << "i,j,vx,vy,n\n";
+		outFile << "i,j,meanX,meanY,num\n";
 	}
 
 	const int lastRow = int(std::round(MPCD::Constants::y_max / _a)) - 1;
