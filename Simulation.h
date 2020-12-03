@@ -16,14 +16,14 @@
 namespace MPCD {
 	class Simulation {
 	private:
-		bool _draw = false;
+		const bool _draw;
 		double _timelapse;
 
 		Grid _grid;
 		Pipe _pipe;
 		int _w;
 
-		bool _addObstacles = true;
+		bool _addObstacles = false;
 
 		int _t;
 		std::vector<Particle> _particles;

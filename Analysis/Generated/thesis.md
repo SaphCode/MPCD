@@ -299,46 +299,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 80
     --loaded 90
     --loaded 100
-    --loaded 110
-    --loaded 120
-    --loaded 130
-    --loaded 140
-    --loaded 150
-    --loaded 160
-    --loaded 170
-    --loaded 180
-    --loaded 190
-    --loaded 200
-    --loaded 210
-    --loaded 220
-    --loaded 230
-    --loaded 240
-    --loaded 250
-    --loaded 260
-    --loaded 270
-    --loaded 280
-    --loaded 290
-    --loaded 300
-    --loaded 310
-    --loaded 320
-    --loaded 330
-    --loaded 340
-    --loaded 350
-    --loaded 360
-    --loaded 370
-    --loaded 380
-    --loaded 390
-    --loaded 400
-    --loaded 410
-    --loaded 420
-    --loaded 430
-    --loaded 440
-    --loaded 450
-    --loaded 460
-    --loaded 470
-    --loaded 480
-    --loaded 490
-    --loaded 500
     Particles loaded and saved!
     
     
@@ -356,46 +316,6 @@ _The animations will probably be more interesting once force, thermostat & obsta
     --loaded 80
     --loaded 90
     --loaded 100
-    --loaded 110
-    --loaded 120
-    --loaded 130
-    --loaded 140
-    --loaded 150
-    --loaded 160
-    --loaded 170
-    --loaded 180
-    --loaded 190
-    --loaded 200
-    --loaded 210
-    --loaded 220
-    --loaded 230
-    --loaded 240
-    --loaded 250
-    --loaded 260
-    --loaded 270
-    --loaded 280
-    --loaded 290
-    --loaded 300
-    --loaded 310
-    --loaded 320
-    --loaded 330
-    --loaded 340
-    --loaded 350
-    --loaded 360
-    --loaded 370
-    --loaded 380
-    --loaded 390
-    --loaded 400
-    --loaded 410
-    --loaded 420
-    --loaded 430
-    --loaded 440
-    --loaded 450
-    --loaded 460
-    --loaded 470
-    --loaded 480
-    --loaded 490
-    --loaded 500
     Cells loaded and saved!
     
     Preparing cell values ..
@@ -432,6 +352,12 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
+
+    
+![png](thesis_files/thesis_72_0.png)
+    
+
+
 ![Ending velocity profile](Release/Assets/velocity_profile.png)
 
 
@@ -439,7 +365,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    [<matplotlib.lines.Line2D at 0x1acd07296a0>]
+    [<matplotlib.lines.Line2D at 0x1bc6856cf40>]
 
 
 
@@ -451,27 +377,34 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 # Histograms velocity
 
-## t = 0
+Function for animation of histogram
 
 
 
+## vx
 
 
 
-    (array([  12.,   63.,  456., 1419., 2672., 2847., 1758.,  636.,  120.,
-              17.]),
-     array([-3.815780e+00, -3.052465e+00, -2.289150e+00, -1.525835e+00,
-            -7.625200e-01,  7.950000e-04,  7.641100e-01,  1.527425e+00,
-             2.290740e+00,  3.054055e+00,  3.817370e+00]),
-     <BarContainer object of 10 artists>)
-
-
+    Frame: 0
+    Frame: 0
+    Frame: 10
+    Frame: 20
+    Frame: 30
+    Frame: 40
+    Frame: 50
+    Frame: 60
+    Frame: 70
+    Frame: 80
+    Frame: 90
+    
 
 
     
-![png](thesis_files/thesis_77_1.png)
+![png](thesis_files/thesis_79_1.png)
     
 
+
+## vy
 
 
 
@@ -482,47 +415,7 @@ _The animations will probably be more interesting once force, thermostat & obsta
 
 
 
-    <AxesSubplot:xlabel='vy0', ylabel='Density'>
-
-
-
-
-    
-![png](thesis_files/thesis_78_2.png)
-    
-
-
-## t = timesteps, f.ex. 200 or 500
-
-
-
-    E:\Software\Anaconda\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
-      warnings.warn(msg, FutureWarning)
-    
-
-
-
-
-    <AxesSubplot:xlabel='vx499', ylabel='Density'>
-
-
-
-
-    
-![png](thesis_files/thesis_80_2.png)
-    
-
-
-
-
-    E:\Software\Anaconda\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
-      warnings.warn(msg, FutureWarning)
-    
-
-
-
-
-    <AxesSubplot:xlabel='vy499', ylabel='Density'>
+    Text(0.5, 1.0, 'distribution of y velocity at t=0')
 
 
 
@@ -532,18 +425,38 @@ _The animations will probably be more interesting once force, thermostat & obsta
     
 
 
+
+
+    E:\Software\Anaconda\envs\datascience\lib\site-packages\seaborn\distributions.py:2551: FutureWarning: `distplot` is a deprecated function and will be removed in a future version. Please adapt your code to use either `displot` (a figure-level function with similar flexibility) or `histplot` (an axes-level function for histograms).
+      warnings.warn(msg, FutureWarning)
+    
+
+
+
+
+    Text(0.5, 1.0, 'distribution of y velocity at t=last')
+
+
+
+
+    
+![png](thesis_files/thesis_82_2.png)
+    
+
+
 # Temperature of solvent
 
-hmmmmm?
 
 
-
-
-
-
-    <AxesSubplot:>
-
-
+    Average sqared velocities after first timestep:
+    vx0    0.991419
+    vy0    0.976602
+    dtype: float64
+    Average v_x2 after last timestep:
+    vx98    69.935394
+    vy98     1.064514
+    dtype: float64
+    
 
 
     
@@ -579,86 +492,6 @@ hmmmmm?
     
     --Created 90 frame.
     
-    --Created 100 frame.
-    
-    --Created 110 frame.
-    
-    --Created 120 frame.
-    
-    --Created 130 frame.
-    
-    --Created 140 frame.
-    
-    --Created 150 frame.
-    
-    --Created 160 frame.
-    
-    --Created 170 frame.
-    
-    --Created 180 frame.
-    
-    --Created 190 frame.
-    
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
-    
-    --Created 490 frame.
-    
     Animated and saved!
     
 
@@ -685,86 +518,6 @@ hmmmmm?
     --Created 80 frame.
     
     --Created 90 frame.
-    
-    --Created 100 frame.
-    
-    --Created 110 frame.
-    
-    --Created 120 frame.
-    
-    --Created 130 frame.
-    
-    --Created 140 frame.
-    
-    --Created 150 frame.
-    
-    --Created 160 frame.
-    
-    --Created 170 frame.
-    
-    --Created 180 frame.
-    
-    --Created 190 frame.
-    
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
-    
-    --Created 490 frame.
     
     Animated and saved!
     
@@ -796,86 +549,6 @@ hmmmmm?
     
     --Created 90 frame.
     
-    --Created 100 frame.
-    
-    --Created 110 frame.
-    
-    --Created 120 frame.
-    
-    --Created 130 frame.
-    
-    --Created 140 frame.
-    
-    --Created 150 frame.
-    
-    --Created 160 frame.
-    
-    --Created 170 frame.
-    
-    --Created 180 frame.
-    
-    --Created 190 frame.
-    
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
-    
-    --Created 490 frame.
-    
     Animated and saved!
     
 
@@ -892,96 +565,6 @@ hmmmmm?
     --Created 20 frame.
     
     --Created 30 frame.
-    
-    --Created 40 frame.
-    
-    --Created 50 frame.
-    
-    --Created 60 frame.
-    
-    --Created 70 frame.
-    
-    --Created 80 frame.
-    
-    --Created 90 frame.
-    
-    --Created 100 frame.
-    
-    --Created 110 frame.
-    
-    --Created 120 frame.
-    
-    --Created 130 frame.
-    
-    --Created 140 frame.
-    
-    --Created 150 frame.
-    
-    --Created 160 frame.
-    
-    --Created 170 frame.
-    
-    --Created 180 frame.
-    
-    --Created 190 frame.
-    
-    --Created 200 frame.
-    
-    --Created 210 frame.
-    
-    --Created 220 frame.
-    
-    --Created 230 frame.
-    
-    --Created 240 frame.
-    
-    --Created 250 frame.
-    
-    --Created 260 frame.
-    
-    --Created 270 frame.
-    
-    --Created 280 frame.
-    
-    --Created 290 frame.
-    
-    --Created 300 frame.
-    
-    --Created 310 frame.
-    
-    --Created 320 frame.
-    
-    --Created 330 frame.
-    
-    --Created 340 frame.
-    
-    --Created 350 frame.
-    
-    --Created 360 frame.
-    
-    --Created 370 frame.
-    
-    --Created 380 frame.
-    
-    --Created 390 frame.
-    
-    --Created 400 frame.
-    
-    --Created 410 frame.
-    
-    --Created 420 frame.
-    
-    --Created 430 frame.
-    
-    --Created 440 frame.
-    
-    --Created 450 frame.
-    
-    --Created 460 frame.
-    
-    --Created 470 frame.
-    
-    --Created 480 frame.
     
     
 
@@ -1014,12 +597,6 @@ The collision step of the MPCD algorithm conserves energy _locally_, which is to
 To inspect this, the energy of every particle is added up. The base energy is the initial energy, the error (or variation from this base) is calculated and plotted below.
 
 
-
-
-
-
-
-![Constant energy throughout simulation](Assets/constant_energy.png)
 
 Error $\sim 10^{-8}$
 
