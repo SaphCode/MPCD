@@ -16,7 +16,7 @@
 namespace MPCD {
 	class Simulation {
 	private:
-		bool _draw = false;
+		const bool _draw;
 		double _timelapse;
 
 		Grid _grid;

@@ -26,10 +26,10 @@ using namespace MPCD;
 using namespace std::chrono;
 
 MPCD::Simulation::Simulation(bool draw) :
-	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::acceleration_const, 0)))
+	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::acceleration_const, 0))),
+	_draw(draw)
 {
 	_timelapse = MPCD::Constants::time_lapse;
-	_draw = draw;
 	int timesteps = MPCD::Constants::timesteps;
 
 	if (timesteps < 99) {
@@ -50,10 +50,7 @@ MPCD::Simulation::Simulation(bool draw) :
 	
 	_t = 0;
 
-
-
 	setup();
-	
 }
 
 void Simulation::setup() {
@@ -193,7 +190,7 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 	std::string num("av" + std::to_string(averageParticlesPerCell));
 	std::string csv(".csv");
 
-	std::ofstream outFile(cwd.string() + filename + num + csv);
+	std::ofstream outFile("../../Analysis/" + l_data + filename + num + csv);
 
 	double particle_mass = MPCD::Constants::particle_mass;
 	double k_BT = MPCD::Constants::k_boltzmann * MPCD::Constants::temperature;
@@ -226,19 +223,26 @@ void MPCD::Simulation::streamingStep() {
 	std::stringstream av;
 	std::string filename;
 	
+
 	cwd = std::filesystem::current_path();
 	s << std::setfill('0') << std::setw(_w) << _t;
 	av << "av" << _grid.getAverageParticlesPerCell() << "_";
-	filename = cwd.string() + l_data + "particles_" + av.str() + "timestep" + s.str() + ".csv";
+	filename = "../../Analysis/" + l_data + "particles_" + av.str() + "timestep" + s.str() + ".csv";//cwd.string()
 	std::ofstream outFile(filename);
-	
-	// draw before streaming and after collision? for "same" timestep
-	if (_draw) {
-		std::stringstream header("x,y,vx,vy");//,vx,vy"
-		outFile << header.str() << '\n';
-	}
 
-	_pipe.stream(_particles, _timelapse, _draw, outFile);
+	if (_t % 100 == 0 || _t + 50 > Constants::timesteps) {
+		// draw before streaming and after collision? for "same" timestep
+		if (_draw) {
+			std::stringstream header("x,y,vx,vy");//,vx,vy"
+			outFile << header.str() << '\n';
+		}
+		_pipe.stream(_particles, _timelapse, _draw, outFile);
+	}
+	else {
+		_pipe.stream(_particles, _timelapse, false, outFile);
+	}
+	
+	
 }
 
 void MPCD::Simulation::collisionStep() {
@@ -247,21 +251,29 @@ void MPCD::Simulation::collisionStep() {
 	std::stringstream av;
 	std::string filename;
 
+	_grid.shift();
+	_grid.updateCoordinates(_particles);
+
 	cwd = std::filesystem::current_path();
 	s << std::setfill('0') << std::setw(_w) << _t;
 	av << "av" << _grid.getAverageParticlesPerCell() << "_";
-	filename = cwd.string() + l_data + "cells_" + av.str() + "timestep" + s.str() + ".csv";
+	filename = "../../Analysis/" + l_data + "cells_" + av.str() + "timestep" + s.str() + ".csv";
 	std::ofstream outFile(filename);
 
-	if (_draw) {
-		std::stringstream header("i,j,meanX,meanY,num");//,vx,vy"
-		outFile << header.str() << '\n';
+	if (_t % 100 == 0 || _t + 50 > Constants::timesteps) {
+
+		if (_draw) {
+			std::stringstream header("i,j,meanX,meanY,num");//,vx,vy"
+			outFile << header.str() << '\n';
+		}
+		_grid.calculate(_draw, outFile);
+	}
+	else {
+		_grid.calculate(false, outFile);
 	}
 
-	_grid.shift();
-	_grid.updateCoordinates(_particles);
-	_grid.calculate(_draw, outFile);
 	_grid.collision(_particles);
 	_grid.undoShift();
+	
 }
 
