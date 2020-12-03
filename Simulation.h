@@ -23,7 +23,7 @@ namespace MPCD {
 		Pipe _pipe;
 		int _w;
 
-		bool _addObstacles = true;
+		bool _addObstacles = false;
 
 		int _t;
 		std::vector<Particle> _particles;
