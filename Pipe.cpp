@@ -46,6 +46,7 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool dra
 		av << "av" << Constants::average_particles_per_cell << "_";
 		filename = "../../Analysis/" + std::string("Data/") + "particles_" + av.str() + "timestep" + s.str() + ".csv";//cwd.string()
 		outFile = std::ofstream(filename);
+		outFile << "x,y,vx,vy\n";
 	}
 	#pragma omp parallel for
 	for (int i = 0; i < size; i++) {
