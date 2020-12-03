@@ -69,8 +69,7 @@ void Simulation::setup() {
 	std::string filename("../../Analysis/Data/constants_");
 	std::string obstacles_fp("obstacles");
 	std::string csv(".csv");
-	std::filesystem::path cwd = std::filesystem::current_path();
-	std::ofstream outFile(cwd.string() + filename + obstacles_fp + csv);
+	std::ofstream outFile(filename + obstacles_fp + csv);
 	outFile << "x,y,r" << "\n"; // header columns
 
 	std::vector<CircularObstacle> obstacles;
@@ -169,7 +168,7 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 
 	std::filesystem::path cwd = std::filesystem::current_path();
 
-	std::string filename("//Data//constants_");
+	std::string filename("constants_");
 	std::string num("av" + std::to_string(averageParticlesPerCell));
 	std::string csv(".csv");
 
