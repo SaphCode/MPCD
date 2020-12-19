@@ -7,7 +7,7 @@ namespace MPCD {
 		//constexpr int number = Grid::average_particles_per_cell * (Pipe::x_max / Grid::cell_dim) * (Pipe::y_max / Grid::cell_dim); // will be a func of Grid
 		constexpr int seed = 234234;
 		
-		constexpr int timesteps = 1000;
+		constexpr int timesteps = 2000;
 		constexpr int average_particles_per_cell = 10;
 		constexpr double cell_dim = 1;
 		constexpr double k_boltzmann = 1;
@@ -15,7 +15,7 @@ namespace MPCD {
 		constexpr double particle_mass = 1;
 		const double unit_of_time = std::sqrt((particle_mass * std::pow(cell_dim, 2) / (k_boltzmann * temperature)));
 		const double acceleration_const = 0.01; // 1 at the moment, kg (particle mass) * m (1) / s^2 (unit of time) about 10^-20, so a = 10^3 seems reasonable, but its really small force
-		const double time_lapse = 0.15;// * unit_of_time; // will be a func of diff parameters
+		const double time_lapse = 0.05;// * unit_of_time; // will be a func of diff parameters
 		constexpr double x_0 = 0;
 		constexpr double y_0 = 0;
 		constexpr double x_max = 400;
