@@ -12,14 +12,21 @@ namespace MPCD {
 		constexpr double cell_dim = 1;
 		constexpr double k_boltzmann = 1;
 		constexpr double temperature = 1; // = 36Celsius
+		constexpr double obstacleMonomer_interaction_tuning = k_boltzmann * temperature;
+		constexpr double monomerMonomer_interaction_tuning = 0.05 * k_boltzmann * temperature;
+		constexpr double solventMonomer_interaction_tuning = 0.05 * k_boltzmann * temperature;
+		constexpr double monomer_diameter = 0.1;
+		constexpr int num_md_timesteps = 50;
+		constexpr double monomer_mass = 10;
 		constexpr double particle_mass = 1;
 		const double unit_of_time = std::sqrt((particle_mass * std::pow(cell_dim, 2) / (k_boltzmann * temperature)));
 		const double acceleration_const = 0.01; // 1 at the moment, kg (particle mass) * m (1) / s^2 (unit of time) about 10^-20, so a = 10^3 seems reasonable, but its really small force
-		const double time_lapse = 0.05;// * unit_of_time; // will be a func of diff parameters
+		const double time_lapse = 0.1 * unit_of_time;// * unit_of_time; // will be a func of diff parameters
+		const double md_timestep = 0.002 * unit_of_time; // TODO: is this ok?
 		constexpr double x_0 = 0;
 		constexpr double y_0 = 0;
-		constexpr double x_max = 400;
-		constexpr double y_max = 50;
+		constexpr double x_max = 20;
+		constexpr double y_max = 20;
 	}
 	namespace Obstacles {
 		constexpr int num = 4;

@@ -67,7 +67,7 @@ void MPCD::Grid::setupCells(std::vector<CircularObstacle> obstacles, std::vector
 	}
 }
 
-void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
+void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles, std::vector<Monomer>& monomers)
 {
 	//std::cout << "Grid.cpp: Adress of first particle in vector: " << &particles[0] << "\n";
 	for (auto& [key, cell] : _cells) {
@@ -86,13 +86,20 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles)
 			_cells.at(coordinates).add(p);
 		}
 	}
-	/*
-	Eigen::Vector2d particlePos = particles[0].getPosition();
-	std::pair<int, int> coordinates = getCoordinates(particlePos);
-	assert(coordinates.first >= 0 && coordinates.first <= _numRows);
-	assert(coordinates.second >= 0 && coordinates.second <= _numCols);
-	_cells.at(coordinates).add(particles[0]);
-	*/
+
+	#pragma omp parallel for
+	for (int i = 0; i < monomers.size(); i++) {
+		Monomer& m = monomers[i];
+		Eigen::Vector2d particlePos = m.getPosition();
+		std::pair<int, int> coordinates = getCoordinates(particlePos);
+		m.setCoordinates(coordinates);
+		assert(coordinates.first >= 0 && coordinates.first <= _numRows);
+		assert(coordinates.second >= 0 && coordinates.second <= _numCols);
+		#pragma omp critical
+		{
+			_cells.at(coordinates).add(m);
+		}
+	}
 }
 
 
@@ -161,7 +168,7 @@ std::pair<int, int> MPCD::Grid::getCoordinates(Eigen::Vector2d position) const {
 	return std::make_pair(i, j);
 }
 
-void MPCD::Grid::collision(std::vector<Particle>& particles)
+void MPCD::Grid::collision(std::vector<Particle>& particles, std::vector<Monomer>& monomers)
 {
 	#pragma omp parallel for
 	for (int i = 0; i < particles.size(); i++) {
@@ -173,6 +180,18 @@ void MPCD::Grid::collision(std::vector<Particle>& particles)
 		double scaling = c.getScalingFactor();
 		int sign = (_unifSign(_signGen) < 0) ? -1 : 1;
 		p.collide(meanVel, sign * rotationAngle, scaling);
+	}
+	
+	#pragma omp parallel for
+	for (int i = 0; i < monomers.size(); i++) {
+		Monomer& m = monomers[i];
+		std::pair<int, int> coord = m.getCoordinates();
+		const Cell& c = _cells[coord];
+		Eigen::Vector2d meanVel = c.getMeanVelocity();
+		double rotationAngle = c.getRotationAngle();
+		double scaling = c.getScalingFactor();
+		int sign = (_unifSign(_signGen) < 0) ? -1 : 1;
+		m.collide(meanVel, sign * rotationAngle, scaling);
 	}
 }
 
@@ -224,3 +243,4 @@ double MPCD::Grid::getMaxShift() const
 {
 	return _maxShift;
 }
+

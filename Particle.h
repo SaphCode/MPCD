@@ -11,7 +11,7 @@ namespace MPCD {
 	public:
 		/* Creates a particle with @param position, @param velocity and unit mass. */
 		Particle(double mass, Eigen::Vector2d position, Eigen::Vector2d velocity) :
-			InteractingBody(mass, position, velocity)
+			InteractingBody(mass, position, velocity, BodyType::PARTICLE)
 		{
 
 		}
@@ -34,9 +34,8 @@ namespace MPCD {
 			m_coordinates = coord;
 		}
 
-		Eigen::Vector2d interact(InteractingBody& b) override {
+		void interact(InteractingBody& b) override {
 			// no effect on other bodies
-			return Eigen::Vector2d(0, 0);
 		}
 	private:
 		std::pair<int, int> m_coordinates;

@@ -6,6 +6,7 @@
 #include "Wall.h"
 #include "CircularObstacle.h"
 #include "ConstForce.h"
+#include "Monomer.h"
 
 namespace MPCD {
 	class Pipe
@@ -18,14 +19,21 @@ namespace MPCD {
 		double _x_max = Constants::x_max;
 		double _y_0 = Constants::y_0;
 		double _y_max = Constants::y_max;
-		void collide(Particle& p);
-		void fixOutOfBounds(Particle& p);
+		void collide(Body& p);
+		void fixOutOfBounds(Body& p);
 		bool inBounds(const Eigen::Vector2d& pos);
+		void calculateInteraction(int currentIndex, Monomer& m, std::vector<Particle>& particles, std::vector<Monomer>& monomers);
+		void verletVelocity(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
+		void verletPosition(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
+
+
 		int _w;
 	public:
 		Pipe(ConstForce force);
 		~Pipe() {}
 		void stream(std::vector<Particle>& particles, double lapse, bool draw, int t);
 		void setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
+		
+		void verlet(std::vector<Particle>& particles, std::vector<Monomer>& monomers, bool draw, int t);
 	};
 }

@@ -6,21 +6,31 @@
 #include <Eigen/Dense>
 #include "Body.h"
 
+enum class BodyType {
+	PARTICLE,
+	MONOMER,
+	OBSTACLE,
+	WALL,
+	CONST_FORCE
+};
+
 class InteractingBody :
 	public Body
 {
 public:
-	InteractingBody(double mass, Eigen::Vector2d pos, Eigen::Vector2d vel) :
-		Body(mass, pos, vel), m_effect(0, 0)
+	InteractingBody(double mass, Eigen::Vector2d pos, Eigen::Vector2d vel, BodyType type) :
+		Body(mass, pos, vel), m_effect(0, 0),
+		m_type(type)
 	{
 
 	}
 
-	virtual Eigen::Vector2d interact(InteractingBody& b) {
-
-		return Eigen::Vector2d(0, 0); // default implementation
+	BodyType getType() const {
+		return m_type;
 	}
-	void resetEffect() {
+
+	virtual void interact(InteractingBody& b) {}
+	virtual void resetEffect() {
 		Eigen::Vector2d zero(0, 0);
 		m_effect = zero;
 	}
@@ -28,7 +38,10 @@ public:
 	void addEffect(Eigen::Vector2d effect);
 	void updateVelocity(const double timelapse);
 
-private:
+protected:
 	Eigen::Vector2d m_effect;
+
+private:
+	BodyType m_type;
 };
 #endif // !IINTERACTINGBODY_H

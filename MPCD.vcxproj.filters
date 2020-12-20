@@ -51,6 +51,9 @@
     <ClCompile Include="Thermostat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Monomer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Grid.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ConstForce.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Monomer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

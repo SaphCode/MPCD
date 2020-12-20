@@ -3,7 +3,7 @@
 #include <iostream>
 
 MPCD::CircularObstacle::CircularObstacle(Eigen::Vector2d center, double radius) :
-	InteractingBody(std::numeric_limits<double>::infinity(), center, Eigen::Vector2d(0, 0)),
+	InteractingBody(std::numeric_limits<double>::infinity(), center, Eigen::Vector2d(0, 0), BodyType::OBSTACLE),
 	m_center(center),
 	m_radius(radius)
 {
@@ -99,9 +99,9 @@ Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 	return overshoot;
 }
 
-Eigen::Vector2d MPCD::CircularObstacle::interact(InteractingBody& b)
+void MPCD::CircularObstacle::interact(InteractingBody& b)
 {
-	return Eigen::Vector2d(0, 0); // do nothing
+	// do nothing
 }
 
 bool MPCD::CircularObstacle::contains(Eigen::Vector2d point) const

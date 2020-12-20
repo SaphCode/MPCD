@@ -5,11 +5,11 @@ using namespace Eigen;
 void InteractingBody::move(const double timelapse)
 {
 	Body::move(timelapse);
-	m_pos += m_effect * timelapse * timelapse / 2;
+	m_pos += m_effect / m_mass * timelapse * timelapse / 2;
 }
 
 void InteractingBody::updateVelocity(const double timelapse) {
-	m_vel += timelapse * m_effect;
+	m_vel += timelapse * m_effect / m_mass;
 }
 
 void InteractingBody::addEffect(Eigen::Vector2d effect)

@@ -16,7 +16,7 @@ namespace MPCD {
         bool isInBounds(const Body& o) const override;
         Eigen::Vector2d getOvershoot(const Body& o) const;
 
-        Eigen::Vector2d interact(InteractingBody& b) override;
+        void interact(InteractingBody& b) override;
 
         bool contains(Eigen::Vector2d point) const override;
 

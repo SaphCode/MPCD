@@ -26,7 +26,11 @@ namespace MPCD {
 		bool _addObstacles = false;
 
 		int _t;
+		int _drawInterval;
+		int _drawLast;
+
 		std::vector<Particle> _particles;
+		std::vector<Monomer> _monomers;
 		//std::vector<std::shared_ptr<IObstacle>> _obstacles; // TODO: remove from simulation?
 		// idea: make vectors of Wall and Circular obstacles separately,
 		// compute interactions and all that stuff separately
@@ -38,6 +42,7 @@ namespace MPCD {
 
 		void streamingStep();
 		void collisionStep();
+		void verlet();
 
 		bool isInBoundsOfAnObstacle(Body& b, std::vector<CircularObstacle> obstacles);
 
@@ -45,8 +50,10 @@ namespace MPCD {
 		
 		void setUpParticles(int number, double x_0, double x_max, double y_0, double y_max, std::vector<CircularObstacle> obstacles);
 
+		void setUpMonomers();
+
 	public:
-		Simulation(bool draw);
+		Simulation(bool draw, int drawInterval, int drawLast);
 		~Simulation() {}
 		/* One timestep */
 		void timestep();

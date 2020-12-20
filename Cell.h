@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include "Particle.h"
 #include "Thermostat.h"
+#include "Monomer.h"
 #include <execution>
 #include <random>
 namespace MPCD {
@@ -14,6 +15,7 @@ namespace MPCD {
 		Cell();
 		~Cell();
 		void add(const Particle& p);
+		void add(const Monomer& p);
 		void addVirtual(const Particle& p);
 		void setOccupied(bool occupied) { 
 			m_occupied = occupied;
@@ -54,6 +56,7 @@ namespace MPCD {
 
 		std::vector<Particle> _particles;
 		std::vector<Particle> _virtualParticles;
+		std::vector<Monomer> _monomers;
 
 		Thermostat m_thermostat;
 		Eigen::Vector2d m_cmVelocity;

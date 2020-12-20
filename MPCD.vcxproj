@@ -162,6 +162,7 @@
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="InteractingBody.cpp" />
     <ClCompile Include="MaxwellBoltzmann.cpp" />
+    <ClCompile Include="Monomer.cpp" />
     <ClCompile Include="Pipe.cpp" />
     <ClCompile Include="Simulation.cpp" />
     <ClCompile Include="Particle.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="MaxwellBoltzmann.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="IObstacle.h" />
+    <ClInclude Include="Monomer.h" />
     <ClInclude Include="Pipe.h" />
     <ClInclude Include="Simulation.h" />
     <ClInclude Include="Particle.h" />

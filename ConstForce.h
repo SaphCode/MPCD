@@ -6,8 +6,8 @@ class ConstForce :
 {
 public:
     ConstForce(Eigen::Vector2d acceleration);
-    Eigen::Vector2d interact(InteractingBody& b);
+    void interact(InteractingBody& b) override;
 private:
-    Eigen::Vector2d m_acceleration;
+    Eigen::Vector2d m_force;
 };
 

@@ -25,9 +25,11 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw) :
+MPCD::Simulation::Simulation(bool draw, int drawInterval, int drawLast) :
 	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::acceleration_const, 0))),
-	_draw(draw)
+	_draw(draw),
+	_drawInterval(drawInterval),
+	_drawLast(drawLast)
 {
 	_timelapse = MPCD::Constants::time_lapse;
 	
@@ -95,12 +97,16 @@ void Simulation::setup() {
 	setUpParticles(number, x_0, x_max, y_0, y_max, obstacles);
 	_pipe.setObstacles(obstacles, walls);
 
+	setUpMonomers();
+
 	if (_draw) {
 		int timesteps = MPCD::Constants::timesteps;
 		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles, timesteps);
 	}
 	std::cout << "Setup complete." << std::endl;
 }
+
+
 
 void MPCD::Simulation::writeCirclePositionToOut(std::ofstream& outFile, Eigen::Vector2d center_pos, double radius) {
 	outFile << center_pos[0] << "," << center_pos[1] << "," << radius << std::endl;
@@ -145,6 +151,16 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 	}
 }
 
+void MPCD::Simulation::setUpMonomers()
+{
+	double mass = MPCD::Constants::monomer_mass;
+	Eigen::Vector2d pos(2, 10);
+	MaxwellBoltzmann mb(0, MPCD::Constants::temperature, mass);
+	Eigen::Vector2d vel = mb.next();
+	double diameter = MPCD::Constants::monomer_diameter;
+	_monomers.push_back(Monomer(mass, pos, vel, diameter));
+}
+
 bool MPCD::Simulation::isInBoundsOfAnObstacle(Body& b, std::vector<CircularObstacle> obstacles) {
 	for (auto& o : obstacles) {
 		if (o.isInBounds(b)) return true;
@@ -181,32 +197,61 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 }
 
 void MPCD::Simulation::timestep()
-{
-	_t += 1;
+{	
 	
 	auto t1 = std::chrono::high_resolution_clock::now();
 	streamingStep();
 	auto t2 = std::chrono::high_resolution_clock::now();
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	if (_t % 100 == 0) {
+	if (_t % _drawInterval == 0) {
 		std::cout << "Streaming Step: " << duration << std::endl;
 	}
 	
+	t1 = std::chrono::high_resolution_clock::now();
+	verlet();
+	t2 = std::chrono::high_resolution_clock::now();
+
+	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+	if (_t % _drawInterval == 0) {
+		std::cout << "Verlet: " << duration << std::endl;
+	}
+
+	
+
+	_grid.shift();
+	_grid.updateCoordinates(_particles, _monomers);
 
 	t1 = std::chrono::high_resolution_clock::now();
 	collisionStep();
 	t2 = std::chrono::high_resolution_clock::now();
+
+	_grid.undoShift();
+
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	if (_t % 100 == 0) {
+	if (_t % _drawInterval == 0) {
 		std::cout << "Collision Step: " << duration << std::endl;
 	}
 	
+	_t += 1;
+}
+
+void MPCD::Simulation::verlet() {
+	bool draw;
+	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
+		draw = true;
+	}
+	else {
+		draw = false;
+	}
+
+	_pipe.verlet(_particles, _monomers, draw, _t);
 }
 
 void MPCD::Simulation::streamingStep() {
 
 	bool draw;
-	if (_t % 100 == 0 || _t + 50 > Constants::timesteps) {
+	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
 		draw = true;
 	}
 	else {
@@ -219,11 +264,8 @@ void MPCD::Simulation::streamingStep() {
 
 void MPCD::Simulation::collisionStep() {
 
-	_grid.shift();
-	_grid.updateCoordinates(_particles);
-
 	bool draw;
-	if (_t % 100 == 0 || _t + 100 > Constants::timesteps) {
+	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
 		draw = true;
 	}
 	else {
@@ -231,8 +273,8 @@ void MPCD::Simulation::collisionStep() {
 	}
 
 	_grid.calculate(draw, _t);
-	_grid.collision(_particles);
-	_grid.undoShift();
+	_grid.collision(_particles, _monomers);
+	
 	
 }
 

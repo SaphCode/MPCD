@@ -18,8 +18,8 @@ namespace MPCD {
 			Grid();
 			void calculate(bool draw, int t);
 			void setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
-			void updateCoordinates(std::vector<Particle>& particles);
-			void collision(std::vector<Particle>& particles);
+			void updateCoordinates(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
+			void collision(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
 			void shift();
 			void undoShift();
 			int getAverageParticlesPerCell() const;
@@ -32,7 +32,6 @@ namespace MPCD {
 		private:
 			std::mt19937_64 _signGen;
 			const std::uniform_real_distribution<double> _unifSign;
-
 
 			void createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const double cell_dim);
 			std::pair<int, int> getCoordinates(Eigen::Vector2d position) const;

@@ -26,8 +26,11 @@ Eigen::Vector2d MPCD::Wall::getOvershoot(const Body& o) const
 {
 	const Eigen::Vector2d pos = o.getPosition();
 	const Eigen::Vector2d oldPos = o.getOldPosition();
+	
 	Vector2d rel = pos - oldPos;
 
+
+	const Eigen::Vector2d vel = o.getVelocity();
 	double k = rel[1] / rel[0];
 
 	double yDiff = pos[1] - m_yPos;
@@ -37,10 +40,9 @@ Eigen::Vector2d MPCD::Wall::getOvershoot(const Body& o) const
 	return overshoot;
 }
 
-Eigen::Vector2d MPCD::Wall::interact(InteractingBody& b)
+void MPCD::Wall::interact(InteractingBody& b)
 {
 	// do nothing for now
-	return Vector2d(0, 0);
 }
 
 bool MPCD::Wall::contains(Eigen::Vector2d point) const
