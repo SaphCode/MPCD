@@ -26,7 +26,7 @@ using namespace MPCD;
 using namespace std::chrono;
 
 MPCD::Simulation::Simulation(bool draw, int drawInterval, int drawLast) :
-	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::acceleration_const, 0))),
+	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::const_force, 0))),
 	_draw(draw),
 	_drawInterval(drawInterval),
 	_drawLast(drawLast)
@@ -58,12 +58,11 @@ void Simulation::setup() {
 	walls.push_back(lower);
 	walls.push_back(upper);
 
-	Eigen::Vector2d acceleration(MPCD::Constants::acceleration_const, 0);
+	Eigen::Vector2d acceleration(MPCD::Constants::const_force, 0);
 	
 
-	const double x_offset = MPCD::Obstacles::x_offset;
-	const int num_circular_obstacles = MPCD::Obstacles::num;
-	const double x_dist = MPCD::Obstacles::x_dist;
+	const double center_to_center_spacing = MPCD::Obstacles::center_to_center_spacing;
+	const int num_per_row = MPCD::Obstacles::num_per_row;
 	const double radius = MPCD::Obstacles::radius;
 	const double y_upper = MPCD::Obstacles::y_center_upper;
 	const double y_lower = MPCD::Obstacles::y_center_lower;
@@ -76,18 +75,19 @@ void Simulation::setup() {
 
 	std::vector<CircularObstacle> obstacles;
 	if (_addObstacles) {
-		for (int i = 0; i < num_circular_obstacles / 2; i++) {
+		for (int i = 0; i < num_per_row; i++) {
 
-			std::cout << "X offset: " << x_offset + radius + 2 * radius * i + x_dist * i << std::endl;
-			Eigen::Vector2d center_upper(x_offset + radius + x_dist * i, y_upper);
+			std::cout << "X offset: " << radius * i + center_to_center_spacing * i << std::endl;
+			Eigen::Vector2d center_upper(radius * i + center_to_center_spacing * i, y_upper);
 			CircularObstacle circ_upper(center_upper, radius);
 			writeCirclePositionToOut(outFile, center_upper, radius);
 			obstacles.push_back(CircularObstacle(circ_upper));
 
-			Eigen::Vector2d center_lower(x_offset + radius + x_dist * i, y_lower);
+			Eigen::Vector2d center_lower(radius * i + center_to_center_spacing * i, y_lower);
 			CircularObstacle circ_lower(center_lower, radius);
 			writeCirclePositionToOut(outFile, center_lower, radius);
 			obstacles.push_back(CircularObstacle(circ_lower));
+			
 		}
 	}
 	outFile.close();
@@ -153,12 +153,36 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 
 void MPCD::Simulation::setUpMonomers()
 {
-	double mass = MPCD::Constants::monomer_mass;
-	Eigen::Vector2d pos(2, 10);
-	MaxwellBoltzmann mb(0, MPCD::Constants::temperature, mass);
-	Eigen::Vector2d vel = mb.next();
-	double diameter = MPCD::Constants::monomer_diameter;
-	_monomers.push_back(Monomer(mass, pos, vel, diameter));
+	std::uniform_real_distribution<double> mt_x{MPCD::Obstacles::x_end + MPCD::Constants::monomer_diameter, MPCD::Constants::x_max - MPCD::Constants::monomer_diameter };
+	std::uniform_real_distribution<double> mt_y{MPCD::Constants::y_0 + MPCD::Constants::monomer_diameter, MPCD::Constants::y_max - MPCD::Constants::monomer_diameter};
+	std::random_device rd{};
+	std::mt19937_64 gen{ rd() };
+	
+	double start_x = mt_x(gen);
+	double start_y = mt_y(gen);
+	Eigen::Vector2d start(start_x, start_y);
+
+	double end_x = mt_x(gen);
+	double end_y = mt_y(gen);
+	Eigen::Vector2d end(end_x, end_y);
+
+	while ((end - start).stableNorm() < MPCD::Constants::num_monomers * MPCD::Constants::monomer_diameter) {
+		end = Eigen::Vector2d(mt_x(gen), mt_y(gen));
+	}
+
+	Eigen::Vector2d step = (end - start) / MPCD::Constants::num_monomers;
+	MaxwellBoltzmann mb(0, MPCD::Constants::temperature, MPCD::Constants::monomer_mass);
+	for (int n = 0; n < MPCD::Constants::num_monomers; n++) {
+		Eigen::Vector2d monomer_position = start + n * step;
+		Eigen::Vector2d monomer_velocity = mb.next();
+		_monomers.push_back(Monomer(
+			MPCD::Constants::monomer_mass,
+			monomer_position,
+			monomer_velocity,
+			MPCD::Constants::monomer_diameter
+		));
+	}
+
 }
 
 bool MPCD::Simulation::isInBoundsOfAnObstacle(Body& b, std::vector<CircularObstacle> obstacles) {
@@ -192,32 +216,29 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 	double particle_mass = MPCD::Constants::particle_mass;
 	double k_BT = MPCD::Constants::k_boltzmann * MPCD::Constants::temperature;
 	outFile << "timesteps,time_lapse,cell_dim,width,height,average_particles_per_cell,total_number_of_particles,particle_mass,k_BT,g" << "\n"; // header columns
-	outFile << timesteps << "," << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::acceleration_const << std::endl;
+	outFile << timesteps << "," << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::const_force << std::endl;
 	outFile.close();
 }
 
 void MPCD::Simulation::timestep()
 {	
-	
 	auto t1 = std::chrono::high_resolution_clock::now();
-	streamingStep();
-	auto t2 = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	if (_t % _drawInterval == 0) {
-		std::cout << "Streaming Step: " << duration << std::endl;
-	}
-	
-	t1 = std::chrono::high_resolution_clock::now();
 	verlet();
+	auto t2 = std::chrono::high_resolution_clock::now();
+
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
+
+	//if (_t % _drawInterval == 0) {
+	std::cout << "Verlet: " << duration << std::endl;
+	//}
+
+	t1 = std::chrono::high_resolution_clock::now();
+	streamingStep();
 	t2 = std::chrono::high_resolution_clock::now();
-
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-
-	if (_t % _drawInterval == 0) {
-		std::cout << "Verlet: " << duration << std::endl;
-	}
-
-	
+	//if (_t % _drawInterval == 0) {
+	std::cout << "Streaming Step: " << duration << std::endl;
+	//}
 
 	_grid.shift();
 	_grid.updateCoordinates(_particles, _monomers);
@@ -229,9 +250,9 @@ void MPCD::Simulation::timestep()
 	_grid.undoShift();
 
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	if (_t % _drawInterval == 0) {
-		std::cout << "Collision Step: " << duration << std::endl;
-	}
+	//if (_t % _drawInterval == 0) {
+	std::cout << "Collision Step: " << duration << std::endl;
+	//}
 	
 	_t += 1;
 }

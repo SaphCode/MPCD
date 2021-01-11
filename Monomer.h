@@ -37,10 +37,13 @@ public:
 		return m_diameter;
 	}
 
+	void monomerInteraction(Eigen::Vector2d rel, double tuning, double diameter);
+
 private:
 	std::pair<int, int> m_coords;
 	double m_diameter;
 
 	Eigen::Vector2d truncLennardJones(Eigen::Vector2d rel, double tuning, double diameter);
+	Eigen::Vector2d truncLennardJonesWall(Eigen::Vector2d rel, double tuning, double diameter);
 };
 

@@ -11,16 +11,16 @@ using namespace MPCD;
 int main()
 {
 	bool draw = true;
-	int drawInterval = 1;
+	int drawInterval = 50;
 	int drawLast = 100;
 	Simulation sim(draw, drawInterval, drawLast);
 
 	int timesteps = MPCD::Constants::timesteps;
 
 	for (int t = 0; t < timesteps; t++) {
-		if (t % drawInterval == 0) {
-			std::cout << "Timestep: " << t << "\n";
-		}
+		//if (t % drawInterval == 0) {
+		std::cout << "Timestep: " << t << "\n";
+		//}
 		sim.timestep();
 	}	
 	

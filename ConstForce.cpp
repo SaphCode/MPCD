@@ -3,10 +3,10 @@
 
 using namespace Eigen;
 
-ConstForce::ConstForce(Eigen::Vector2d acceleration) :
+ConstForce::ConstForce(Eigen::Vector2d force) :
 	InteractingBody(std::numeric_limits<double>::infinity(), Vector2d(0, 0), Vector2d(0, 0), BodyType::CONST_FORCE)
 {
-	m_force = acceleration;
+	m_force = force;
 }
 
 void ConstForce::interact(InteractingBody& b)

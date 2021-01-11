@@ -43,7 +43,7 @@ void MPCD::Cell::addVirtual(const MPCD::Particle& p) {
 
 void MPCD::Cell::calculate()
 {
-	if (_particles.size() > 0) {
+	if (_particles.size() > 0 || _monomers.size() > 0) {
 		Eigen::Vector2d momentum(0, 0);
 		double mass = MPCD::Constants::particle_mass;
 		for (const auto& p : _particles) {

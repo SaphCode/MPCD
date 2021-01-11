@@ -37,6 +37,8 @@ namespace MPCD {
 		void interact(InteractingBody& b) override {
 			// no effect on other bodies
 		}
+
+		void constForce(Eigen::Vector2d force);
 	private:
 		std::pair<int, int> m_coordinates;
 

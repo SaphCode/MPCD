@@ -20,3 +20,7 @@ void Particle::move(double timelapse)
 	m_oldPosition = m_pos;
 	InteractingBody::move(timelapse);
 }
+
+void Particle::constForce(Eigen::Vector2d force) {
+	addEffect(force);
+}
