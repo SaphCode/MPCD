@@ -17,6 +17,7 @@ namespace MPCD {
 	class Simulation {
 	private:
 		const bool _draw;
+		const bool _drawParticles;
 		double _timelapse;
 
 		Grid _grid;
@@ -53,7 +54,7 @@ namespace MPCD {
 		void setUpMonomers();
 
 	public:
-		Simulation(bool draw, int drawInterval, int drawLast);
+		Simulation(bool draw, int drawInterval, int drawLast, bool particleDrawing);
 		~Simulation() {}
 		/* One timestep */
 		void timestep();

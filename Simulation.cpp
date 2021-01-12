@@ -25,11 +25,12 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw, int drawInterval, int drawLast) :
+MPCD::Simulation::Simulation(bool draw, int drawInterval, int drawLast, bool particleDrawing) :
 	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::const_force, 0))),
 	_draw(draw),
 	_drawInterval(drawInterval),
-	_drawLast(drawLast)
+	_drawLast(drawLast),
+	_drawParticles(particleDrawing)
 {
 	_timelapse = MPCD::Constants::time_lapse;
 	
@@ -153,22 +154,24 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 
 void MPCD::Simulation::setUpMonomers()
 {
-	std::uniform_real_distribution<double> mt_x{MPCD::Obstacles::x_end + MPCD::Constants::monomer_diameter, MPCD::Constants::x_max - MPCD::Constants::monomer_diameter };
 	std::uniform_real_distribution<double> mt_y{MPCD::Constants::y_0 + MPCD::Constants::monomer_diameter, MPCD::Constants::y_max - MPCD::Constants::monomer_diameter};
 	std::random_device rd{};
 	std::mt19937_64 gen{ rd() };
 	
-	double start_x = mt_x(gen);
 	double start_y = mt_y(gen);
-	Eigen::Vector2d start(start_x, start_y);
-
-	double end_x = mt_x(gen);
+	Eigen::Vector2d start(MPCD::Obstacles::x_end + MPCD::Constants::monomer_diameter, start_y);
+		
 	double end_y = mt_y(gen);
-	Eigen::Vector2d end(end_x, end_y);
+	Eigen::Vector2d end(MPCD::Obstacles::x_end + 40 * MPCD::Constants::monomer_diameter, end_y);
 
-	while ((end - start).stableNorm() < MPCD::Constants::num_monomers * MPCD::Constants::monomer_diameter) {
+	/*
+	while (
+		(end - start).stableNorm() < 0.5 * MPCD::Constants::num_monomers * MPCD::Constants::monomer_diameter 
+		&&
+		(end - start).stableNorm() > MPCD::Constants::num_monomers * MPCD::Constants::monomer_diameter) {
 		end = Eigen::Vector2d(mt_x(gen), mt_y(gen));
 	}
+	*/
 
 	Eigen::Vector2d step = (end - start) / MPCD::Constants::num_monomers;
 	MaxwellBoltzmann mb(0, MPCD::Constants::temperature, MPCD::Constants::monomer_mass);
@@ -271,12 +274,14 @@ void MPCD::Simulation::verlet() {
 
 void MPCD::Simulation::streamingStep() {
 
-	bool draw;
-	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
-		draw = true;
-	}
-	else {
-		draw = false;
+	bool draw = false;
+	if (_drawParticles) {
+		if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
+			draw = true;
+		}
+		else {
+			draw = false;
+		}
 	}
 
 	_pipe.stream(_particles, _timelapse, draw, _t);

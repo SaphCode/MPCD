@@ -38,6 +38,9 @@ public:
 	}
 
 	void monomerInteraction(Eigen::Vector2d rel, double tuning, double diameter);
+	void linearSpring(Eigen::Vector2d rel);
+
+	Eigen::Vector2d getRelPositionTorus(Eigen::Vector2d otherPos);
 
 private:
 	std::pair<int, int> m_coords;

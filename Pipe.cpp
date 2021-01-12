@@ -51,7 +51,7 @@ void MPCD::Pipe::verlet(std::vector<Particle>& particles, std::vector<Monomer>& 
 		outFile = std::ofstream(filename);
 		outFile << "x,y,vx,vy,m,sigma\n";
 
-		for (auto& m : monomers) {
+		for (const auto& m : monomers) {
 			Eigen::Vector2d pos = m.getPosition();
 			Eigen::Vector2d vel = m.getVelocity();
 			outFile << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "," << m.getMass() << "," << m.getDiameter() << "\n";
@@ -221,8 +221,12 @@ void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<
 	for (int m_i = 0; m_i < monomers.size(); m_i++) {
 		if (currentIndex != m_i) {
 			const Monomer& m2 = monomers[m_i];
-			Eigen::Vector2d rel = m2.getPosition() - m.getPosition();
+			const Eigen::Vector2d rel = m.getRelPositionTorus(m2.getPosition());
 			
+			if (currentIndex == m_i - 1 || currentIndex == m_i + 1) {
+				m.linearSpring(rel);
+			}
+
 			m.monomerInteraction(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m.getDiameter()); // 1/2 b/c of double counting
 		}
 

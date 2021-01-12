@@ -11,9 +11,10 @@ using namespace MPCD;
 int main()
 {
 	bool draw = true;
-	int drawInterval = 50;
+	bool particleDrawing = false;
+	int drawInterval = 1;
 	int drawLast = 100;
-	Simulation sim(draw, drawInterval, drawLast);
+	Simulation sim(draw, drawInterval, drawLast, particleDrawing);
 
 	int timesteps = MPCD::Constants::timesteps;
 
