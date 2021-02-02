@@ -98,7 +98,7 @@ void Simulation::setup() {
 	setUpParticles(number, x_0, x_max, y_0, y_max, obstacles);
 	_pipe.setObstacles(obstacles, walls);
 
-	setUpMonomers();
+	// setUpMonomers();
 
 	if (_draw) {
 		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles);
@@ -289,6 +289,9 @@ void MPCD::Simulation::streamingStep() {
 	}
 	*/
 	bool draw = false;
+	if (_t > 2500) {
+		draw = true;
+	}
 	_pipe.stream(_particles, _timestep, draw, _t);
 	
 }
