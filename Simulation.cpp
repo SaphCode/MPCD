@@ -7,7 +7,6 @@
 #include <filesystem>
 #include <fstream>
 #include <cmath>
-#include "Locations.h"
 #include <execution>
 #include <chrono>
 #include <algorithm>
@@ -25,14 +24,15 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw, int drawInterval, int drawLast, bool particleDrawing) :
+MPCD::Simulation::Simulation(bool draw, bool particleDrawing) :
 	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::const_force, 0))),
 	_draw(draw),
-	_drawInterval(drawInterval),
-	_drawLast(drawLast),
 	_drawParticles(particleDrawing)
 {
-	_timelapse = MPCD::Constants::time_lapse;
+	_timestep = MPCD::Constants::time_lapse;
+	_mdTimestep = MPCD::Constants::md_timestep;
+	std::cout << "Streaming timestep: " << _timestep << "\n";
+	std::cout << "Monomer timestep: " << _mdTimestep << "\n";
 	
 	_t = 0;
 
@@ -98,11 +98,10 @@ void Simulation::setup() {
 	setUpParticles(number, x_0, x_max, y_0, y_max, obstacles);
 	_pipe.setObstacles(obstacles, walls);
 
-	setUpMonomers();
+	// setUpMonomers();
 
 	if (_draw) {
-		int timesteps = MPCD::Constants::timesteps;
-		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles, timesteps);
+		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles);
 	}
 	std::cout << "Setup complete." << std::endl;
 }
@@ -162,7 +161,7 @@ void MPCD::Simulation::setUpMonomers()
 	Eigen::Vector2d start(MPCD::Obstacles::x_end + MPCD::Constants::monomer_diameter, start_y);
 		
 	double end_y = mt_y(gen);
-	Eigen::Vector2d end(MPCD::Obstacles::x_end + 40 * MPCD::Constants::monomer_diameter, end_y);
+	Eigen::Vector2d end(MPCD::Obstacles::x_end + 120 * MPCD::Constants::monomer_diameter, end_y);
 
 	/*
 	while (
@@ -196,7 +195,7 @@ bool MPCD::Simulation::isInBoundsOfAnObstacle(Body& b, std::vector<CircularObsta
 }
 
 
-void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps) {
+void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell) {
 	int num_hypothetical_x_cells = (int)std::round(width / cell_dim);
 	int num_hypothetical_y_cells = (int)std::round(height / cell_dim);
 
@@ -214,12 +213,12 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 	std::string filename("constants");
 	std::string csv(".csv");
 
-	std::ofstream outFile("../../Analysis/" + l_data + filename + csv);
+	std::ofstream outFile("../../Analysis/Data/" + filename + csv);
 
 	double particle_mass = MPCD::Constants::particle_mass;
 	double k_BT = MPCD::Constants::k_boltzmann * MPCD::Constants::temperature;
-	outFile << "timesteps,time_lapse,cell_dim,width,height,average_particles_per_cell,total_number_of_particles,particle_mass,k_BT,g" << "\n"; // header columns
-	outFile << timesteps << "," << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::const_force << std::endl;
+	outFile << "time_lapse,cell_dim,width,height,average_particles_per_cell,total_number_of_particles,particle_mass,k_BT,g" << "\n"; // header columns
+	outFile << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::const_force << std::endl;
 	outFile.close();
 }
 
@@ -232,7 +231,7 @@ void MPCD::Simulation::timestep()
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 
 	//if (_t % _drawInterval == 0) {
-	std::cout << "Verlet: " << duration << std::endl;
+	//std::cout << "\tVerlet: " << duration << "\n";
 	//}
 
 	t1 = std::chrono::high_resolution_clock::now();
@@ -240,7 +239,7 @@ void MPCD::Simulation::timestep()
 	t2 = std::chrono::high_resolution_clock::now();
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 	//if (_t % _drawInterval == 0) {
-	std::cout << "Streaming Step: " << duration << std::endl;
+	//std::cout << "\tStreaming Step: " << duration << "\n";
 	//}
 
 	_grid.shift();
@@ -254,13 +253,15 @@ void MPCD::Simulation::timestep()
 
 	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
 	//if (_t % _drawInterval == 0) {
-	std::cout << "Collision Step: " << duration << std::endl;
+	//std::cout << "\tCollision Step: " << duration << "\n";
 	//}
 	
 	_t += 1;
 }
 
 void MPCD::Simulation::verlet() {
+	
+	/*
 	bool draw;
 	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
 		draw = true;
@@ -268,12 +269,15 @@ void MPCD::Simulation::verlet() {
 	else {
 		draw = false;
 	}
+	*/
 
-	_pipe.verlet(_particles, _monomers, draw, _t);
+	bool draw = true;
+	_pipe.verlet(_monomers, draw, _t);
 }
 
 void MPCD::Simulation::streamingStep() {
 
+	/*
 	bool draw = false;
 	if (_drawParticles) {
 		if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
@@ -283,13 +287,18 @@ void MPCD::Simulation::streamingStep() {
 			draw = false;
 		}
 	}
-
-	_pipe.stream(_particles, _timelapse, draw, _t);
+	*/
+	bool draw = false;
+	if (_t > 2500) {
+		draw = true;
+	}
+	_pipe.stream(_particles, _timestep, draw, _t);
 	
 }
 
 void MPCD::Simulation::collisionStep() {
 
+	/*
 	bool draw;
 	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
 		draw = true;
@@ -297,7 +306,9 @@ void MPCD::Simulation::collisionStep() {
 	else {
 		draw = false;
 	}
+	*/
 
+	bool draw = true;
 	_grid.calculate(draw, _t);
 	_grid.collision(_particles, _monomers);
 	
