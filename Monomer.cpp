@@ -23,7 +23,6 @@ void Monomer::interact(InteractingBody& b)
 		/*Eigen::Vector2d f = truncLennardJones(rel, MPCD::Constants::solventMonomer_interaction_tuning, m_diameter);
 		m_effect += f;
 		b.addEffect(-f);*/
-
 	}
 	else if (otherType == BodyType::WALL) {
 		pos = b.getPosition();

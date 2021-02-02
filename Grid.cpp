@@ -21,22 +21,9 @@ MPCD::Grid::Grid() :
 	_signGen{ std::random_device()() },
 	_unifSign(-1, 1)
 {
-	const int timesteps = Constants::timesteps;
-	if (timesteps < 99) {
-		_w = 2;
-	}
-	else if (timesteps < 999) {
-		_w = 3;
-	}
-	else if (timesteps < 9999) {
-		_w = 4;
-	}
-	else if (timesteps < 99999) {
-		_w = 5;
-	}
-	else {
-		throw std::exception("timesteps too large or too short: " + timesteps);
-	}
+
+	_w = 5; // width of 0s for filename
+
 }
 
 void MPCD::Grid::setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls) {

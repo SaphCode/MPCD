@@ -176,7 +176,6 @@
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Body.h" />
     <ClInclude Include="InteractingBody.h" />
-    <ClInclude Include="Locations.h" />
     <ClInclude Include="MaxwellBoltzmann.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="IObstacle.h" />

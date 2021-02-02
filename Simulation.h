@@ -18,7 +18,8 @@ namespace MPCD {
 	private:
 		const bool _draw;
 		const bool _drawParticles;
-		double _timelapse;
+		double _timestep;
+		double _mdTimestep;
 
 		Grid _grid;
 		Pipe _pipe;
@@ -27,8 +28,7 @@ namespace MPCD {
 		bool _addObstacles = false;
 
 		int _t;
-		int _drawInterval;
-		int _drawLast;
+		int _drawInterval = 1;
 
 		std::vector<Particle> _particles;
 		std::vector<Monomer> _monomers;
@@ -47,17 +47,21 @@ namespace MPCD {
 
 		bool isInBoundsOfAnObstacle(Body& b, std::vector<CircularObstacle> obstacles);
 
-		void writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell, int timesteps);
+		void writeConstantsToOut(double timelapse, double width, double height, double cell_dim, int averageParticlesPerCell);
 		
 		void setUpParticles(int number, double x_0, double x_max, double y_0, double y_max, std::vector<CircularObstacle> obstacles);
 
 		void setUpMonomers();
 
 	public:
-		Simulation(bool draw, int drawInterval, int drawLast, bool particleDrawing);
+		Simulation(bool draw, bool particleDrawing);
 		~Simulation() {}
 		/* One timestep */
 		void timestep();
+
+		void setDrawingInterval(int interval) {
+			_drawInterval = interval;
+		}
 	};
 	
 }
