@@ -136,6 +136,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/D _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS /D _ENFORCE_MATCHING_ALLOCATORS=0 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>E:\Programming\MPCD-Solution\MPCD;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -71,6 +71,7 @@ void MPCD::Cell::calculate()
 }
 
 void MPCD::Cell::draw(std::pair<int, int> index, std::ofstream& ofs) const {
+	/*
 	Eigen::Vector2d momentum(0,0);
 	double mass = MPCD::Constants::particle_mass;
 	for (const auto& p : _particles) {
@@ -78,7 +79,8 @@ void MPCD::Cell::draw(std::pair<int, int> index, std::ofstream& ofs) const {
 		assert(mass == p.getMass());
 	}
 	Eigen::Vector2d meanVelocity = momentum / (mass * _particles.size());
-	ofs << index.first << "," << index.second << "," << meanVelocity[0] << "," << meanVelocity[1] << "," << _particles.size() << "\n";
+	*/
+	ofs << index.first << "," << index.second << "," << m_cmVelocity[0] << "," << m_cmVelocity[1] << "," << _particles.size() << "\n";
 }
 
 double MPCD::Cell::thermostatScaling() {

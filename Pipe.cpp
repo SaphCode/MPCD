@@ -8,22 +8,7 @@
 MPCD::Pipe::Pipe(ConstForce force) :
 	m_constForce(force)
 {
-	const int timesteps = Constants::timesteps;
-	if (timesteps < 99) {
-		_w = 2;
-	}
-	else if (timesteps < 999) {
-		_w = 3;
-	}
-	else if (timesteps < 9999) {
-		_w = 4;
-	}
-	else if (timesteps < 99999) {
-		_w = 5;
-	}
-	else {
-		throw std::exception("timesteps too large or too short: " + timesteps);
-	}
+	_w = 5; // width of 0s for filenames
 }
 
 void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls)
@@ -32,11 +17,11 @@ void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vect
 	m_walls = walls;
 }
 
-void MPCD::Pipe::verlet(std::vector<Particle>& particles, std::vector<Monomer>& monomers, bool draw, int t)
+void MPCD::Pipe::verlet(std::vector<Monomer>& monomers, bool draw, int t)
 {
 	for (int md_t = 0; md_t < MPCD::Constants::num_md_timesteps; md_t++) {
-		verletPosition(particles, monomers);
-		verletVelocity(particles, monomers);
+		verletPosition(monomers);
+		verletVelocity(monomers);
 	}
 
 
@@ -94,6 +79,7 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool dra
 		p.constForce(constForce);
 
 		p.move(lapse);
+
 		collide(p);
 		fixOutOfBounds(p);
 		p.updateVelocity(lapse);
@@ -187,7 +173,7 @@ void MPCD::Pipe::collide(Body& b) {
 	}
 }
 
-void MPCD::Pipe::verletPosition(std::vector<Particle>& particles, std::vector<Monomer>& monomers)
+void MPCD::Pipe::verletPosition(std::vector<Monomer>& monomers)
 {
 	#pragma omp parallel for
 	for (int i = 0; i < monomers.size(); i++) {
@@ -200,7 +186,7 @@ void MPCD::Pipe::verletPosition(std::vector<Particle>& particles, std::vector<Mo
 	}
 }
 
-void MPCD::Pipe::verletVelocity(std::vector<Particle>& particles, std::vector<Monomer>& monomers)
+void MPCD::Pipe::verletVelocity(std::vector<Monomer>& monomers)
 {
 	#pragma omp parallel for
 	for (int i = 0; i < monomers.size(); i++) {
@@ -209,13 +195,13 @@ void MPCD::Pipe::verletVelocity(std::vector<Particle>& particles, std::vector<Mo
 		Eigen::Vector2d oldEffect = m.getEffect();
 		m.resetEffect();
 
-		calculateInteraction(i, m, particles, monomers);
+		calculateInteraction(i, m, monomers);
 
 		m.updateVelocity(MPCD::Constants::md_timestep, oldEffect); // update velocity
 	}
 }
 
-void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<Particle>& particles, std::vector<Monomer>& monomers) {
+void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<Monomer>& monomers) {
 
 	
 	for (int m_i = 0; m_i < monomers.size(); m_i++) {

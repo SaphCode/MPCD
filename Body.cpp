@@ -1,4 +1,5 @@
 #include "Body.h"
+#include <iostream>
 
 Body::Body(double mass, Eigen::Vector2d pos, Eigen::Vector2d vel)
 {
@@ -14,6 +15,11 @@ Body::~Body()
 void Body::move(const double timelapse)
 {
 	m_pos += m_vel * timelapse;
+	/*
+	std::cout << "Body\n";
+	std::cout << "Vel:\n" << m_vel;
+	std::cout << "\nTimelapse:\n" << timelapse;
+	*/
 }
 
 void Body::correctPosition(const Eigen::Vector2d newPos)

@@ -18,6 +18,8 @@ void Particle::collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle,
 void Particle::move(double timelapse)
 {
 	m_oldPosition = m_pos;
+	//std::cout << "Particle\n";
+	//m_pos = m_pos + m_effect / m_mass * timelapse * timelapse / 2 + m_vel * timelapse;;
 	InteractingBody::move(timelapse);
 }
 

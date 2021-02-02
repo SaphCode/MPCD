@@ -22,9 +22,9 @@ namespace MPCD {
 		void collide(Body& p);
 		void fixOutOfBounds(Body& p);
 		bool inBounds(const Eigen::Vector2d& pos);
-		void calculateInteraction(int currentIndex, Monomer& m, std::vector<Particle>& particles, std::vector<Monomer>& monomers);
-		void verletVelocity(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
-		void verletPosition(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
+		void calculateInteraction(int currentIndex, Monomer& m, std::vector<Monomer>& monomers);
+		void verletVelocity(std::vector<Monomer>& monomers);
+		void verletPosition(std::vector<Monomer>& monomers);
 
 
 		int _w;
@@ -34,6 +34,6 @@ namespace MPCD {
 		void stream(std::vector<Particle>& particles, double lapse, bool draw, int t);
 		void setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
 		
-		void verlet(std::vector<Particle>& particles, std::vector<Monomer>& monomers, bool draw, int t);
+		void verlet(std::vector<Monomer>& monomers, bool draw, int t);
 	};
 }
