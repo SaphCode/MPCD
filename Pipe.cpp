@@ -151,7 +151,7 @@ void MPCD::Pipe::collide(Body& b) {
 			
 			Eigen::Vector2d overshoot = o.getOvershoot(b);
 			if (std::abs(overshoot[0]) > 1 || std::abs(overshoot[1]) > 1) {
-				std::cout << overshoot << std::endl;
+				//std::cout << overshoot << std::endl;
 				o.getOvershoot(b);
 			}
 			// no slip

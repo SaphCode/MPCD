@@ -25,7 +25,7 @@ namespace MPCD {
 		Pipe _pipe;
 		
 
-		bool _addObstacles = false;
+		bool _addObstacles = true;
 
 		int _t;
 		int _drawInterval = 1;
