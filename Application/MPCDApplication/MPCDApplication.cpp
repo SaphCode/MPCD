@@ -16,8 +16,9 @@ using namespace MPCD;
 bool cancel = false;
 bool draw = true;
 bool particleDrawing = false;
+int stationaryT = 3000;
 
-Simulation sim(draw, particleDrawing);
+Simulation sim(draw, particleDrawing, stationaryT);
 
 void interrupt_handler(sig_atomic_t s) {
 	int input = -1;

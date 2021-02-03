@@ -25,10 +25,11 @@ namespace MPCD {
 		Pipe _pipe;
 		
 
-		bool _addObstacles = true;
+		const bool _addObstacles = true;
 
 		int _t;
 		int _drawInterval = 1;
+		const int _stationaryT;
 
 		std::vector<Particle> _particles;
 		std::vector<Monomer> _monomers;
@@ -54,7 +55,7 @@ namespace MPCD {
 		void setUpMonomers();
 
 	public:
-		Simulation(bool draw, bool particleDrawing);
+		Simulation(bool draw, bool particleDrawing, int stationaryT);
 		~Simulation() {}
 		/* One timestep */
 		void timestep();

@@ -24,10 +24,11 @@ using namespace Eigen;
 using namespace MPCD;
 using namespace std::chrono;
 
-MPCD::Simulation::Simulation(bool draw, bool particleDrawing) :
+MPCD::Simulation::Simulation(bool draw, bool particleDrawing, int stationaryT) :
 	_pipe(ConstForce(Eigen::Vector2d(MPCD::Constants::const_force, 0))),
 	_draw(draw),
-	_drawParticles(particleDrawing)
+	_drawParticles(particleDrawing),
+	_stationaryT(stationaryT)
 {
 	_timestep = MPCD::Constants::time_lapse;
 	_mdTimestep = MPCD::Constants::md_timestep;
@@ -224,72 +225,35 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 
 void MPCD::Simulation::timestep()
 {	
-	auto t1 = std::chrono::high_resolution_clock::now();
-	verlet();
-	auto t2 = std::chrono::high_resolution_clock::now();
+	if (_t == _stationaryT) {
+		setUpMonomers();
+	}
+	if (_t >= _stationaryT) {
+		verlet();
+	}
 
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-
-	//if (_t % _drawInterval == 0) {
-	//std::cout << "\tVerlet: " << duration << "\n";
-	//}
-
-	t1 = std::chrono::high_resolution_clock::now();
 	streamingStep();
-	t2 = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	//if (_t % _drawInterval == 0) {
-	//std::cout << "\tStreaming Step: " << duration << "\n";
-	//}
 
 	_grid.shift();
 	_grid.updateCoordinates(_particles, _monomers);
 
-	t1 = std::chrono::high_resolution_clock::now();
 	collisionStep();
-	t2 = std::chrono::high_resolution_clock::now();
 
 	_grid.undoShift();
-
-	duration = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1).count();
-	//if (_t % _drawInterval == 0) {
-	//std::cout << "\tCollision Step: " << duration << "\n";
-	//}
 	
 	_t += 1;
 }
 
 void MPCD::Simulation::verlet() {
 	
-	/*
-	bool draw;
-	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
-		draw = true;
-	}
-	else {
-		draw = false;
-	}
-	*/
-
 	bool draw = true;
 	_pipe.verlet(_monomers, draw, _t);
 }
 
 void MPCD::Simulation::streamingStep() {
 
-	/*
 	bool draw = false;
-	if (_drawParticles) {
-		if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
-			draw = true;
-		}
-		else {
-			draw = false;
-		}
-	}
-	*/
-	bool draw = false;
-	if (_t > 2500) {
+	if (_t > _stationaryT-1) {
 		draw = true;
 	}
 	_pipe.stream(_particles, _timestep, draw, _t);
@@ -298,17 +262,10 @@ void MPCD::Simulation::streamingStep() {
 
 void MPCD::Simulation::collisionStep() {
 
-	/*
-	bool draw;
-	if (_t % _drawInterval == 0 || _t + _drawLast > Constants::timesteps) {
+	bool draw = false;
+	if (_t > _stationaryT-1) {
 		draw = true;
 	}
-	else {
-		draw = false;
-	}
-	*/
-
-	bool draw = true;
 	_grid.calculate(draw, _t);
 	_grid.collision(_particles, _monomers);
 	
