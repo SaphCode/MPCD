@@ -207,8 +207,8 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 
 	double particle_mass = MPCD::Constants::particle_mass;
 	double k_BT = MPCD::Constants::k_boltzmann * MPCD::Constants::temperature;
-	outFile << "stationaryT,time_lapse,cell_dim,width,height,average_particles_per_cell,total_number_of_particles,particle_mass,k_BT,g" << "\n"; // header columns
-	outFile << _stationaryT << timelapse << "," << cell_dim << "," << width << "," << height << "," << averageParticlesPerCell << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::const_force << std::endl;
+	outFile << "stationary_t,avg,delta_t,a,w,h,num_particles,m,k_BT,g" << "\n"; // header columns
+	outFile << _stationaryT << averageParticlesPerCell << timelapse << "," << cell_dim << "," << width << "," << height << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::const_force << std::endl;
 	outFile.close();
 }
 
@@ -242,7 +242,7 @@ void MPCD::Simulation::verlet() {
 void MPCD::Simulation::streamingStep() {
 
 	bool draw = false;
-	if (_t > _stationaryT-1) {
+	if (_t == _stationaryT-1) {
 		draw = true;
 	}
 	_pipe.stream(_particles, _timestep, draw, _t);
