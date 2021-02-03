@@ -99,8 +99,6 @@ void Simulation::setup() {
 	setUpParticles(number, x_0, x_max, y_0, y_max, obstacles);
 	_pipe.setObstacles(obstacles, walls);
 
-	// setUpMonomers();
-
 	if (_draw) {
 		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles);
 	}
@@ -163,15 +161,6 @@ void MPCD::Simulation::setUpMonomers()
 		
 	double end_y = mt_y(gen);
 	Eigen::Vector2d end(MPCD::Obstacles::x_end + 120 * MPCD::Constants::monomer_diameter, end_y);
-
-	/*
-	while (
-		(end - start).stableNorm() < 0.5 * MPCD::Constants::num_monomers * MPCD::Constants::monomer_diameter 
-		&&
-		(end - start).stableNorm() > MPCD::Constants::num_monomers * MPCD::Constants::monomer_diameter) {
-		end = Eigen::Vector2d(mt_x(gen), mt_y(gen));
-	}
-	*/
 
 	Eigen::Vector2d step = (end - start) / MPCD::Constants::num_monomers;
 	MaxwellBoltzmann mb(0, MPCD::Constants::temperature, MPCD::Constants::monomer_mass);

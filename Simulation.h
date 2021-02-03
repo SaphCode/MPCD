@@ -25,7 +25,7 @@ namespace MPCD {
 		Pipe _pipe;
 		
 
-		const bool _addObstacles = true;
+		const bool _addObstacles = false;
 
 		int _t;
 		int _drawInterval = 1;
