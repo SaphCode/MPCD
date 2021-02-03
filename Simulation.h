@@ -28,7 +28,6 @@ namespace MPCD {
 		const bool _addObstacles = true;
 
 		int _t;
-		int _drawInterval = 1;
 		const int _stationaryT;
 
 		std::vector<Particle> _particles;
@@ -60,9 +59,6 @@ namespace MPCD {
 		/* One timestep */
 		void timestep();
 
-		void setDrawingInterval(int interval) {
-			_drawInterval = interval;
-		}
 	};
 	
 }
