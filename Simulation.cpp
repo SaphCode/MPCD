@@ -208,7 +208,7 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 	double particle_mass = MPCD::Constants::particle_mass;
 	double k_BT = MPCD::Constants::k_boltzmann * MPCD::Constants::temperature;
 	outFile << "stationary_t,avg,delta_t,a,w,h,num_particles,m,k_BT,g" << "\n"; // header columns
-	outFile << _stationaryT << averageParticlesPerCell << timelapse << "," << cell_dim << "," << width << "," << height << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::const_force << std::endl;
+	outFile << _stationaryT << "," << averageParticlesPerCell << "," << timelapse << "," << cell_dim << "," << width << "," << height << "," << num_hypothetical_x_cells*num_hypothetical_y_cells*averageParticlesPerCell << "," << particle_mass << "," << k_BT << "," << MPCD::Constants::const_force << std::endl;
 	outFile.close();
 }
 
@@ -252,7 +252,7 @@ void MPCD::Simulation::streamingStep() {
 void MPCD::Simulation::collisionStep() {
 
 	bool draw = false;
-	if (_t > _stationaryT-1) {
+	if (_t >= _stationaryT - 1) {
 		draw = true;
 	}
 	_grid.calculate(draw, _t);
