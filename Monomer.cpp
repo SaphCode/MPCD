@@ -48,11 +48,11 @@ Eigen::Vector2d Monomer::getRelPositionTorus(Eigen::Vector2d otherPos)
 {
 	Eigen::Vector2d naivePos = m_pos - otherPos;
 	double xSpan = MPCD::Constants::x_max - MPCD::Constants::x_0;
-	if (naivePos[0] > xSpan / 2.0) {
-		naivePos[0] = xSpan - naivePos[0];
+	if (m_pos[0] <= MPCD::Constants::x_max && otherPos[0] > 0) {
+		naivePos[0] = -1 * (MPCD::Constants::x_max - m_pos[0] + otherPos[0]);
 	}
-	else if (naivePos[0] < -xSpan / 2.0) {
-		naivePos[0] = xSpan + naivePos[0];
+	else if (otherPos[0] <= MPCD::Constants::x_max && m_pos[0] > 0) {
+		naivePos[0] = MPCD::Constants::x_max - otherPos[0] + m_pos[0];
 	}
 	return naivePos;
 }
