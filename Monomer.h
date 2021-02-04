@@ -38,7 +38,7 @@ public:
 	}
 
 	void monomerInteraction(Eigen::Vector2d rel, double tuning, double diameter);
-	void linearSpring(Eigen::Vector2d rel);
+	void nonlinearSpring(Eigen::Vector2d rel);
 
 	Eigen::Vector2d getRelPositionTorus(Eigen::Vector2d otherPos);
 

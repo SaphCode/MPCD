@@ -62,11 +62,12 @@ void Monomer::monomerInteraction(Eigen::Vector2d rel, double tuning, double diam
 	m_effect += truncLennardJones(rel, tuning, diameter);
 }
 
-void Monomer::linearSpring(Eigen::Vector2d rel) {
+void Monomer::nonlinearSpring(Eigen::Vector2d rel) {
 	const double d = rel.stableNorm();
-	const double bond_length = MPCD::Constants::monomer_bond_length;
-	const double spring_constant = MPCD::Constants::monomer_spring_constant;
-	m_effect += -spring_constant * (d - bond_length) * rel.normalized();
+	const double R0 = MPCD::Constants::monomer_bond_length;
+	assert(d < R0);
+	const double k = MPCD::Constants::monomer_spring_constant;
+	m_effect += -k * d / (1 - d * d / (R0 * R0))* rel.normalized();
 }
 
 
@@ -74,7 +75,7 @@ Eigen::Vector2d Monomer::truncLennardJones(Eigen::Vector2d rel, double tuning, d
 	double d = rel.stableNorm();
 	Eigen::Vector2d f(0, 0);
 	if (d < std::pow(2, 1 / 6) * diameter) {
-		double f_abs = -4 * tuning * (-12 * std::pow(diameter, 12) / std::pow(d, 13) + 6 * std::pow(diameter, 6) / std::pow(d, 7));
+		double f_abs = 4 * tuning * (-12 * std::pow(diameter, 12) / std::pow(d, 13) - -6 * std::pow(diameter, 6) / std::pow(d, 7));
 		f[0] = rel[0] / d * f_abs;
 		f[1] = rel[1] / d * f_abs;
 	}
@@ -91,7 +92,7 @@ Eigen::Vector2d Monomer::truncLennardJonesWall(Eigen::Vector2d rel, double tunin
 	double d = rel.stableNorm();
 	Eigen::Vector2d f(0, 0);
 	if (d < std::pow(2 / 5, 1 / 6) * diameter) {
-		double f_abs = -tuning * (-18 / 15 * std::pow(diameter, 9) / std::pow(d, 10) + 3 * std::pow(diameter, 3) / std::pow(d, 4));
+		double f_abs = tuning * (2 * -9 / 15 * std::pow(diameter, 9) / std::pow(d, 10) - -3 * std::pow(diameter, 3) / std::pow(d, 4));
 		f[0] = 0;
 		f[1] = rel[1] / d * f_abs;
 	}
