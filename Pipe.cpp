@@ -209,11 +209,11 @@ void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<
 			const Monomer& m2 = monomers[m_i];
 			const Eigen::Vector2d rel = m.getRelPositionTorus(m2.getPosition());
 			
-			if (currentIndex == m_i - 1 || currentIndex == m_i + 1) {
+			if ((currentIndex == m_i - 1) || (currentIndex == m_i + 1)) {
 				m.nonlinearSpring(rel);
 			}
 
-			m.monomerInteraction(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m.getDiameter()); // 1/2 b/c of double counting
+			//m.monomerInteraction(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m.getDiameter()); // 1/2 b/c of double counting
 		}
 
 	}
