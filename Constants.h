@@ -14,7 +14,7 @@ namespace MPCD {
 		constexpr double monomerMonomer_interaction_tuning = 0.5 * k_boltzmann * temperature;
 		constexpr double monomer_diameter = cell_dim;
 		constexpr double monomer_bond_length = 1.5 * monomer_diameter;
-		constexpr double monomer_spring_constant = 30.0 * monomerMonomer_interaction_tuning / (monomer_diameter * monomer_diameter);
+		constexpr double monomer_spring_constant = 100.0 * monomerMonomer_interaction_tuning / (monomer_diameter * monomer_diameter);//30.0
 		constexpr int num_monomers = 50;
 		constexpr int num_md_timesteps = 50;
 		constexpr double particle_mass = 1;

@@ -101,7 +101,8 @@ void MPCD::Grid::calculate(const bool draw, int t) {
 	if (draw) {
 		s << std::setfill('0') << std::setw(_w) << t;
 		av << "av" << Constants::average_particles_per_cell << "_";
-		filename = "../../Analysis/" + std::string("Data/") + "cells_" + av.str() + "timestep" + s.str() + ".csv";
+		std::string external("G:/Bachelor/Data/");
+		filename = external + "cells_" + av.str() + "timestep" + s.str() + ".csv";
 		outFile = std::ofstream(filename);
 		outFile << "i,j,meanX,meanY,num\n";
 	}

@@ -16,7 +16,7 @@ using namespace MPCD;
 bool cancel = false;
 bool draw = true;
 bool particleDrawing = false;
-int stationaryT = 3000;
+int stationaryT = 1;
 
 Simulation sim(draw, particleDrawing, stationaryT);
 

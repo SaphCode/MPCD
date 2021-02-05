@@ -63,21 +63,21 @@ void Monomer::monomerInteraction(Eigen::Vector2d rel, double tuning, double diam
 }
 
 void Monomer::nonlinearSpring(Eigen::Vector2d rel) {
-	std::cout << "spring" << std::endl;
+	//std::cout << "spring" << std::endl;
 	const double d = rel.stableNorm();
 	const double R0 = MPCD::Constants::monomer_bond_length;
-	if (d < R0) {
+	/*if (d < R0) {
 		std::cout << "d smaller R0" << std::endl;
 		
 	}
 	else {
 		std::cout << "d larger R0" << std::endl;
 		exit(-1);
-	}
+	}*/
 	assert(d < R0);
 	assert(d > R0);
 	const double k = MPCD::Constants::monomer_spring_constant;
-	m_effect += -k * d / (1 - d * d / (R0 * R0))* rel.normalized();
+	m_effect += k * d / (1 - d * d / (R0 * R0))* rel.normalized();
 }
 
 

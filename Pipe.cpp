@@ -19,12 +19,6 @@ void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vect
 
 void MPCD::Pipe::verlet(std::vector<Monomer>& monomers, bool draw, int t)
 {
-	for (int md_t = 0; md_t < MPCD::Constants::num_md_timesteps; md_t++) {
-		verletPosition(monomers);
-		verletVelocity(monomers);
-	}
-
-
 	if (draw) {
 		std::ofstream outFile;
 		std::stringstream s;
@@ -32,7 +26,9 @@ void MPCD::Pipe::verlet(std::vector<Monomer>& monomers, bool draw, int t)
 		std::string filename;
 		s << std::setfill('0') << std::setw(_w) << t;
 		av << "av" << Constants::average_particles_per_cell << "_";
-		filename = "../../Analysis/" + std::string("Data/") + "monomers_" + av.str() + "timestep" + s.str() + ".csv";//cwd.string()
+
+		std::string external("G:/Bachelor/Data/");
+		filename = external + "monomers_" + av.str() + "timestep" + s.str() + ".csv";//cwd.string()
 		outFile = std::ofstream(filename);
 		outFile << "x,y,vx,vy,m,sigma\n";
 
@@ -42,7 +38,12 @@ void MPCD::Pipe::verlet(std::vector<Monomer>& monomers, bool draw, int t)
 			outFile << pos[0] << "," << pos[1] << "," << vel[0] << "," << vel[1] << "," << m.getMass() << "," << m.getDiameter() << "\n";
 		}
 	}
-	
+
+	for (int md_t = 0; md_t < MPCD::Constants::num_md_timesteps; md_t++) {
+		verletPosition(monomers);
+		verletVelocity(monomers);
+	}
+
 }
 
 void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool draw, int t) {
@@ -54,7 +55,8 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool dra
 		std::string filename;
 		s << std::setfill('0') << std::setw(_w) << t;
 		av << "av" << Constants::average_particles_per_cell << "_";
-		filename = "../../Analysis/" + std::string("Data/") + "particles_" + av.str() + "timestep" + s.str() + ".csv";//cwd.string()
+		std::string external("G:/Bachelor/Data/");
+		filename = external + "particles_" + av.str() + "timestep" + s.str() + ".csv";
 		outFile = std::ofstream(filename);
 		outFile << "x,y,vx,vy\n";
 	}
@@ -209,7 +211,8 @@ void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<
 			const Monomer& m2 = monomers[m_i];
 			const Eigen::Vector2d rel = m.getRelPositionTorus(m2.getPosition());
 			
-			if ((currentIndex == m_i - 1) || (currentIndex == m_i + 1)) {
+			if ((currentIndex == m_i - 1) || (currentIndex == m_i + 1)) { // right & left neighbor
+				// std::cout << "Current Monomer: " << currentIndex << " is connected to: " << m_i << "\n";
 				m.nonlinearSpring(rel);
 			}
 

@@ -69,10 +69,11 @@ void Simulation::setup() {
 	const double y_upper = MPCD::Obstacles::y_center_upper;
 	const double y_lower = MPCD::Obstacles::y_center_lower;
 
+	std::string external("G:/Bachelor/Data/constants_");
 	std::string filename("../../Analysis/Data/constants_");
 	std::string obstacles_fp("obstacles");
 	std::string csv(".csv");
-	std::ofstream outFile(filename + obstacles_fp + csv);
+	std::ofstream outFile(external + obstacles_fp + csv);
 	outFile << "x,y,r" << "\n"; // header columns
 
 	std::vector<CircularObstacle> obstacles;
@@ -152,20 +153,33 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 
 void MPCD::Simulation::setUpMonomers()
 {
-	std::uniform_real_distribution<double> mt_y{MPCD::Constants::y_0 + MPCD::Constants::monomer_diameter, MPCD::Constants::y_max - MPCD::Constants::monomer_diameter};
+	std::uniform_real_distribution<double> mt_alpha{0, 2 * M_PI};
 	std::random_device rd{};
 	std::mt19937_64 gen{ rd() };
 	
-	double start_y = mt_y(gen);
-	Eigen::Vector2d start(MPCD::Obstacles::x_end + MPCD::Constants::monomer_diameter, start_y);
-		
-	double end_y = mt_y(gen);
-	Eigen::Vector2d end(MPCD::Obstacles::x_end + 120 * MPCD::Constants::monomer_diameter, end_y);
+	const int num_monomers = MPCD::Constants::num_monomers;
+	const double monomerDiameter = MPCD::Constants::monomer_diameter;
 
-	Eigen::Vector2d step = (end - start) / MPCD::Constants::num_monomers;
+	double alpha = mt_alpha(gen);
+	while (num_monomers * monomerDiameter * sin(alpha) >= MPCD::Constants::y_max) {
+		alpha = mt_alpha(gen);
+	}
+
+	std::uniform_real_distribution<double> mt_x{MPCD::Obstacles::x_end + (double)num_monomers/2.0 * monomerDiameter, MPCD::Constants::x_max - (double)num_monomers / 2.0 * monomerDiameter };
+	std::random_device rd_x{};
+	std::mt19937_64 gen_x{ rd_x() };
+	Vector2d centerPos = Vector2d(mt_x(gen_x), MPCD::Constants::y_max / 2);
+
+	Vector2d direction(cos(alpha), sin(alpha));
+	Vector2d start = centerPos + (double)num_monomers/2.0 * monomerDiameter * direction;
+	Vector2d end = centerPos - (double)num_monomers/2.0 * monomerDiameter * direction;
+	Vector2d step = 1.0/(double)num_monomers * (end - start);
+
 	MaxwellBoltzmann mb(0, MPCD::Constants::temperature, MPCD::Constants::monomer_mass);
+
+
 	for (int n = 0; n < MPCD::Constants::num_monomers; n++) {
-		Eigen::Vector2d monomer_position = start + n * step;
+		Eigen::Vector2d monomer_position = start + n * step * 0.95;
 		Eigen::Vector2d monomer_velocity = mb.next();
 		_monomers.push_back(Monomer(
 			MPCD::Constants::monomer_mass,
@@ -203,7 +217,8 @@ void MPCD::Simulation::writeConstantsToOut(double timelapse, double width, doubl
 	std::string filename("constants");
 	std::string csv(".csv");
 
-	std::ofstream outFile("../../Analysis/Data/" + filename + csv);
+	std::string external("G:/Bachelor/Data/");
+	std::ofstream outFile(external + filename + csv);
 
 	double particle_mass = MPCD::Constants::particle_mass;
 	double k_BT = MPCD::Constants::k_boltzmann * MPCD::Constants::temperature;
