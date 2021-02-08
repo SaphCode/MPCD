@@ -38,7 +38,7 @@ public:
 	}
 
 	void monomerInteraction(Eigen::Vector2d rel, double tuning, double diameter);
-	void nonlinearSpring(Eigen::Vector2d rel);
+	void nonlinearSpring(Eigen::Vector2d rel, double tuning, double diameter);
 
 	Eigen::Vector2d getRelPositionTorus(Eigen::Vector2d otherPos);
 
@@ -46,7 +46,9 @@ private:
 	std::pair<int, int> m_coords;
 	double m_diameter;
 
-	Eigen::Vector2d truncLennardJones(Eigen::Vector2d rel, double tuning, double diameter);
+	Eigen::Vector2d truncshiftedLennardJones(Eigen::Vector2d rel, double tuning, double diameter);
 	Eigen::Vector2d truncLennardJonesWall(Eigen::Vector2d rel, double tuning, double diameter);
+
+	Eigen::Vector2d lennardJones(Eigen::Vector2d rel, double tuning, double diameter);
 };
 

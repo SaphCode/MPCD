@@ -4,9 +4,6 @@
 
 namespace MPCD {
 	namespace Constants {
-		//constexpr int number = Grid::average_particles_per_cell * (Pipe::x_max / Grid::cell_dim) * (Pipe::y_max / Grid::cell_dim); // will be a func of Grid
-		constexpr int seed = 234234;
-		
 		constexpr int average_particles_per_cell = 10;
 		constexpr double cell_dim = 1;
 		constexpr double k_boltzmann = 1;
@@ -14,13 +11,13 @@ namespace MPCD {
 		constexpr double monomerMonomer_interaction_tuning = 0.5 * k_boltzmann * temperature;
 		constexpr double monomer_diameter = cell_dim;
 		constexpr double monomer_bond_length = 1.5 * monomer_diameter;
-		constexpr double monomer_spring_constant = 100.0 * monomerMonomer_interaction_tuning / (monomer_diameter * monomer_diameter);//30.0
+		constexpr double monomer_spring_constant = 30.0 * monomerMonomer_interaction_tuning / (monomer_diameter * monomer_diameter);//30.0
 		constexpr int num_monomers = 50;
 		constexpr int num_md_timesteps = 50;
-		constexpr double particle_mass = 1;
+		constexpr double particle_mass = 1.0;
 		constexpr double monomer_mass = average_particles_per_cell * particle_mass; // avg particle mass per cell
-		constexpr double unit_of_time = 1.0; // std::sqrt((particle_mass* std::pow(cell_dim, 2) / (k_boltzmann * temperature)))
-		constexpr double const_force = 0.1; // 1 at the moment, kg (particle mass) * m (1) / s^2 (unit of time) about 10^-20, so a = 10^3 seems reasonable, but its really small force
+		constexpr double unit_of_time = 1.0; // a * mass_solvent/sqrt(kB T) // std::sqrt((particle_mass* std::pow(cell_dim, 2) / (k_boltzmann * temperature)))
+		constexpr double const_force = 0.01 * particle_mass * cell_dim * unit_of_time * unit_of_time;
 		constexpr double time_lapse = 0.1 * unit_of_time;
 		constexpr double md_timestep = 1.0 / (double)num_md_timesteps * time_lapse;
 		constexpr double x_0 = 0;

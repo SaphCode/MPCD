@@ -166,7 +166,7 @@ void MPCD::Pipe::collide(Body& b) {
 	}
 	for (const auto& o : m_walls) {
 		if ((o.isInBounds(b))) {
-			std::cout << "old pos, new pos, vel" << std::endl;
+			std::cout << "old pos, new pos, vel" << std::endl; // TODO
 			std::cout << b.getOldPosition() << std::endl;
 			std::cout << b.getPosition() << std::endl;
 			std::cout << b.getVelocity() << std::endl;
@@ -212,8 +212,7 @@ void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<
 			const Eigen::Vector2d rel = m.getRelPositionTorus(m2.getPosition());
 			
 			if ((currentIndex == m_i - 1) || (currentIndex == m_i + 1)) { // right & left neighbor
-				// std::cout << "Current Monomer: " << currentIndex << " is connected to: " << m_i << "\n";
-				m.nonlinearSpring(rel);
+				m.nonlinearSpring(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m.getDiameter());
 			}
 
 			//m.monomerInteraction(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m.getDiameter()); // 1/2 b/c of double counting

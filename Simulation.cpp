@@ -179,7 +179,7 @@ void MPCD::Simulation::setUpMonomers()
 
 
 	for (int n = 0; n < MPCD::Constants::num_monomers; n++) {
-		Eigen::Vector2d monomer_position = start + n * step * 0.95;
+		Eigen::Vector2d monomer_position = start + n * step * 0.10; // something weird is happening here TODO
 		Eigen::Vector2d monomer_velocity = mb.next();
 		_monomers.push_back(Monomer(
 			MPCD::Constants::monomer_mass,
