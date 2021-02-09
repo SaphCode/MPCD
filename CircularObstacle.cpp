@@ -12,7 +12,7 @@ MPCD::CircularObstacle::CircularObstacle(Eigen::Vector2d center, double radius) 
 
 bool MPCD::CircularObstacle::isInBounds(const Body& o) const
 {
-	Eigen::Vector2d rel = o.getPosition() - m_center;
+	Eigen::Vector2d rel = o.getTorusPosition() - m_center;
 	if (rel.stableNorm() <= m_radius) {
 		//std::cout << "in Bounds" << std::endl;
 		return true;
@@ -22,8 +22,8 @@ bool MPCD::CircularObstacle::isInBounds(const Body& o) const
 
 Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 {
-	Eigen::Vector2d oldPos = o.getOldPosition();
-	Eigen::Vector2d pos = o.getPosition();
+	Eigen::Vector2d oldPos = o.getOldTorusPosition();
+	Eigen::Vector2d pos = o.getTorusPosition();
 	Eigen::Vector2d relPos = pos - oldPos;
 
 	/*

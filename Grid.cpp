@@ -63,7 +63,7 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles, std::vector
 	#pragma omp parallel for
 	for (int i = 0; i < particles.size(); i++) {
 		Particle& p = particles[i];
-		Eigen::Vector2d particlePos = p.getPosition();
+		Eigen::Vector2d particlePos = p.getTorusPosition();
 		std::pair<int, int> coordinates = getCoordinates(particlePos);
 		p.setCoordinates(coordinates);
 		assert(coordinates.first >= 0 && coordinates.first <= _numRows);
@@ -77,8 +77,8 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles, std::vector
 	#pragma omp parallel for
 	for (int i = 0; i < monomers.size(); i++) {
 		Monomer& m = monomers[i];
-		Eigen::Vector2d particlePos = m.getPosition();
-		std::pair<int, int> coordinates = getCoordinates(particlePos);
+		Eigen::Vector2d monomerPos = m.getTorusPosition();
+		std::pair<int, int> coordinates = getCoordinates(monomerPos);
 		m.setCoordinates(coordinates);
 		assert(coordinates.first >= 0 && coordinates.first <= _numRows);
 		assert(coordinates.second >= 0 && coordinates.second <= _numCols);

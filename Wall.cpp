@@ -7,7 +7,7 @@ using namespace Eigen;
 
 bool MPCD::Wall::isInBounds(const Body& o) const
 {
-	const Eigen::Vector2d pos = o.getPosition();
+	const Eigen::Vector2d pos = o.getTorusPosition();
 	bool upOOB = m_yPos >= MPCD::Constants::y_max;
 	if (upOOB) {
 		if (pos[1] >= m_yPos) {
@@ -24,8 +24,8 @@ bool MPCD::Wall::isInBounds(const Body& o) const
 
 Eigen::Vector2d MPCD::Wall::getOvershoot(const Body& o) const
 {
-	const Eigen::Vector2d pos = o.getPosition();
-	const Eigen::Vector2d oldPos = o.getOldPosition();
+	const Eigen::Vector2d pos = o.getTorusPosition();
+	const Eigen::Vector2d oldPos = o.getOldTorusPosition();
 	
 	Vector2d rel = pos - oldPos;
 
