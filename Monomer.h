@@ -16,7 +16,7 @@ public:
 	virtual void move(const double timelapse) override;
 
 	void updateVelocity(const double timelapse, Eigen::Vector2d oldEffect) {
-		m_vel += 1 / 2 * timelapse * m_effect / m_mass + 1 / 2 * timelapse * oldEffect / m_mass;
+		m_vel += 1.0 / 2.0 * timelapse * m_effect / m_mass + 1.0 / 2.0 * timelapse * oldEffect / m_mass;
 	}
 
 	void collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle, double temperatureScalingFactor);
