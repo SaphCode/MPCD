@@ -13,6 +13,8 @@ public:
 	virtual void correctPosition(const Eigen::Vector2d newPos);
 	virtual void collided(const Eigen::Vector2d overshoot);
 	Eigen::Vector2d getPosition() const;
+	Eigen::Vector2d getTorusPosition() const;
+	Eigen::Vector2d getOldTorusPosition() const;
 	virtual Eigen::Vector2d getOldPosition() const;
 	Eigen::Vector2d getVelocity() const;
 	double getMass() const;

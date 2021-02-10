@@ -10,33 +10,19 @@ void Monomer::interact(InteractingBody& b)
 {
 	BodyType otherType = b.getType();
 
-	Eigen::Vector2d pos = b.getPosition();
-	Eigen::Vector2d rel = pos - m_pos;
-	if (otherType == BodyType::MONOMER) {
-		// monomer - monomer interaction
-		Eigen::Vector2d f = 1/2 * truncshiftedLennardJones(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m_diameter); // 1/2 b/c of double counting
-		m_effect += f;
-		b.addEffect(-f);
-	}
-	else if (otherType == BodyType::PARTICLE) {
-		// no interaction with particles
-		/*Eigen::Vector2d f = truncLennardJones(rel, MPCD::Constants::solventMonomer_interaction_tuning, m_diameter);
-		m_effect += f;
-		b.addEffect(-f);*/
-	}
-	else if (otherType == BodyType::WALL) {
-		pos = b.getPosition();
+	Eigen::Vector2d pos = b.getTorusPosition();
+	if (otherType == BodyType::WALL) {
 		double yWall = pos[1];
-		double y = m_pos[1];
-		rel = Eigen::Vector2d(0, yWall - y);
+		double y = getTorusPosition()[1];
+		Eigen::Vector2d rel = Eigen::Vector2d(0, yWall - y);
 		Eigen::Vector2d f = truncLennardJonesWall(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m_diameter);
 		m_effect += f;
 		// no effect on wall
 	}
 	else if (otherType == BodyType::OBSTACLE) {
+		Eigen::Vector2d rel = pos - getTorusPosition();
 		Eigen::Vector2d f = truncshiftedLennardJones(rel, MPCD::Constants::monomerMonomer_interaction_tuning, (m_diameter + 2 * MPCD::Obstacles::radius) / 2);
 		m_effect += f;
-
 		// no effect on obstacle
 	}
 	else {
@@ -47,14 +33,13 @@ void Monomer::interact(InteractingBody& b)
 Eigen::Vector2d Monomer::getRelPositionTorus(Eigen::Vector2d otherPos)
 {
 	Eigen::Vector2d naivePos = otherPos - m_pos;
-	double xSpan = MPCD::Constants::x_max - MPCD::Constants::x_0;
+	/*double xSpan = MPCD::Constants::x_max - MPCD::Constants::x_0;
 	if (m_pos[0] - otherPos[0] >= MPCD::Constants::x_max / 2) {
 		naivePos[0] = MPCD::Constants::x_max - m_pos[0] + otherPos[0];
 	}
-	else if (otherPos[0] - m_pos[0] >= MPCD::Constants::x_max) {
+	else if (otherPos[0] - m_pos[0] >= MPCD::Constants::x_max/2) {
 		naivePos[0] = -1 * (MPCD::Constants::x_max - otherPos[0] + m_pos[0]);
-	}
-	
+	}*/
 	return naivePos;
 }
 
@@ -70,9 +55,9 @@ void Monomer::nonlinearSpring(Eigen::Vector2d rel, double tuning, double diamete
 	if (d < R0) {
 		m_effect += k * tuning/(diameter*diameter) * R0*R0 * d / (1 - d * d / (R0 * R0)) * rel.normalized();
 	}
-	else {
+	/*else {
 		m_effect += 1000 * k * d * rel.normalized();
-	}
+	}*/
 }
 
 
@@ -94,6 +79,10 @@ Eigen::Vector2d Monomer::lennardJones(Eigen::Vector2d rel, double tuning, double
 	Eigen::Vector2d r_hat = rel / r;
 
 	double f_abs = 4 * tuning * (-12 * std::pow(diameter, 12) / std::pow(r, 13) - -6 * std::pow(diameter, 6) / std::pow(r, 7));
+	/*const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
+	if (f_abs > max_f_abs) { // 20 * c / delta_t^2
+		f_abs = max_f_abs;
+	}*/
 	Eigen::Vector2d f = f_abs * r_hat;
 	return f;
 }
@@ -106,6 +95,10 @@ Eigen::Vector2d Monomer::truncLennardJonesWall(Eigen::Vector2d rel, double tunin
 	if (r <= r_end) {
 		double f_abs = tuning * (2 / 15 * -9 * std::pow(diameter, 9) / std::pow(r, 10) - -3 * std::pow(diameter, 3) / std::pow(r, 4));
 		f = f_abs * r_hat;
+		/*const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
+		if (f_abs > max_f_abs) { // 20 * c / delta_t^2
+			f_abs = max_f_abs;
+		}*/
 	}
 	return f;
 }
