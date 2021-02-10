@@ -79,10 +79,10 @@ Eigen::Vector2d Monomer::lennardJones(Eigen::Vector2d rel, double tuning, double
 	Eigen::Vector2d r_hat = rel / r;
 
 	double f_abs = 4 * tuning * (-12 * std::pow(diameter, 12) / std::pow(r, 13) - -6 * std::pow(diameter, 6) / std::pow(r, 7));
-	const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
+	/*const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
 	if (f_abs > max_f_abs) { // 20 * c / delta_t^2
 		f_abs = max_f_abs;
-	}
+	}*/
 	Eigen::Vector2d f = f_abs * r_hat;
 	return f;
 }
@@ -95,10 +95,10 @@ Eigen::Vector2d Monomer::truncLennardJonesWall(Eigen::Vector2d rel, double tunin
 	if (r <= r_end) {
 		double f_abs = tuning * (2 / 15 * -9 * std::pow(diameter, 9) / std::pow(r, 10) - -3 * std::pow(diameter, 3) / std::pow(r, 4));
 		f = f_abs * r_hat;
-		const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
+		/*const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
 		if (f_abs > max_f_abs) { // 20 * c / delta_t^2
 			f_abs = max_f_abs;
-		}
+		}*/
 	}
 	return f;
 }

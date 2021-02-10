@@ -161,14 +161,14 @@ void MPCD::Simulation::setUpMonomers()
 	const double monomerDiameter = MPCD::Constants::monomer_diameter;
 
 	double alpha = mt_alpha(gen);
-	while (num_monomers * monomerDiameter * sin(alpha) >= MPCD::Constants::y_max) {
+	while (num_monomers * monomerDiameter * sin(alpha) >= 0.8 * MPCD::Constants::y_max) {
 		alpha = mt_alpha(gen);
 	}
 
 	std::uniform_real_distribution<double> mt_x{MPCD::Obstacles::x_end + (double)num_monomers/2.0 * monomerDiameter, MPCD::Constants::x_max - (double)num_monomers / 2.0 * monomerDiameter };
 	std::random_device rd_x{};
 	std::mt19937_64 gen_x{ rd_x() };
-	Vector2d centerPos = Vector2d(mt_x(gen_x), MPCD::Constants::y_max / 2);
+	Vector2d centerPos = Vector2d(mt_x(gen_x), (MPCD::Constants::y_max + MPCD::Constants::y_0) / 2.0);
 
 	Vector2d direction(cos(alpha), sin(alpha));
 	Vector2d start = centerPos + (double)num_monomers/2.0 * monomerDiameter * direction;
@@ -179,7 +179,7 @@ void MPCD::Simulation::setUpMonomers()
 
 
 	for (int n = 0; n < MPCD::Constants::num_monomers; n++) {
-		Eigen::Vector2d monomer_position = start + n * step * 0.10; // something weird is happening here TODO
+		Eigen::Vector2d monomer_position = start + n * step * 0.85; // something weird is happening here TODO
 		Eigen::Vector2d monomer_velocity = mb.next();
 		_monomers.push_back(Monomer(
 			MPCD::Constants::monomer_mass,

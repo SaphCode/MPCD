@@ -110,7 +110,7 @@ bool MPCD::Pipe::inBounds(const Eigen::Vector2d& pos) {
 }
 
 void MPCD::Pipe::fixOutOfBounds(Body& p) {
-	Eigen::Vector2d pos = p.getPosition();
+	Eigen::Vector2d pos = p.getTorusPosition();
 
 	Eigen::Vector2d newPos = pos;
 	double diff_negx = pos[0] - _x_0;
@@ -128,9 +128,9 @@ void MPCD::Pipe::fixOutOfBounds(Body& p) {
 		double rem = std::fmod(diff_negx, width);
 		assert(rem < 0);
 		newPos[0] = _x_max + rem;
+		p.correctPosition(newPos);
 	}
 
-	p.correctPosition(newPos);
 	if (!inBounds(newPos)) {
 		//std::cout << "Vel: " << p.getVelocity() << "\n";
 		std::cout << "Old pos: (" << pos[0] << ", " << pos[1] << ")\n";
@@ -183,7 +183,7 @@ void MPCD::Pipe::verletPosition(std::vector<Monomer>& monomers)
 		Monomer& m = monomers[i];
 
 		m.move(MPCD::Constants::md_timestep); // update position
-		// collide(m); should work with forces
+		collide(m); // should work with forces
 		fixOutOfBounds(m);
 
 	}
