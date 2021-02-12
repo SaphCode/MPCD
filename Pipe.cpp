@@ -40,8 +40,14 @@ void MPCD::Pipe::verlet(std::vector<Monomer>& monomers, bool draw, int t)
 	}
 
 	for (int md_t = 0; md_t < MPCD::Constants::num_md_timesteps; md_t++) {
-		verletPosition(monomers);
-		verletVelocity(monomers);
+		#pragma omp parallel for
+		for (int i = 0; i < monomers.size(); i++) {
+			verletPosition(i, monomers, MPCD::Constants::md_timestep);
+		}
+		#pragma omp parallel for
+		for (int i = 0; i < monomers.size(); i++) {
+			verletVelocity(i, monomers, MPCD::Constants::md_timestep);
+		}
 	}
 
 }
@@ -66,18 +72,6 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool dra
 	for (int i = 0; i < particles.size(); i++) {
 		Particle& p = particles[i];
 
-		/* NOT NECESSARY: NO INTERACTION WITH WALL AND OBSTACLES; and const force is simple update.
-		{
-			for (auto& wall : m_walls) {
-				wall.interact(p);
-			}
-			for (auto& obstacle : m_obstacles) {
-				obstacle.interact(p);
-			}
-			m_constForce.interact(p);
-		}
-		*/
-		
 		p.constForce(constForce);
 
 		p.move(lapse);
@@ -176,49 +170,84 @@ void MPCD::Pipe::collide(Body& b) {
 	}
 }
 
-void MPCD::Pipe::verletPosition(std::vector<Monomer>& monomers)
+void MPCD::Pipe::verletPosition(int chainIndex, std::vector<Monomer>& monomers, double timestep)
 {
-	#pragma omp parallel for
-	for (int i = 0; i < monomers.size(); i++) {
-		Monomer& m = monomers[i];
+	Monomer& m = monomers[chainIndex];
+	Eigen::Vector2d oldPos = m.getPosition();
+	m.move(timestep); // update position
+	bool isLegalPos = isLegalPosition(m);
 
-		m.move(MPCD::Constants::md_timestep); // update position
-		collide(m); // should work with forces
-		fixOutOfBounds(m);
-
+	if (isLegalPos) return;
+	else {
+		std::cout << "Vel: " << m.getVelocity() << "\n";
+		std::cout << "F: " << m.getEffect() << "\n";
+		std::cout << "Pos: " << m.getPosition() << "\n";
+		throw std::exception();
 	}
+	/*
+	#pragma omp critical 
+	{
+		unsigned int count = 0;
+		while (!isLegalPos) {
+			count += 1;
+			timestep /= (double)std::pow(2, count);
+
+			m.correctPosition(oldPos);
+			m.move(timestep);
+			oldPos = m.getPosition();
+			isLegalPos = isLegalPosition(m);
+		}
+
+		unsigned int partition = std::ceil(std::pow(2, count));
+
+		for (int p = 0; p < partition; p++) {
+			verletVelocity(chainIndex, monomers, timestep);
+			verletPosition(chainIndex, monomers, timestep);
+		}
+	}
+	*/
 }
 
-void MPCD::Pipe::verletVelocity(std::vector<Monomer>& monomers)
+const bool MPCD::Pipe::isLegalPosition(const Body& b)
 {
-	#pragma omp parallel for
-	for (int i = 0; i < monomers.size(); i++) {
-		Monomer& m = monomers[i];
-
-		Eigen::Vector2d oldEffect = m.getEffect();
-		m.resetEffect();
-
-		calculateInteraction(i, m, monomers);
-
-		m.updateVelocity(MPCD::Constants::md_timestep, oldEffect); // update velocity
+	for (const auto& o : m_obstacles) {
+		if (o.isInBounds(b)) {
+			return false;
+		}
 	}
+	for (const auto& o : m_walls) {
+		if (o.isInBounds(b)) {
+			return false;
+		}
+	}
+	return true;
 }
 
-void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<Monomer>& monomers) {
+void MPCD::Pipe::verletVelocity(int chainIndex, std::vector<Monomer>& monomers, double timestep)
+{
+	Monomer& m = monomers[chainIndex];
+	Eigen::Vector2d oldEffect = m.getEffect();
+	m.resetEffect();
 
-	
+	calculateInteraction(chainIndex, monomers);
+
+	m.updateVelocity(MPCD::Constants::md_timestep, oldEffect); // update velocity
+}
+
+void MPCD::Pipe::calculateInteraction(int chainIndex, std::vector<Monomer>& monomers) {
+
+	Monomer& m = monomers[chainIndex];
 	for (int m_i = 0; m_i < monomers.size(); m_i++) {
-		if (currentIndex != m_i) {
+		if (chainIndex != m_i) {
 			const Monomer& m2 = monomers[m_i];
 			const Eigen::Vector2d rel = m.getRelPositionTorus(m2.getPosition());
 			
-			if ((currentIndex == m_i - 1) || (currentIndex == m_i + 1)) { // right & left neighbor
+			if ((chainIndex == m_i - 1) || (chainIndex == m_i + 1)) { // right & left neighbor
 				m.nonlinearSpring(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m.getDiameter());
 			}
 
 			m.monomerInteraction(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m.getDiameter()); // 1/2 b/c of double counting
 		}
-
 	}
 
 	for (int k = 0; k < m_obstacles.size(); k++) {
@@ -230,8 +259,6 @@ void MPCD::Pipe::calculateInteraction(int currentIndex, Monomer& m, std::vector<
 		Wall& wall = m_walls[l];
 		m.interact(wall);
 	}
-
-	// m_constForce.interact(m);
 }
 
 

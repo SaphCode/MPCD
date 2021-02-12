@@ -153,7 +153,7 @@ void Simulation::setUpParticles(int number, double x_0, double x_max, double y_0
 
 void MPCD::Simulation::setUpMonomers()
 {
-	std::uniform_real_distribution<double> mt_alpha{0, 2 * M_PI};
+	std::uniform_real_distribution<double> mt_alpha{0, M_PI};
 	std::random_device rd{};
 	std::mt19937_64 gen{ rd() };
 	
@@ -161,7 +161,7 @@ void MPCD::Simulation::setUpMonomers()
 	const double monomerDiameter = MPCD::Constants::monomer_diameter;
 
 	double alpha = mt_alpha(gen);
-	while (num_monomers * monomerDiameter * sin(alpha) >= 0.8 * MPCD::Constants::y_max) {
+	while (num_monomers * monomerDiameter * sin(alpha) >= 0.7 * MPCD::Constants::y_max) {
 		alpha = mt_alpha(gen);
 	}
 

@@ -15,6 +15,8 @@ public:
 
 	virtual void move(const double timelapse) override;
 
+	bool testMove(const double timelapse);
+
 	void updateVelocity(const double timelapse, Eigen::Vector2d oldEffect) {
 		m_vel += 1.0 / 2.0 * timelapse * m_effect / m_mass + 1.0 / 2.0 * timelapse * oldEffect / m_mass;
 	}
@@ -36,6 +38,8 @@ public:
 	double getDiameter() const {
 		return m_diameter;
 	}
+
+	Eigen::Vector2d capForce(Eigen::Vector2d f);
 
 	void monomerInteraction(Eigen::Vector2d rel, double tuning, double diameter);
 	void nonlinearSpring(Eigen::Vector2d rel, double tuning, double diameter);

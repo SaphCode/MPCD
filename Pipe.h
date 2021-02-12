@@ -22,9 +22,11 @@ namespace MPCD {
 		void collide(Body& p);
 		void fixOutOfBounds(Body& p);
 		bool inBounds(const Eigen::Vector2d& pos);
-		void calculateInteraction(int currentIndex, Monomer& m, std::vector<Monomer>& monomers);
-		void verletVelocity(std::vector<Monomer>& monomers);
-		void verletPosition(std::vector<Monomer>& monomers);
+		void calculateInteraction(int chainIndex, std::vector<Monomer>& monomers);
+		void verletVelocity(int chainIndex, std::vector<Monomer>& monomers, double timestep);
+		void verletPosition(int chainIndex, std::vector<Monomer>& monomers, double timestep);
+
+		const bool isLegalPosition(const Body& b);
 
 
 		int _w;

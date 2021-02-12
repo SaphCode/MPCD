@@ -16,13 +16,13 @@ void Monomer::interact(InteractingBody& b)
 		double y = getTorusPosition()[1];
 		Eigen::Vector2d rel = Eigen::Vector2d(0, yWall - y);
 		Eigen::Vector2d f = truncLennardJonesWall(rel, MPCD::Constants::monomerMonomer_interaction_tuning, m_diameter);
-		m_effect += f;
+		m_effect += capForce(f);
 		// no effect on wall
 	}
 	else if (otherType == BodyType::OBSTACLE) {
 		Eigen::Vector2d rel = pos - getTorusPosition();
 		Eigen::Vector2d f = truncshiftedLennardJones(rel, MPCD::Constants::monomerMonomer_interaction_tuning, (m_diameter + 2 * MPCD::Obstacles::radius) / 2);
-		m_effect += f;
+		m_effect += capForce(f);
 		// no effect on obstacle
 	}
 	else {
@@ -44,8 +44,17 @@ Eigen::Vector2d Monomer::getRelPositionTorus(Eigen::Vector2d otherPos)
 }
 
 
+Eigen::Vector2d Monomer::capForce(Eigen::Vector2d f)
+{
+	double max_cell_movement = 0.5; // 0.5 cell at one md timestep is allowed
+	double maxForce = 2.0 * max_cell_movement * m_mass / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
+	double force = f.stableNorm();
+	Eigen::Vector2d cappedForce = force <= maxForce ? f : maxForce * f/force;
+	return cappedForce;
+}
+
 void Monomer::monomerInteraction(Eigen::Vector2d rel, double tuning, double diameter) {
-	m_effect += truncshiftedLennardJones(rel, tuning, diameter);
+	m_effect += capForce(truncshiftedLennardJones(rel, tuning, diameter));
 }
 
 void Monomer::nonlinearSpring(Eigen::Vector2d rel, double tuning, double diameter) {
@@ -53,11 +62,9 @@ void Monomer::nonlinearSpring(Eigen::Vector2d rel, double tuning, double diamete
 	const double R0 = MPCD::Constants::monomer_bond_length;
 	const double k = MPCD::Constants::monomer_spring_constant;
 	if (d < R0) {
-		m_effect += k * tuning/(diameter*diameter) * R0*R0 * d / (1 - d * d / (R0 * R0)) * rel.normalized();
+		Eigen::Vector2d f = k * tuning / (diameter * diameter) * R0 * R0 * d / (1 - d * d / (R0 * R0)) * rel/d;
+		m_effect += capForce(f);
 	}
-	/*else {
-		m_effect += 1000 * k * d * rel.normalized();
-	}*/
 }
 
 
@@ -108,6 +115,12 @@ void Monomer::move(const double timelapse)
 	// position update logic
 	m_oldPosition = m_pos;
 	InteractingBody::move(timelapse);
+}
+
+bool Monomer::testMove(const double timelapse)
+{
+	
+	return false;
 }
 
 void Monomer::collide(Eigen::Vector2d mean_cell_velocity, double rotationAngle, double temperatureScalingFactor) {
