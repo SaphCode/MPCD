@@ -46,7 +46,7 @@ Eigen::Vector2d Monomer::getRelPositionTorus(Eigen::Vector2d otherPos)
 
 Eigen::Vector2d Monomer::capForce(Eigen::Vector2d f)
 {
-	double max_cell_movement = 0.5; // 0.5 cell at one md timestep is allowed
+	double max_cell_movement = 0.1; // 0.5 cell at one md timestep is allowed
 	double maxForce = 2.0 * max_cell_movement * m_mass / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
 	double force = f.stableNorm();
 	Eigen::Vector2d cappedForce = force <= maxForce ? f : maxForce * f/force;

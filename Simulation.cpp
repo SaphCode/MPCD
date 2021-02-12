@@ -80,13 +80,13 @@ void Simulation::setup() {
 	if (_addObstacles) {
 		for (int i = 0; i < num_per_row; i++) {
 
-			std::cout << "X offset: " << radius * i + center_to_center_spacing * i << std::endl;
-			Eigen::Vector2d center_upper(radius * i + center_to_center_spacing * i, y_upper);
+			std::cout << "X offset: " << center_to_center_spacing * i << std::endl;
+			Eigen::Vector2d center_upper(MPCD::Obstacles::x_start + 5 + radius + center_to_center_spacing * i, y_upper);
 			CircularObstacle circ_upper(center_upper, radius);
 			writeCirclePositionToOut(outFile, center_upper, radius);
 			obstacles.push_back(CircularObstacle(circ_upper));
 
-			Eigen::Vector2d center_lower(radius * i + center_to_center_spacing * i, y_lower);
+			Eigen::Vector2d center_lower(MPCD::Obstacles::x_start + 5 + radius + center_to_center_spacing * i, y_lower);
 			CircularObstacle circ_lower(center_lower, radius);
 			writeCirclePositionToOut(outFile, center_lower, radius);
 			obstacles.push_back(CircularObstacle(circ_lower));

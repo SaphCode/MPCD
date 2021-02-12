@@ -32,7 +32,7 @@ namespace MPCD {
 		constexpr double x_space = x_end - x_start;
 		constexpr int num_per_row = (int)(x_space / (2.0 * 2.0 * radius));
 		constexpr double center_to_center_spacing = 2 * radius + 2 * radius; // (->) + -- + (<-)
-		constexpr double y_center_lower = Constants::y_0 + radius;
-		constexpr double y_center_upper = Constants::y_max - radius;
+		constexpr double y_center_lower = Constants::y_0 + 2.5 + radius;
+		constexpr double y_center_upper = Constants::y_max - 2.5 - radius;
 	}
 }
