@@ -175,14 +175,34 @@ void MPCD::Pipe::verletPosition(int chainIndex, std::vector<Monomer>& monomers, 
 	Monomer& m = monomers[chainIndex];
 	Eigen::Vector2d oldPos = m.getPosition();
 	m.move(timestep); // update position
-	bool isLegalPos = isLegalPosition(m);
+	collide(m);
+	/*bool isLegalPos = isLegalPosition(m);
 
 	if (isLegalPos) return;
 	else {
+		
+		/*
 		std::cout << "Vel: " << m.getVelocity() << "\n";
 		std::cout << "F: " << m.getEffect() << "\n";
 		std::cout << "Pos: " << m.getPosition() << "\n";
-		throw std::exception();
+		double count = 0;
+		double partition = 0;
+		while (!isLegalPos) {
+			count++;
+			partition = std::pow(2, count);
+			m.correctPosition(oldPos);
+			m.move(timestep / partition);
+			isLegalPos = isLegalPosition(m);
+		}
+		for (int t = 1; t < count; t++) {
+			std::cout << "Correction step " << t + 1 << " of " << count << ".\n";
+			verletVelocity(chainIndex, monomers, timestep / partition);
+			verletPosition(chainIndex, monomers, timestep / partition);
+		}
+		std::cout << "Final Vel: " << m.getVelocity() << "\n";
+		std::cout << "Final F: " << m.getEffect() << "\n";
+		std::cout << "Final Pos: " << m.getPosition() << "\n";
+		
 	}
 	/*
 	#pragma omp critical 
@@ -228,10 +248,16 @@ void MPCD::Pipe::verletVelocity(int chainIndex, std::vector<Monomer>& monomers, 
 	Monomer& m = monomers[chainIndex];
 	Eigen::Vector2d oldEffect = m.getEffect();
 	m.resetEffect();
+	if (timestep < MPCD::Constants::md_timestep) {
+		std::cout << "After reset, force is: " << m.getEffect() << " .\n";
+	}
 
 	calculateInteraction(chainIndex, monomers);
+	if (timestep < MPCD::Constants::md_timestep) {
+		std::cout << "After interaction, force is: " << m.getEffect() << " .\n";
+	}
 
-	m.updateVelocity(MPCD::Constants::md_timestep, oldEffect); // update velocity
+	m.updateVelocity(timestep, oldEffect); // update velocity
 }
 
 void MPCD::Pipe::calculateInteraction(int chainIndex, std::vector<Monomer>& monomers) {

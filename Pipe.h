@@ -28,7 +28,6 @@ namespace MPCD {
 
 		const bool isLegalPosition(const Body& b);
 
-
 		int _w;
 	public:
 		Pipe(ConstForce force);
