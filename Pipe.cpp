@@ -248,15 +248,7 @@ void MPCD::Pipe::verletVelocity(int chainIndex, std::vector<Monomer>& monomers, 
 	Monomer& m = monomers[chainIndex];
 	Eigen::Vector2d oldEffect = m.getEffect();
 	m.resetEffect();
-	if (timestep < MPCD::Constants::md_timestep) {
-		std::cout << "After reset, force is: " << m.getEffect() << " .\n";
-	}
-
 	calculateInteraction(chainIndex, monomers);
-	if (timestep < MPCD::Constants::md_timestep) {
-		std::cout << "After interaction, force is: " << m.getEffect() << " .\n";
-	}
-
 	m.updateVelocity(timestep, oldEffect); // update velocity
 }
 

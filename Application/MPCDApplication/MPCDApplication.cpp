@@ -24,10 +24,15 @@ int main()
 {
 
 	int t = 0;
+	
+	auto start = std::chrono::high_resolution_clock::now();
 	while (!cancel) {
 		t += 1;
 		if (t % 100 == 0) {
-			std::cout << "Timestep: " << t << "\n";
+			auto finish = std::chrono::high_resolution_clock::now();
+			auto seconds = std::chrono::duration_cast<std::chrono::seconds>(finish - start);
+			std::cout << "Timestep: " << t << " (" << seconds.count() << "s)" << "\n";
+			start = std::chrono::high_resolution_clock::now();
 		}
 		sim.timestep();
 	}
