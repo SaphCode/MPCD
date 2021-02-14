@@ -95,8 +95,8 @@ void MPCD::Pipe::stream(std::vector<Particle>& particles, double lapse, bool dra
 bool MPCD::Pipe::inBounds(const Eigen::Vector2d& pos) {
 	double x = pos[0];
 	double y = pos[1];
-	bool xInBounds = (x >= _x_0); // && x <= _x_max
-	bool yInBounds = (y >= _y_0 && y <= _y_max);
+	bool xInBounds = (x >= MPCD::Constants::x_0); // && x <= _x_max
+	bool yInBounds = (y >= MPCD::Constants::y_0 && y <= MPCD::Constants::y_max);
 	if (xInBounds && yInBounds) {
 		return true;
 	}
@@ -107,9 +107,9 @@ void MPCD::Pipe::fixOutOfBounds(Body& p) {
 	Eigen::Vector2d pos = p.getTorusPosition();
 
 	Eigen::Vector2d newPos = pos;
-	double diff_negx = pos[0] - _x_0;
-	double width = _x_max - _x_0;
-	double height = _y_max - _y_0;
+	double diff_negx = pos[0] - MPCD::Constants::x_0;
+	double width = MPCD::Constants::x_max - MPCD::Constants::x_0;
+	double height = MPCD::Constants::y_max - MPCD::Constants::y_0;
 
 	/*
 	if (diff_posx > 0) {
@@ -121,12 +121,14 @@ void MPCD::Pipe::fixOutOfBounds(Body& p) {
 	if (diff_negx < 0) {
 		double rem = std::fmod(diff_negx, width);
 		assert(rem < 0);
-		newPos[0] = _x_max + rem;
+		newPos[0] = MPCD::Constants::x_max + rem;
 		p.correctPosition(newPos);
 	}
 
 	if (!inBounds(newPos)) {
 		//std::cout << "Vel: " << p.getVelocity() << "\n";
+		std::cout << "Mass: " << p.getMass() << "\n";
+		std::cout << "Vel: " << p.getVelocity() << "\n";
 		std::cout << "Old pos: (" << pos[0] << ", " << pos[1] << ")\n";
 		std::cout << "New pos: (" << newPos[0] << ", " << newPos[1] << ")\n";
 	}

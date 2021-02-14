@@ -15,10 +15,6 @@ namespace MPCD {
 		std::vector<CircularObstacle> m_obstacles;
 		std::vector<Wall> m_walls;
 		ConstForce m_constForce;
-		double _x_0 = Constants::x_0;
-		double _x_max = Constants::x_max;
-		double _y_0 = Constants::y_0;
-		double _y_max = Constants::y_max;
 		void collide(Body& p);
 		void fixOutOfBounds(Body& p);
 		bool inBounds(const Eigen::Vector2d& pos);

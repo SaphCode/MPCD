@@ -6,7 +6,7 @@ using namespace Eigen;
 void InteractingBody::move(const double timelapse)
 {
 	
-	m_pos += m_effect / m_mass * timelapse * timelapse / 2;
+	m_pos += m_effect / m_mass * timelapse * timelapse / 2.0;
 	/*
 	std::cout << "InteractingBody\n";
 	std::cout << "Effect:\n" << m_effect;

@@ -1,6 +1,7 @@
 #include "CircularObstacle.h"
 #include "Constants.h"
 #include <iostream>
+#include <float.h>
 
 MPCD::CircularObstacle::CircularObstacle(Eigen::Vector2d center, double radius) :
 	InteractingBody(std::numeric_limits<double>::infinity(), center, Eigen::Vector2d(0, 0), BodyType::OBSTACLE),
@@ -83,6 +84,14 @@ Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 	//assert(c == c1);
 	double x_circle_intersection = 0;
 	double y_circle_intersection = 0;
+	double toRoot = b * b - 4 * a * c;
+	if (toRoot < 0) {
+		std::cout << "Root is smaller 0 for:\n";
+		std::cout << "Mass: " << o.getMass() << "\nPos: " << o.getPosition() << "\n";
+		std::cout << "Old Pos: " << o.getOldPosition() << "\n";
+		std::cout << "Vel: " << m_vel << "\n";
+		exit(-1);
+	}
 	if (oldPos[0] < pos[0]) {
 		x_circle_intersection = (-b - std::sqrt(b * b - 4 * a * c)) / (2 * a);
 	}
@@ -96,6 +105,9 @@ Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 	Eigen::Vector2d overshoot = pos - Eigen::Vector2d(x_circle_intersection, y_circle_intersection);
 	
 	//std::cout << "Circle x: " << m_center[0] << ", y: " << m_center[1] << std::endl;
+	if (_isnan(overshoot[0]) || _isnan(overshoot[1])) {
+		exit(-1);
+	}
 	return overshoot;
 }
 
