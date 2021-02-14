@@ -127,6 +127,8 @@ void MPCD::Pipe::fixOutOfBounds(Body& p) {
 
 	if (!inBounds(newPos)) {
 		//std::cout << "Vel: " << p.getVelocity() << "\n";
+		std::cout << "Mass: " << p.getMass() << "\n";
+		std::cout << "Vel: " << p.getVelocity() << "\n";
 		std::cout << "Old pos: (" << pos[0] << ", " << pos[1] << ")\n";
 		std::cout << "New pos: (" << newPos[0] << ", " << newPos[1] << ")\n";
 	}
