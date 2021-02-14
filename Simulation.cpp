@@ -267,7 +267,7 @@ void MPCD::Simulation::streamingStep() {
 void MPCD::Simulation::collisionStep() {
 
 	bool draw = false;
-	if (_t == _stationaryT - 1) {
+	if (_t >= _stationaryT - 1 - 100 && _t <= _stationaryT - 1) {
 		draw = true;
 	}
 	else if (_t > _stationaryT - 1 && _t % 100 == 0) {
