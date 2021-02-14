@@ -257,7 +257,7 @@ void MPCD::Simulation::verlet() {
 void MPCD::Simulation::streamingStep() {
 
 	bool draw = false;
-	if (_t == _stationaryT-1) {
+	if (_t >= _stationaryT - 1 - 100 && _t <= _stationaryT - 1) {
 		draw = true;
 	}
 	_pipe.stream(_particles, _timestep, draw, _t);
