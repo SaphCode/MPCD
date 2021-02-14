@@ -71,6 +71,7 @@ void MPCD::Cell::calculate()
 }
 
 void MPCD::Cell::draw(std::pair<int, int> index, std::ofstream& ofs) const {
+	// if occupied set true
 	ofs << index.first << "," << index.second << "," << m_cmVelocity[0] << "," << m_cmVelocity[1] << "," << _particles.size() << "\n";
 }
 
