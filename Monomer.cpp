@@ -62,7 +62,7 @@ void Monomer::nonlinearSpring(Eigen::Vector2d rel, double tuning, double diamete
 	const double R0 = MPCD::Constants::monomer_bond_length;
 	const double k = MPCD::Constants::monomer_spring_constant;
 	if (d < R0) {
-		Eigen::Vector2d f = k * tuning / (diameter * diameter) * R0 * R0 * d / (1 - d * d / (R0 * R0)) * rel/d;
+		Eigen::Vector2d f = k * tuning / (diameter * diameter) * R0 * R0 * d / (1.0 - d * d / (R0 * R0)) * rel/d;
 		m_effect += capForce(f);
 	}
 }
@@ -70,7 +70,7 @@ void Monomer::nonlinearSpring(Eigen::Vector2d rel, double tuning, double diamete
 
 Eigen::Vector2d Monomer::truncshiftedLennardJones(Eigen::Vector2d rel, double tuning, double diameter) {
 	const double r = rel.stableNorm();
-	const double r_end = std::pow(2, 1 / 6) * diameter;
+	const double r_end = std::pow(2.0, 1.0 / 6.0) * diameter;
 	Eigen::Vector2d f(0, 0);
 	if (r <= r_end) {
 		Eigen::Vector2d lj = lennardJones(rel, tuning, diameter);
@@ -85,7 +85,7 @@ Eigen::Vector2d Monomer::lennardJones(Eigen::Vector2d rel, double tuning, double
 	double r = rel.stableNorm();
 	Eigen::Vector2d r_hat = rel / r;
 
-	double f_abs = 4 * tuning * (-12 * std::pow(diameter, 12) / std::pow(r, 13) - -6 * std::pow(diameter, 6) / std::pow(r, 7));
+	double f_abs = 4.0 * tuning * (-12.0 * std::pow(diameter, 12) / std::pow(r, 13) - -6.0 * std::pow(diameter, 6) / std::pow(r, 7));
 	/*const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
 	if (f_abs > max_f_abs) { // 20 * c / delta_t^2
 		f_abs = max_f_abs;
@@ -96,11 +96,11 @@ Eigen::Vector2d Monomer::lennardJones(Eigen::Vector2d rel, double tuning, double
 
 Eigen::Vector2d Monomer::truncLennardJonesWall(Eigen::Vector2d rel, double tuning, double diameter) {
 	const double r = rel.stableNorm();
-	const double r_end = std::pow(2 / 5, 1 / 6) * diameter;
+	const double r_end = std::pow(2.0 / 5.0, 1.0 / 6.0) * diameter;
 	Eigen::Vector2d r_hat = rel / r;
 	Eigen::Vector2d f(0, 0);
 	if (r <= r_end) {
-		double f_abs = tuning * (2 / 15 * -9 * std::pow(diameter, 9) / std::pow(r, 10) - -3 * std::pow(diameter, 3) / std::pow(r, 4));
+		double f_abs = tuning * (2.0 / 15.0 * -9.0 * std::pow(diameter, 9) / std::pow(r, 10) - -3.0 * std::pow(diameter, 3) / std::pow(r, 4));
 		f = f_abs * r_hat;
 		/*const double max_f_abs = 20 * 0.1 / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
 		if (f_abs > max_f_abs) { // 20 * c / delta_t^2

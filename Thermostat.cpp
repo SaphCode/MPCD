@@ -14,7 +14,7 @@ double MPCD::Thermostat::getScalingFactor(const std::vector<Particle>& particles
 	double alpha = 1;
 	if (particleNum > 1) {
 		const int df = 2*(particleNum - 1);
-		std::gamma_distribution<double> dist(df / 2, MPCD::Constants::k_boltzmann * MPCD::Constants::temperature);
+		std::gamma_distribution<double> dist(df / 2.0, MPCD::Constants::k_boltzmann * MPCD::Constants::temperature);
 		double kineticEnergy = dist(_gen);
 		double sum = calculateSum(particles, cellMeanVelocity);
 		alpha = std::sqrt((2 * kineticEnergy) / sum);
