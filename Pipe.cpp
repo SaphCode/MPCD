@@ -177,7 +177,7 @@ void MPCD::Pipe::verletPosition(int chainIndex, std::vector<Monomer>& monomers, 
 	Monomer& m = monomers[chainIndex];
 	Eigen::Vector2d oldPos = m.getPosition();
 	m.move(timestep); // update position
-	collide(m);
+	//collide(m);
 	/*bool isLegalPos = isLegalPosition(m);
 
 	if (isLegalPos) return;

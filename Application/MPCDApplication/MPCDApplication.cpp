@@ -16,15 +16,18 @@ using namespace MPCD;
 bool cancel = false;
 bool draw = true;
 bool particleDrawing = false;
-int stationaryT = 10000;
+int stationaryT = 3000;
 
 Simulation sim(draw, particleDrawing, stationaryT);
 
 int main()
 {
 
-	int t = 0;
+	int t = 2999;
 	
+	//sim.setup();
+	sim.loadCheckpoint(2999, "G:/Bachelor/Data/particles_av10_timestep02999.csv"); // , "G:/Bachelor/Data/cells_av10_timestep02999.csv"
+
 	auto start = std::chrono::high_resolution_clock::now();
 	while (!cancel) {
 		t += 1;

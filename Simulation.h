@@ -39,7 +39,7 @@ namespace MPCD {
 
 		void writeCirclePositionToOut(std::ofstream& outFile, Eigen::Vector2d center_pos, double radius);
 
-		void setup();
+		std::vector<CircularObstacle>& setupObstacles(std::ofstream& outFile);
 
 		void streamingStep();
 		void collisionStep();
@@ -58,6 +58,10 @@ namespace MPCD {
 		~Simulation() {}
 		/* One timestep */
 		void timestep();
+
+		void setup();
+
+		void loadCheckpoint(int timestep, std::string pathParticles);
 
 	};
 	

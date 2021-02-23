@@ -29,7 +29,7 @@ Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 
 	double x_circle_intersection = 0;
 	double y_circle_intersection = 0;
-	if (relPos[0] == 0) {
+	if (relPos[0] <= 1e-6) {
 		x_circle_intersection = pos[0];
 		if (oldPos[1] > pos[1]) {
 			y_circle_intersection = std::sqrt(std::pow(m_radius, 2) - std::pow(x_circle_intersection - m_center[0], 2)) + m_center[1];

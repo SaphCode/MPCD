@@ -159,6 +159,7 @@
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="CircularObstacle.cpp" />
     <ClCompile Include="ConstForce.cpp" />
+    <ClCompile Include="CSVReader.cpp" />
     <ClCompile Include="Grid.cpp" />
     <ClCompile Include="InteractingBody.cpp" />
     <ClCompile Include="MaxwellBoltzmann.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="Cell.h" />
     <ClInclude Include="CircularObstacle.h" />
     <ClInclude Include="ConstForce.h" />
+    <ClInclude Include="CSVReader.h" />
     <ClInclude Include="Grid.h" />
     <ClInclude Include="Body.h" />
     <ClInclude Include="InteractingBody.h" />
