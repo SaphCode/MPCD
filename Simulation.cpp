@@ -17,6 +17,8 @@
 #include "ConstForce.h"
 #include "CircularObstacle.h"
 
+#include "CSVReader.h"
+
 #define _USE_MATH_DEFINES
 #include <math.h>
 
@@ -36,8 +38,6 @@ MPCD::Simulation::Simulation(bool draw, bool particleDrawing, int stationaryT) :
 	std::cout << "Monomer timestep: " << _mdTimestep << "\n";
 	
 	_t = 0;
-
-	setup();
 }
 
 void Simulation::setup() {
@@ -60,14 +60,7 @@ void Simulation::setup() {
 	walls.push_back(lower);
 	walls.push_back(upper);
 
-	Eigen::Vector2d acceleration(MPCD::Constants::const_force, 0);
-	
-
-	const double center_to_center_spacing = MPCD::Obstacles::center_to_center_spacing;
-	const int num_per_row = MPCD::Obstacles::num_per_row;
-	const double radius = MPCD::Obstacles::radius;
-	const double y_upper = MPCD::Obstacles::y_center_upper;
-	const double y_lower = MPCD::Obstacles::y_center_lower;
+	//Eigen::Vector2d acceleration(MPCD::Constants::const_force, 0);
 
 	std::string external("G:/Bachelor/Data/constants_");
 	std::string filename("../../Analysis/Data/constants_");
@@ -76,6 +69,27 @@ void Simulation::setup() {
 	std::ofstream outFile(external + obstacles_fp + csv);
 	outFile << "x,y,r" << "\n"; // header columns
 
+	std::vector<CircularObstacle> obstacles = setupObstacles(outFile);
+	
+	outFile.close();
+
+	_grid.setupCells(obstacles, walls);
+
+	setUpParticles(number, x_0, x_max, y_0, y_max, obstacles);
+	_pipe.setObstacles(obstacles, walls);
+
+	if (_draw) {
+		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles);
+	}
+	std::cout << "Setup complete." << std::endl;
+}
+
+std::vector<CircularObstacle>& MPCD::Simulation::setupObstacles(std::ofstream& outFile) {
+	const double center_to_center_spacing = MPCD::Obstacles::center_to_center_spacing;
+	const int num_per_row = MPCD::Obstacles::num_per_row;
+	const double radius = MPCD::Obstacles::radius;
+	const double y_upper = MPCD::Obstacles::y_center_upper;
+	const double y_lower = MPCD::Obstacles::y_center_lower;
 	std::vector<CircularObstacle> obstacles;
 	if (_addObstacles) {
 		for (int i = 0; i < num_per_row; i++) {
@@ -90,20 +104,53 @@ void Simulation::setup() {
 			CircularObstacle circ_lower(center_lower, radius);
 			writeCirclePositionToOut(outFile, center_lower, radius);
 			obstacles.push_back(CircularObstacle(circ_lower));
-			
+
 		}
 	}
+	return obstacles;
+}
+
+void MPCD::Simulation::loadCheckpoint(int timestep, std::string pathParticles) //std::string pathCells
+{
+	_t = timestep;
+
+	std::vector<Wall> walls;
+	Wall lower(MPCD::Constants::y_0);
+	Wall upper(MPCD::Constants::y_max);
+	walls.push_back(lower);
+	walls.push_back(upper);
+
+	std::string external("G:/Bachelor/Data/constants_");
+	std::string filename("../../Analysis/Data/constants_");
+	std::string obstacles_fp("obstacles");
+	std::string csv(".csv");
+	std::ofstream outFile(external + obstacles_fp + csv);
+	outFile << "x,y,r" << "\n"; // header columns
+	std::vector<CircularObstacle> obstacles = setupObstacles(outFile);
 	outFile.close();
 
 	_grid.setupCells(obstacles, walls);
 
-	setUpParticles(number, x_0, x_max, y_0, y_max, obstacles);
 	_pipe.setObstacles(obstacles, walls);
 
-	if (_draw) {
-		writeConstantsToOut(timelapse, width, height, cell_dim, av_particles);
+	std::ifstream particlesFile(pathParticles);
+	//std::string particle;
+	//std::vector<std::string> result;
+	unsigned int it = 0;
+
+	double particleMass = MPCD::Constants::particle_mass;
+	for (auto& row : CSVRange(particlesFile)) {
+		it += 1;
+		if (it != 1) {
+			Eigen::Vector2d pos(stod(std::string(row[0])), stod(std::string(row[1])));
+			Eigen::Vector2d v(stod(std::string(row[2])), stod(std::string(row[3])));
+			_particles.push_back(Particle(particleMass, pos, v));
+		}
 	}
-	std::cout << "Setup complete." << std::endl;
+
+	if (it != MPCD::Constants::average_particles_per_cell * MPCD::Constants::x_max * MPCD::Constants::y_max + 1) exit(-1);
+
+	std::cout << "Loaded from checkpoint." << std::endl;
 }
 
 
@@ -189,6 +236,8 @@ void MPCD::Simulation::setUpMonomers()
 		));
 	}
 
+	std::cout << "Inserted polymer." << std::endl;
+
 }
 
 bool MPCD::Simulation::isInBoundsOfAnObstacle(Body& b, std::vector<CircularObstacle> obstacles) {
@@ -257,7 +306,7 @@ void MPCD::Simulation::verlet() {
 void MPCD::Simulation::streamingStep() {
 
 	bool draw = false;
-	if (_t >= _stationaryT - 1 - 100 && _t <= _stationaryT - 1) {
+	if ((_t >= _stationaryT - 1 - 100 && _t <= _stationaryT - 1) || (_t >= _stationaryT && _t % 1000 == 0)) {
 		draw = true;
 	}
 	_pipe.stream(_particles, _timestep, draw, _t);
