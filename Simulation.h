@@ -39,7 +39,7 @@ namespace MPCD {
 
 		void writeCirclePositionToOut(std::ofstream& outFile, Eigen::Vector2d center_pos, double radius);
 
-		std::vector<CircularObstacle>& setupObstacles(std::ofstream& outFile);
+		std::vector<CircularObstacle> setupObstacles(std::ofstream& outFile);
 
 		void streamingStep();
 		void collisionStep();

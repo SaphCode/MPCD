@@ -84,7 +84,7 @@ void Simulation::setup() {
 	std::cout << "Setup complete." << std::endl;
 }
 
-std::vector<CircularObstacle>& MPCD::Simulation::setupObstacles(std::ofstream& outFile) {
+std::vector<CircularObstacle> MPCD::Simulation::setupObstacles(std::ofstream& outFile) {
 	const double center_to_center_spacing = MPCD::Obstacles::center_to_center_spacing;
 	const int num_per_row = MPCD::Obstacles::num_per_row;
 	const double radius = MPCD::Obstacles::radius;
@@ -148,8 +148,10 @@ void MPCD::Simulation::loadCheckpoint(int timestep, std::string pathParticles) /
 		}
 	}
 
-	if (it != MPCD::Constants::average_particles_per_cell * MPCD::Constants::x_max * MPCD::Constants::y_max + 1) exit(-1);
-
+	if (it != MPCD::Constants::average_particles_per_cell * MPCD::Constants::x_max * MPCD::Constants::y_max + 1) {
+		std::cout << it << std::endl;
+		exit(-1);
+	}
 	std::cout << "Loaded from checkpoint." << std::endl;
 }
 

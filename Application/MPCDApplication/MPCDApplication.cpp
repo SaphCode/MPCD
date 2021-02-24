@@ -23,10 +23,10 @@ Simulation sim(draw, particleDrawing, stationaryT);
 int main()
 {
 
-	int t = 0;
+	int t = stationaryT - 1;
 	
-	sim.setup();
-	//sim.loadCheckpoint(2999, "G:/Bachelor/Data/particles_av10_timestep02999.csv"); // , "G:/Bachelor/Data/cells_av10_timestep02999.csv"
+	//sim.setup();
+	sim.loadCheckpoint(t, "G:/Bachelor/Data/f=0.01/particles_av10_timestep59999.csv"); // , "G:/Bachelor/Data/cells_av10_timestep02999.csv"
 
 	auto start = std::chrono::high_resolution_clock::now();
 	while (!cancel) {
