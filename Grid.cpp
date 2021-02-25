@@ -22,7 +22,7 @@ MPCD::Grid::Grid() :
 	_unifSign(-1, 1)
 {
 
-	_w = 5; // width of 0s for filename
+	_w = 6; // width of 0s for filename
 
 }
 

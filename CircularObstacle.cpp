@@ -29,7 +29,7 @@ Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 
 	double x_circle_intersection = 0;
 	double y_circle_intersection = 0;
-	if (std::abs(relPos[0]) < 1e-8) {
+	if (std::abs(relPos[0]) < 5e-6) {
 		x_circle_intersection = pos[0];
 		if (oldPos[1] > pos[1]) {
 			y_circle_intersection = std::sqrt(std::pow(m_radius, 2) - std::pow(x_circle_intersection - m_center[0], 2)) + m_center[1];
@@ -58,6 +58,7 @@ Eigen::Vector2d MPCD::CircularObstacle::getOvershoot(const Body& o) const
 		double toRoot = b * b - 4 * a * c;
 		if (toRoot < 0) {
 			std::cout << "Root is smaller 0 for:\n";
+			std::cout << "REl pos[0] * 1000: " << relPos[0] * 1000 << std::endl;
 			std::cout << "Mass: " << o.getMass() << "\nPos: " << o.getPosition() << "\n";
 			std::cout << "Old Pos: " << o.getOldPosition() << "\n";
 			std::cout << "Vel: " << m_vel << "\n";

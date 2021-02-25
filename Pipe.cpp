@@ -8,7 +8,7 @@
 MPCD::Pipe::Pipe(ConstForce force) :
 	m_constForce(force)
 {
-	_w = 5; // width of 0s for filenames
+	_w = 6; // width of 0s for filenames
 }
 
 void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls)

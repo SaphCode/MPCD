@@ -23,7 +23,7 @@ Simulation sim(draw, particleDrawing, stationaryT);
 int main()
 {
 
-	int t = stationaryT - 1;
+	int t = stationaryT - 1; // 0
 	
 	//sim.setup();
 	sim.loadCheckpoint(t, "G:/Bachelor/Data/f=0.01/particles_av10_timestep59999.csv"); // , "G:/Bachelor/Data/cells_av10_timestep02999.csv"
