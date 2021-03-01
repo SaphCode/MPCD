@@ -30,6 +30,9 @@ namespace MPCD {
 		~Pipe() {}
 		void stream(std::vector<Particle>& particles, double lapse, bool draw, int t);
 		void setObstacles(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
+
+		const std::vector<CircularObstacle>& getObstacles() const;
+		const std::vector<Wall>& getWalls() const;
 		
 		void verlet(std::vector<Monomer>& monomers, bool draw, int t);
 	};

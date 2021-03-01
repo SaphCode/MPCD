@@ -20,7 +20,7 @@ namespace MPCD {
 
         bool contains(Eigen::Vector2d point) const override;
 
-        bool occupies(std::pair<int, int> index, double cell_dim) const override;
+        bool occupies(std::pair<int, int> index, Eigen::Vector2d shift, double cell_dim) const override;
 
     private:
         Eigen::Vector2d m_center;

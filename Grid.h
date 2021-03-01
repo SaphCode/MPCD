@@ -19,6 +19,7 @@ namespace MPCD {
 			void calculate(bool draw, int t);
 			void setupCells(std::vector<CircularObstacle> obstacles, std::vector<Wall> walls);
 			void updateCoordinates(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
+			void updateOccupied(const std::vector<CircularObstacle>& obstacles, const std::vector<Wall>& walls);
 			void collision(std::vector<Particle>& particles, std::vector<Monomer>& monomers);
 			void shift();
 			void undoShift();

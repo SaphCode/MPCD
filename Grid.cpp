@@ -13,8 +13,8 @@ using namespace Eigen;
 MPCD::Grid::Grid() :
 	_shiftGen{ std::random_device()() },
 	_unif(-MPCD::Constants::cell_dim / 2, MPCD::Constants::cell_dim / 2),
-	_numRows((int)std::floor((MPCD::Constants::y_max - MPCD::Constants::y_0) / MPCD::Constants::cell_dim)),
-	_numCols((int)std::floor((MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim)),
+	_numRows((int)(MPCD::Constants::y_max - MPCD::Constants::y_0) / MPCD::Constants::cell_dim),
+	_numCols((int)(MPCD::Constants::x_max - MPCD::Constants::x_0) / MPCD::Constants::cell_dim),
 	_a(MPCD::Constants::cell_dim),
 	_maxShift(MPCD::Constants::cell_dim / 2),
 	_average_particles_per_cell(MPCD::Constants::average_particles_per_cell),
@@ -37,13 +37,13 @@ void MPCD::Grid::setupCells(std::vector<CircularObstacle> obstacles, std::vector
 			Cell cell;
 			std::pair index = std::make_pair(i, j);
 			for (auto& obstacle : obstacles) {
-				if (obstacle.occupies(index, MPCD::Constants::cell_dim)) {
+				if (obstacle.occupies(index, Eigen::Vector2d(0, 0), MPCD::Constants::cell_dim)) {
 					std::cout << "Cell " << i << ", " << j << " is occupied by obstacle." << std::endl;
 					cell.setOccupied(true);
 				}
 			}
 			for (auto& wall : walls) {
-				if (wall.occupies(index, MPCD::Constants::cell_dim)) {
+				if (wall.occupies(index, Eigen::Vector2d(0, 0), MPCD::Constants::cell_dim)) {
 					std::cout << "Cell " << i << ", " << j << " is occupied by wall." << std::endl;
 					cell.setOccupied(true);
 				}
@@ -56,9 +56,12 @@ void MPCD::Grid::setupCells(std::vector<CircularObstacle> obstacles, std::vector
 
 void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles, std::vector<Monomer>& monomers)
 {
-	//std::cout << "Grid.cpp: Adress of first particle in vector: " << &particles[0] << "\n";
-	for (auto& [key, cell] : _cells) {
-		cell.clear();
+	#pragma omp parallel for
+	for (int i = 0; i < _numRows; i++) {
+		for (int j = 0; j < _numCols; j++) {
+			std::pair<int, int> index = std::make_pair(i, j);
+			_cells[index].clear();
+		}
 	}
 	#pragma omp parallel for
 	for (int i = 0; i < particles.size(); i++) {
@@ -85,6 +88,23 @@ void MPCD::Grid::updateCoordinates(std::vector<Particle>& particles, std::vector
 		#pragma omp critical
 		{
 			_cells.at(coordinates).add(m);
+		}
+	}
+}
+
+void MPCD::Grid::updateOccupied(const std::vector<CircularObstacle>& obstacles, const std::vector<Wall>& walls)
+{
+	#pragma omp parallel for
+	for (int i = 0; i < _numRows; i++) {
+		for (int j = 0; j < _numCols; j++) {
+			std::pair<int, int> index = std::make_pair(i, j);
+			Cell& cell = _cells[index];
+			for (const auto& obstacle : obstacles) {
+				cell.setOccupied(obstacle.occupies(index, _shift, _a));
+			}
+			for (const auto& wall : walls) {
+				cell.setOccupied(wall.occupies(index, _shift, _a));
+			}
 		}
 	}
 }
@@ -185,7 +205,7 @@ void MPCD::Grid::collision(std::vector<Particle>& particles, std::vector<Monomer
 
 void MPCD::Grid::createVirtualParticles(const std::pair<int, int>& key, Cell& cell, const double cell_dim) {
 	const int particlesToCreate = MPCD::Constants::average_particles_per_cell - (int)cell.number();
-	const double mass = MPCD::Constants::particle_mass; // h2o kg mass
+	const double mass = MPCD::Constants::particle_mass;
 	const double mean = 0;
 	const double temperature = MPCD::Constants::temperature;
 	MaxwellBoltzmann mb_vel(mean, temperature, mass);

@@ -17,7 +17,7 @@ namespace MPCD {
 		constexpr double particle_mass = 1.0;
 		constexpr double monomer_mass = average_particles_per_cell * particle_mass; // avg particle mass per cell
 		constexpr double unit_of_time = 1.0; // a * mass_solvent/sqrt(kB T) // std::sqrt((particle_mass* std::pow(cell_dim, 2) / (k_boltzmann * temperature)))
-		constexpr double const_force = 0.01 * particle_mass * cell_dim * unit_of_time * unit_of_time;
+		constexpr double const_force = 0.03 * particle_mass * cell_dim * unit_of_time * unit_of_time;
 		constexpr double time_lapse = 0.1 * unit_of_time;
 		constexpr double md_timestep = 1.0 / (double)num_md_timesteps * time_lapse;
 		constexpr double x_0 = 0;

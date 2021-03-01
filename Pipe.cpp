@@ -17,6 +17,16 @@ void MPCD::Pipe::setObstacles(std::vector<CircularObstacle> obstacles, std::vect
 	m_walls = walls;
 }
 
+const std::vector<MPCD::CircularObstacle>& MPCD::Pipe::getObstacles() const
+{
+	return m_obstacles;
+}
+
+const std::vector<MPCD::Wall>& MPCD::Pipe::getWalls() const
+{
+	return m_walls;
+}
+
 void MPCD::Pipe::verlet(std::vector<Monomer>& monomers, bool draw, int t)
 {
 	if (draw) {
@@ -146,13 +156,8 @@ void MPCD::Pipe::collide(Body& b) {
 		}
 	}
 	for (const auto& o : m_walls) {
-		if (o.isInBounds(b)) {
-			
+		if (o.isInBounds(b)) {			
 			Eigen::Vector2d overshoot = o.getOvershoot(b);
-			if (std::abs(overshoot[0]) > 1 || std::abs(overshoot[1]) > 1) {
-				//std::cout << overshoot << std::endl;
-				o.getOvershoot(b);
-			}
 			// no slip
 			b.collided(overshoot);
 			assert(!(o.isInBounds(b)));

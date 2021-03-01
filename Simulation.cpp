@@ -290,6 +290,7 @@ void MPCD::Simulation::timestep()
 	streamingStep();
 
 	_grid.shift();
+	_grid.updateOccupied(_pipe.getObstacles(), _pipe.getWalls());
 	_grid.updateCoordinates(_particles, _monomers);
 
 	collisionStep();

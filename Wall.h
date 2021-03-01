@@ -34,7 +34,7 @@ namespace MPCD {
         void interact(InteractingBody& b) override;
 
         bool contains(Eigen::Vector2d point) const override;
-        bool occupies(std::pair<int, int> index, double cell_dim) const;
+        bool occupies(std::pair<int, int> index, Eigen::Vector2d shift, double cell_dim) const override;
 
     private:
         double m_yPos;
