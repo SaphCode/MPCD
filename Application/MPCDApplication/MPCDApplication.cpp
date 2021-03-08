@@ -26,7 +26,7 @@ int main()
 	int t = 0; // stationaryT - 1
 	
 	sim.setup();
-	//sim.loadCheckpoint(t, "G:/Bachelor/Data/f=0.01/particles_av10_timestep059999.csv"); // , "G:/Bachelor/Data/cells_av10_timestep02999.csv"
+	//sim.loadCheckpoint(t, "G:/Bachelor/Data/f=0.005/particles_av10_timestep060000.csv"); // , "G:/Bachelor/Data/cells_av10_timestep02999.csv"
 
 	auto start = std::chrono::high_resolution_clock::now();
 	while (!cancel) {

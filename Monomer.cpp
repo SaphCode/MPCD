@@ -46,11 +46,12 @@ Eigen::Vector2d Monomer::getRelPositionTorus(Eigen::Vector2d otherPos)
 
 Eigen::Vector2d Monomer::capForce(Eigen::Vector2d f)
 {
-	double max_cell_movement = 0.1; // 0.05 cell at one md timestep is allowed
+	return f;
+	/*double max_cell_movement = 0.1; // 0.05 cell at one md timestep is allowed
 	double maxForce = 2.0 * max_cell_movement * m_mass / (MPCD::Constants::md_timestep * MPCD::Constants::md_timestep);
 	double force = f.stableNorm();
 	Eigen::Vector2d cappedForce = force <= maxForce ? f : maxForce * f/force;
-	return cappedForce;
+	return cappedForce;*/
 }
 
 void Monomer::monomerInteraction(Eigen::Vector2d rel, double tuning, double diameter) {
@@ -61,10 +62,13 @@ void Monomer::nonlinearSpring(Eigen::Vector2d rel, double tuning, double diamete
 	const double d = rel.stableNorm();
 	const double R0 = MPCD::Constants::monomer_bond_length;
 	const double k = MPCD::Constants::monomer_spring_constant;
-	if (d < R0) {
-		Eigen::Vector2d f = k * tuning / (diameter * diameter) * R0 * R0 * d / (1.0 - d * d / (R0 * R0)) * rel/d;
-		m_effect += capForce(f);
-	}
+	//if (d < R0) {
+	Eigen::Vector2d f = k * tuning / (diameter * diameter) * R0 * R0 * d / (1.0 - d * d / (R0 * R0)) * rel/d;
+	m_effect += capForce(f);
+	//}
+	//else {
+
+	//}
 }
 
 

@@ -126,7 +126,11 @@ void MPCD::Simulation::loadCheckpoint(int timestep, std::string pathParticles) /
 	std::string csv(".csv");
 	std::ofstream outFile(external + obstacles_fp + csv);
 	outFile << "x,y,r" << "\n"; // header columns
-	std::vector<CircularObstacle> obstacles = setupObstacles(outFile);
+	std::vector<CircularObstacle> obstacles;
+	if (_addObstacles) {
+		obstacles = setupObstacles(outFile);
+	}
+	
 	outFile.close();
 
 	_grid.setupCells(obstacles, walls);
