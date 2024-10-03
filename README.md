@@ -27,9 +27,6 @@ and this pattern is repeated until the simulation is terminated.
 
 ![image](https://user-images.githubusercontent.com/10268570/196809816-200a7af2-1bca-4418-85d0-7fb927f93509.png)
 
-*It can be seen in this image, that the averaged speeds are not symmetric, which we would not expect
-from this system. There may be a bug in the code, but I could not find it.*
-
 Study of the polymers is more complicated and can be found in the thesis.
 
 Thesis: [Polymer Behavior in narrow-channels blocked by circular obstacles.pdf](https://github.com/SaphCode/MPCD/files/9824520/Polymer.Behavior.in.narrow-channels.blocked.by.circular.obstacles.pdf)
